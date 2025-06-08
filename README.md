@@ -12,12 +12,12 @@ CREATE TABLE articles (
                           category VARCHAR(50),                             -- 文章分类
                           tags VARCHAR(50)[],                               -- 文章标签数组
                           url VARCHAR(255),                                 -- 新增：文章URL
-                          created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,  -- 创建时间
-                          updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,  -- 更新时间
+                          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  -- 创建时间
+                          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  -- 更新时间
                           like_count INTEGER DEFAULT 0,                     -- 点赞数
                           view_count INTEGER DEFAULT 0,                     -- 阅读数
                           is_deleted BOOLEAN DEFAULT FALSE,                 -- 逻辑删除标志
-                          deleted_at TIMESTAMP WITH TIME ZONE               -- 删除时间(可选)
+                          deleted_at TIMESTAMP               -- 删除时间(可选)
 );
 
 -- 为URL字段添加唯一约束（可选）
