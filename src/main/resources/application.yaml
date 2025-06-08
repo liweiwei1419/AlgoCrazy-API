@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: springboot3-helloworld
+server:
+  port: 8888
