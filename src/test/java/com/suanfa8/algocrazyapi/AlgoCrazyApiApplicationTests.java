@@ -4,10 +4,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class AlgoCrazyApiApplicationTests {
+public class AlgoCrazyApiApplicationTests {
 
     @Test
     void contextLoads() {
+
     }
 
 }
