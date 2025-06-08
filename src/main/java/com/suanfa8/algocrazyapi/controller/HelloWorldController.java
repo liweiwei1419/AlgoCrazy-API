@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class HelloWorldController {
 
-    // http://localhost:8888/hello/world
+    // http://localhost:8888/api/v1/hello/world
 
     @GetMapping("/world")
     public User world() {
