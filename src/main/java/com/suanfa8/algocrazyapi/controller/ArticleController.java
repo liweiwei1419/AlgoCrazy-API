@@ -3,6 +3,7 @@ package com.suanfa8.algocrazyapi.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.suanfa8.algocrazyapi.common.Result;
 import com.suanfa8.algocrazyapi.entity.Article;
 import com.suanfa8.algocrazyapi.service.IArticleService;
 import jakarta.annotation.Resource;
@@ -47,19 +48,15 @@ public class ArticleController {
      * @return 分页结果
      */
     @GetMapping("/page")
-    public Map<String, Object> getArticlePage(@RequestParam(defaultValue = "1") Integer current, @RequestParam(defaultValue = "10") Integer size) {
+    public Result<IPage<Article>> getArticlePage(@RequestParam(defaultValue = "1") Integer current, @RequestParam(defaultValue = "10") Integer size) {
+        log.info("current => {}", current);
+        log.info("size => {}", size);
+
         // 创建分页对象
         Page<Article> page = new Page<>(current, size);
         // 执行分页查询
-        IPage<Article> articlePage = articleService.page(page, new QueryWrapper<Article>().orderByDesc("create_time"));
-        // 封装返回数据
-        Map<String, Object> res = new HashMap<>();
-        res.put("total", articlePage.getTotal());      // 总记录数
-        res.put("current", articlePage.getCurrent());  // 当前页
-        res.put("size", articlePage.getSize());        // 每页条数
-        res.put("pages", articlePage.getPages());     // 总页数
-        res.put("records", articlePage.getRecords());  // 数据列表
-        return res;
+        IPage<Article> articlePage = articleService.page(page, new QueryWrapper<Article>().orderByDesc("created_at"));
+        return Result.success(articlePage);
     }
 
 }
