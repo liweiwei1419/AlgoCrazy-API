@@ -39,6 +39,9 @@ public class Article {
     @TableField("url")
     private String url;
 
+    @TableField("source_url")
+    private String sourceUrl;
+
     @TableField(value = "created_at", fill = FieldFill.INSERT)
     private LocalDateTime createdAt;
 

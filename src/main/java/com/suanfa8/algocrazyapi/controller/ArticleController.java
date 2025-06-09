@@ -52,7 +52,7 @@ public class ArticleController {
         // 创建分页对象
         Page<Article> page = new Page<>(current, size);
         // 执行分页查询
-        IPage<Article> articlePage = articleService.page(page, new QueryWrapper<Article>().select("id", "title", "url", "category", "author", "created_at", "updated_at").orderByDesc("created_at"));
+        IPage<Article> articlePage = articleService.page(page, new QueryWrapper<Article>().select("id", "title", "url", "category", "author", "created_at", "updated_at").orderByDesc("updated_at"));
         return Result.success(articlePage);
     }
 
