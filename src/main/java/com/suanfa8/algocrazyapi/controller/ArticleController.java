@@ -38,9 +38,8 @@ public class ArticleController {
     @PostMapping("/create")
     public Boolean articleCreate(@RequestBody Article article) {
         log.info("创建文章 => {}", article);
-        return articleService.save(article);
+        return articleService.articleCreate(article) == 1;
     }
-
 
     @Operation(summary = "分页查询文章列表")
     @Parameter(name = "current", description = "当前页")
@@ -62,6 +61,9 @@ public class ArticleController {
     @GetMapping("/{id}")
     public Result<Article> getArticleById(@PathVariable Long id) {
         log.info("查询文章 => {}", id);
+        // 先增加阅读量
+        articleService.lambdaUpdate().eq(Article::getId, id).setSql("view_count = view_count + 1").update();
+        // 再查询文章
         Article article = articleService.getById(id);
         if (article == null) {
             return Result.fail(500, "文章不存在");

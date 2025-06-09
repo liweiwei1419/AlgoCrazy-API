@@ -19,7 +19,7 @@ spring:
 mybatis-plus:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl # ??SQL??
-    map-underscore-to-camel-case: true # ??????
+    map-underscore-to-camel-case: true  # ????????
     default-enum-type-handler: org.apache.ibatis.type.EnumOrdinalTypeHandler # ????
     jdbc-type-for-null: null # ??JDBC???null???
 

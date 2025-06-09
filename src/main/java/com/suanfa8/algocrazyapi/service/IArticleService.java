@@ -6,6 +6,8 @@ import com.suanfa8.algocrazyapi.entity.Article;
 
 public interface IArticleService extends IService<Article> {
 
+    int articleCreate(Article article);
+
     Page<Article> selectPage(int curPage, int pageSize);
 
 }

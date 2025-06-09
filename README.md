@@ -25,4 +25,10 @@ CREATE UNIQUE INDEX idx_articles_url ON articles(url) WHERE url IS NOT NULL;
 
 -- 为URL字段添加索引（可选）
 CREATE INDEX idx_articles_url ON articles(url);
+
+
+ALTER TABLE articles ADD COLUMN parent_id INTEGER REFERENCES articles(id); -- 父级文章ID
+ALTER TABLE articles ADD COLUMN display_order INTEGER DEFAULT 0; -- 同级显示顺序
+ALTER TABLE articles ADD COLUMN path VARCHAR(255) DEFAULT ''; -- 路径(如"1,5,12"表示1→5→12)
+ALTER TABLE articles ADD COLUMN is_folder BOOLEAN DEFAULT FALSE; -- 是否为文件夹
 ```

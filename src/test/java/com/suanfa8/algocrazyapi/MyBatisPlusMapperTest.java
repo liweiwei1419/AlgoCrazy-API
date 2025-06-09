@@ -2,12 +2,10 @@ package com.suanfa8.algocrazyapi;
 
 import com.suanfa8.algocrazyapi.entity.Article;
 import com.suanfa8.algocrazyapi.mapper.ArticleMapper;
-import org.checkerframework.checker.units.qual.A;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @SpringBootTest
@@ -37,6 +35,17 @@ public class MyBatisPlusMapperTest {
 //        tags.add("二叉搜索树");
 //        article.setTags(tags);
         int insert = articleMapper.insert(article);
+        System.out.println(insert);
+    }
+
+    @Test
+    public void testUpdate(){
+        Article article = new Article();
+        article.setId(1L);
+        article.setTitle("测试修改");
+        article.setContent("测试");
+
+        int insert = articleMapper.updateById(article);
         System.out.println(insert);
     }
 

@@ -7,6 +7,8 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -16,6 +18,7 @@ import java.util.List;
 @Data
 @Accessors(chain = true)
 @TableName("articles")
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class Article {
 
     @TableId(type = IdType.AUTO)
@@ -45,7 +48,7 @@ public class Article {
     @TableField(value = "created_at", fill = FieldFill.INSERT)
     private LocalDateTime createdAt;
 
-    @TableField(value = "updated_at", fill = FieldFill.INSERT_UPDATE)
+    @TableField(value = "updated_at", fill = FieldFill.UPDATE)
     private LocalDateTime updatedAt;
 
     @TableField("like_count")
@@ -60,4 +63,17 @@ public class Article {
 
     @TableField("deleted_at")
     private LocalDateTime deletedAt;
+
+    // 新增树形结构字段
+    @TableField("parent_id")
+    private Long parentId;
+
+    @TableField("display_order")
+    private Integer displayOrder;
+
+    @TableField("path")
+    private String path;
+
+    @TableField("is_folder")
+    private Boolean isFolder;
 }
