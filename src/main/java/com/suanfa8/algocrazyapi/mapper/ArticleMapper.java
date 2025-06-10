@@ -13,6 +13,9 @@ public interface ArticleMapper extends BaseMapper<Article> {
     @Select("SELECT id, title, parent_id, is_folder FROM articles where is_deleted = false ORDER BY display_order ASC")
     List<Article> selectAllWithoutContent();
 
+    @Select("SELECT id, title FROM articles where is_deleted = false")
+    List<Article> getTitleAndIdSelect();
+
     @Select("SELECT * FROM articles WHERE url = #{url}")
     Article findByUrl(@Param("url") String url);
 

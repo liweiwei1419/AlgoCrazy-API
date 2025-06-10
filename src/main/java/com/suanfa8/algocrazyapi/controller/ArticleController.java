@@ -4,6 +4,10 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.suanfa8.algocrazyapi.common.Result;
+import com.suanfa8.algocrazyapi.dto.ArticleAddDto;
+import com.suanfa8.algocrazyapi.dto.ArticleDetailDto;
+import com.suanfa8.algocrazyapi.dto.ArticleUpdateDto;
+import com.suanfa8.algocrazyapi.dto.TitleAndIdSelectDto;
 import com.suanfa8.algocrazyapi.entity.Article;
 import com.suanfa8.algocrazyapi.service.IArticleService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.Mapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -22,6 +27,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Tag(name = "文章")
 @CrossOrigin
@@ -36,8 +44,16 @@ public class ArticleController {
     @Operation(summary = "创建文章")
     @Parameter(name = "article", description = "文章对象", required = true)
     @PostMapping("/create")
-    public Boolean articleCreate(@RequestBody Article article) {
-        log.info("创建文章 => {}", article);
+    public Boolean articleCreate(@RequestBody ArticleAddDto articleAddDto) {
+        log.info("创建文章 => {}", articleAddDto);
+
+        Article article = new Article();
+        article.setAuthor(articleAddDto.getAuthor());
+        article.setTitle(articleAddDto.getTitle());
+        article.setCategory(articleAddDto.getCategory());
+        article.setContent(articleAddDto.getContent());
+        article.setParentId(Long.parseLong(articleAddDto.getParentId()));
+        article.setSourceUrl(articleAddDto.getSourceUrl());
         return articleService.articleCreate(article) == 1;
     }
 
@@ -75,13 +91,18 @@ public class ArticleController {
     @Operation(summary = "更新文章")
     @Parameter(name = "article", description = "文章对象", required = true)
     @PutMapping("/update")
-    public Result<Boolean> updateArticle(@RequestBody Article article) {
-        log.info("更新文章 => {}", article);
-        if (article.getId() == null) {
-            return Result.fail(500, "文章 ID 不能为空");
-        }
-        boolean result = articleService.updateById(article);
-        return Result.success(result);
+    public Result<Boolean> updateArticle(@RequestBody ArticleUpdateDto articleUpdateDto) {
+        log.info("更新文章 => {}", articleUpdateDto);
+
+        Article article = new Article();
+        article.setId(Long.parseLong(articleUpdateDto.getId()));
+        article.setAuthor(articleUpdateDto.getAuthor());
+        article.setTitle(articleUpdateDto.getTitle());
+        article.setCategory(articleUpdateDto.getCategory());
+        article.setContent(articleUpdateDto.getContent());
+        article.setParentId(Long.parseLong(articleUpdateDto.getParentId()));
+        article.setSourceUrl(articleUpdateDto.getSourceUrl());
+        return Result.success(articleService.update(article) == 1);
     }
 
 
@@ -92,6 +113,29 @@ public class ArticleController {
         log.info("删除文章 => {}", id);
         boolean result = articleService.removeById(id);
         return Result.success(result);
+    }
+
+
+    @GetMapping("/articles")
+    public Result<List<TitleAndIdSelectDto>> getTitleAndIdSelect() {
+        List<Article> titleAndIdSelect = articleService.getTitleAndIdSelect();
+        List<TitleAndIdSelectDto> titleAndIdSelectDtos = new ArrayList<>();
+        for (Article article : titleAndIdSelect) {
+            TitleAndIdSelectDto titleAndIdSelectDto = new TitleAndIdSelectDto();
+            titleAndIdSelectDto.setId(article.getId().toString());
+            titleAndIdSelectDto.setTitle(article.getTitle());
+            titleAndIdSelectDtos.add(titleAndIdSelectDto);
+        }
+        return Result.success(titleAndIdSelectDtos);
+    }
+
+    @GetMapping("/book/{url}")
+    public Result<ArticleDetailDto> queryByUrl(@PathVariable String url){
+        Article article = articleService.queryByUrl(url);
+        ArticleDetailDto articleDetailDto = new ArticleDetailDto();
+        articleDetailDto.setContent(article.getContent());
+        articleDetailDto.setTitle(article.getTitle());
+        return Result.success(articleDetailDto);
     }
 
 }

@@ -1,5 +1,6 @@
 package com.suanfa8.algocrazyapi.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.suanfa8.algocrazyapi.entity.Article;
@@ -8,26 +9,46 @@ import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Service
-public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> implements IArticleService{
+public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> implements IArticleService {
 
     @Resource
     private ArticleMapper articleMapper;
 
     @Override
     public int articleCreate(Article article) {
-        // 如果有 sourceUrl，自动生成 url
+        generateAndSetArticleUrl(article);
+        return articleMapper.insert(article);
+    }
+
+
+    @Override
+    public int update(Article article) {
+        generateAndSetArticleUrl(article);
+        return articleMapper.updateById(article);
+    }
+
+    @Override
+    public Article queryByUrl(String url) {
+        LambdaQueryWrapper<Article> articleLambdaQueryWrapper = new LambdaQueryWrapper<Article>().eq(Article::getUrl, url);
+        return articleMapper.selectOne(articleLambdaQueryWrapper);
+    }
+
+
+    // 如果 article 有 sourceUrl，自动生成并设置 url
+    private void generateAndSetArticleUrl(Article article) {
         if (StringUtils.isNotBlank(article.getSourceUrl())) {
             String url = generateUrlFromSource(article.getSourceUrl(), article.getTitle());
             if (url != null) {
                 article.setUrl(url);
             }
         }
-        return articleMapper.insert(article);
     }
+
 
     private String generateUrlFromSource(String sourceUrl, String title) {
         try {
@@ -87,6 +108,11 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     public Page<Article> selectPage(int curPage, int pageSize) {
         Page<Article> page = new Page<>(curPage, pageSize);
         return articleMapper.selectPage(page, null);
+    }
+
+    @Override
+    public List<Article> getTitleAndIdSelect() {
+        return articleMapper.getTitleAndIdSelect();
     }
 
 }
