@@ -18,6 +18,7 @@ import java.util.List;
 @Data
 @Accessors(chain = true)
 @TableName("articles")
+// 驼峰转下划线
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class Article {
 

@@ -1,5 +1,6 @@
 package com.suanfa8.algocrazyapi.service;
 
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.suanfa8.algocrazyapi.dto.ArticleTreeNode;
 import com.suanfa8.algocrazyapi.entity.Article;
 import com.suanfa8.algocrazyapi.mapper.ArticleMapper;
@@ -16,15 +17,15 @@ import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
-public class ArticleTreeService {
+public class ArticleTreeServiceImpl  implements IArticleTreeService {
 
     private final ArticleMapper articleMapper;
 
     // 获取完整树形结构
+    @Override
     public List<ArticleTreeNode> getFullTree() {
         // 1. 一次性查询所有结点（不包含 content 大字段）
         List<Article> allArticles = articleMapper.selectAllWithoutContent();
-
         // 2. 构建 ID 到结点的映射
         Map<Long, ArticleTreeNode> nodeMap = new HashMap<>();
         allArticles.forEach(article -> {
@@ -32,7 +33,6 @@ public class ArticleTreeService {
             BeanUtils.copyProperties(article, node);
             nodeMap.put(article.getId(), node);
         });
-
         // 3. 构建树结构
         List<ArticleTreeNode> roots = new ArrayList<>();
         for (Article article : allArticles) {
@@ -40,7 +40,6 @@ public class ArticleTreeService {
             if (Objects.isNull(article.getParentId())) {
                 continue;
             }
-
             if (article.getParentId() == 0L) {
                 roots.add(node);
             } else {
@@ -115,5 +114,6 @@ public class ArticleTreeService {
             currentOrder++;
         }
     }
+
 }
 

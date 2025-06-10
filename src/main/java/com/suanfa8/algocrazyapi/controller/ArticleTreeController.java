@@ -2,7 +2,7 @@ package com.suanfa8.algocrazyapi.controller;
 
 import com.suanfa8.algocrazyapi.common.Result;
 import com.suanfa8.algocrazyapi.dto.ArticleTreeNode;
-import com.suanfa8.algocrazyapi.service.ArticleTreeService;
+import com.suanfa8.algocrazyapi.service.IArticleTreeService;
 import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,7 +18,7 @@ import java.util.List;
 public class ArticleTreeController {
 
     @Resource
-    private ArticleTreeService articleTreeService;
+    private IArticleTreeService articleTreeService;
 
     // 获取完整树形结构
     @GetMapping("/all")

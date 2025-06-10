@@ -1,10 +1,9 @@
 package com.suanfa8.algocrazyapi;
 
 import com.suanfa8.algocrazyapi.dto.ArticleTreeNode;
-import com.suanfa8.algocrazyapi.service.ArticleTreeService;
+import com.suanfa8.algocrazyapi.service.ArticleTreeServiceImpl;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.List;
@@ -13,7 +12,7 @@ import java.util.List;
 public class ArticleTreeServiceTest {
 
     @Resource
-    private ArticleTreeService articleTreeService;
+    private ArticleTreeServiceImpl articleTreeService;
 
     @Test
     public void test(){

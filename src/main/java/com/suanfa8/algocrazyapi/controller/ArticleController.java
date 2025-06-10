@@ -133,8 +133,15 @@ public class ArticleController {
     public Result<ArticleDetailDto> queryByUrl(@PathVariable String url){
         Article article = articleService.queryByUrl(url);
         ArticleDetailDto articleDetailDto = new ArticleDetailDto();
+        articleDetailDto.setId(article.getId());
         articleDetailDto.setContent(article.getContent());
         articleDetailDto.setTitle(article.getTitle());
+        articleDetailDto.setAuthor(article.getAuthor());
+        articleDetailDto.setSourceUrl(article.getSourceUrl());
+        articleDetailDto.setCreatedAt(article.getCreatedAt());
+        articleDetailDto.setUpdatedAt(article.getUpdatedAt());
+        articleDetailDto.setLikeCount(article.getLikeCount());
+        articleDetailDto.setViewCount(article.getViewCount());
         return Result.success(articleDetailDto);
     }
 
