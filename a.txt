@@ -1,0 +1,1188 @@
+例题：「力扣」第 46 题：全排列（中等）
+● 题目地址：https://leetcode.cn/problems/permutations/description/
+
+我们在第 2 节已经把回溯算法的内容大致介绍完了，接下来就需要通过一定量的练习巩固。
+在解决回溯算法的问题中还有一个优化技巧叫做剪枝，其实就是在深度优先遍历的过程中，同时判断接下来将要遍历的分支是否存在问题的答案，如果不存在，则跳过。就像剪掉树枝一样，把不必要的搜索路径剪掉，从而节省计算资源和时间。只要我们对问题理解透彻，对典型的测试用例理解透彻，剪枝是非常自然的。
+例题 1：「力扣」第 47 题：全排列（中等）
+● 题目地址：https://leetcode.cn/problems/permutations-ii/description/
+给定一个可包含重复数字的序列 nums ，按任意顺序 返回所有不重复的全排列。
+示例 1：
+输入：nums = [1,1,2]
+输出：
+[[1,1,2],
+ [1,2,1],
+ [2,1,1]]
+示例 2：
+输入：nums = [1,2,3]
+输出：[[1,2,3],[1,3,2],[2,1,3],[2,3,1],[3,1,2],[3,2,1]]
+提示：
+● 1 <= nums.length <= 8
+● -10 <= nums[i] <= 10
+思路分析
+这一题在「力扣」第 46 题（全排列）的基础上增加了序列 nums 包含重复数字这一条件，且要求：返回的结果不能重复。
+一个比较容易想到的做法是使用「力扣」第 46 题的代码，在结果集中去重，这些结果集的元素是列表，对列表去重不像用哈希表对基本元素去重那样容易。
+如果要比较两个列表，一个容易想到的办法是对列表分别排序，然后逐个比对。既然要排序，我们可以 在深度优先遍历之前就对输入数组排序 ，一旦发现某个分支遍历下去会得到重复的元素就停止，这样结果集中就不会包含重复列表。
+我们使用 nums = [0, 0', 1] （为了区分两个 0 ，另一个 0 使用 0' 表示）画出递归树如下：
+
+图中虚线框住的叶子结点（且标有箭头）是产生重复排列的结点，它们的 0' 在前，0 在后，我们分析产生重复的原因：[0’, 0, 1] 与 [0’, 1, 0] 是在遍历到 [0'] 结点（位于该递归树第 2 层）的时候得到的，[0'] 子树与 [0] 子树（同样位于该递归树第 2 层）得到的结果一样。  [0'] 子树的特点是：
+● 当前遍历到的值与前一个分支的值相等，即 nums[i] == nums[i - 1]；
+● 接下来还要尝试选择 0 ，即 0 还未被使用，即 !used[i - 1]。
+代码写出来就是：
+if (i > 0 && nums[i] == nums[i - 1] && !used[i - 1]) {
+    continue;
+}
+!used[i - 1] 是初学的时候比较难理解的地方，大家须要结合语义进行理解：
+● 由于当前分支选择的数字与上一个分支选择的数字相等；
+● 由于上一个分支选择的数字还未被使用，接下来的遍历就会使用到这个数字，进而产生重复，所以应该跳过。
+被跳过的分支如下图中被虚线框住的部分所示：
+
+本题的参考代码如下：
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Deque;
+import java.util.List;
+
+public class Solution {
+
+    public List<List<Integer>> permuteUnique(int[] nums) {
+        int n = nums.length;
+        List<List<Integer>> res = new ArrayList<>();
+        // 剪枝的前提是排序
+        Arrays.sort(nums);
+        boolean[] used = new boolean[n];
+        Deque<Integer> path = new ArrayDeque<>();
+        dfs(nums, 0, n, used, path, res);
+        return res;
+    }
+
+    private void dfs(int[] nums, int index, int n, boolean[] used, Deque<Integer> path, List<List<Integer>> res) {
+        if (index == n) {
+            res.add(new ArrayList<>(path));
+            return;
+        }
+
+        for (int i = 0; i < n; i++) {
+            if (used[i]) {
+                continue;
+            }
+
+            // nums[i - 1] 还继续选择，就会和前一个分支产生重复，因此应该剪去该分支
+            if (i > 0 && nums[i] == nums[i - 1] && !used[i - 1]) {
+                continue;
+            }
+
+            used[i] = true;
+            path.addLast(nums[i]);
+            // System.out.println("递归之前：" + path);
+            dfs(nums, index + 1, n, used, path, res);
+            // 回溯部分的代码，和 dfs 之前的代码是对称的
+            used[i] = false;
+            path.removeLast();
+            // System.out.println("递归之前：" + path);
+        }
+    }
+
+}
+说明：把注释的两个 System.out.println函数打开，并且对测试用例 [0, 0, 1]运行，得到的结果如下：
+递归之前：[0]
+递归之前：[0, 0]
+递归之前：[0, 0, 1]
+递归之后：[0, 0]
+递归之后：[0]
+递归之前：[0, 1]
+递归之前：[0, 1, 0]
+递归之后：[0, 1]
+递归之后：[0]
+递归之后：[]
+递归之前：[1]
+递归之前：[1, 0]
+递归之前：[1, 0, 0]
+递归之后：[1, 0]
+递归之后：[1]
+递归之后：[]
+再对比剪枝以后的递归树，可以帮助我们理解剪枝的代码。
+
+例题 2：「力扣」第 39 题：组合总和（中等）
+● 题目地址：https://leetcode.cn/problems/combination-sum/description/
+给你一个 无重复元素 的整数数组 candidates 和一个目标整数 target ，找出 candidates 中可以使数字和为目标数 target 的 所有 不同组合 ，并以列表形式返回。你可以按 任意顺序 返回这些组合。
+candidates 中的 同一个 数字可以 无限制重复被选取 。如果至少一个数字的被选数量不同，则两种组合是不同的。
+对于给定的输入，保证和为 target 的不同组合数少于 150 个。
+示例 1：
+输入：candidates = [2,3,6,7], target = 7
+输出：[[2,2,3],[7]]
+解释：
+2 和 3 可以形成一组候选，2 + 2 + 3 = 7 。注意 2 可以使用多次。
+7 也是一个候选， 7 = 7 。
+仅有这两种组合。
+示例 2：
+输入: candidates = [2,3,5], target = 8
+输出: [[2,2,2,2],[2,3,3],[3,5]]
+示例 3：
+输入: candidates = [2], target = 1
+输出: []
+提示：
+● 1 <= candidates.length <= 30
+● 2 <= candidates[i] <= 40
+● candidates 的所有元素 互不相同
+● 1 <= target <= 40
+思路分析
+根据示例 1，输入: candidates = [2, 3, 6, 7]，target = 7。
+● 输入数组里有 2，如果找到了组合总和为 7 - 2 = 5 的所有组合，再在之前加上 2 ，就是 7 的所有组合；
+● 同理考虑 3，如果找到了组合总和为 7 - 3 = 4 的所有组合，再在之前加上 3 ，就是 7 的所有组合，依次这样找下去。
+我们画出递归树如下：
+
+画图的规则是：
+● 创建一个分支时 做减法 ；
+● 每一个箭头表示：从父亲结点的数值减去边上的数值，得到子结点的数值。边的值就是题目中给出的 candidate 数组的每个元素的值；
+● 减到 0 或者负数的时候停止；
+● 所有从根结点到叶子结点 0 的路径就是题目要找的结果。
+这棵树有 $4$ 个叶子结点的值 $0$，对应的路径列表是 [[2, 2, 3], [2, 3, 2], [3, 2, 2], [7]]，而示例中给出的输出只有 [[7], [2, 2, 3]]。即：题目中要求每一个符合要求的解是 不计算顺序 的。
+如何去掉重复组合呢？我们的策略是在画这棵递归树的时候就避免产生重复组合。在力扣第 15 题（三数之和）、力扣第 47 题（ 全排列 II ）中，我们曾经见过：按顺序计算，可以避免产生重复。对输入数组排序后，我们可以通过控制递归的起始位置（start 参数）来避免产生重复的组合。
+例如，在 candidates = [2, 3, 6, 7] 中，如果我们已经尝试了以 2 开头的组合（如 [2, 2, 3]），那么在后序的遍历中，我们不需要再尝试以 3 开头的组合中包含 2 的情况（如 [3, 2, 2]），因为这会生成重复的组合。
+另外，排序的附加作用是：剪枝更彻底。例如，输入数组 candidates = [2, 3, 6, 7]，target = 7，当当前组合的和为 5 时，如果尝试加入 6 或 7，显然会超过 target，因此可以直接跳过这些数。
+参考代码：
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Deque;
+import java.util.List;
+
+public class Solution {
+
+    public List<List<Integer>> combinationSum(int[] candidates, int target) {
+        int n = candidates.length;
+        List<List<Integer>> res = new ArrayList<>();
+        // 排序的作用：去重、剪枝更彻底
+        Arrays.sort(candidates);
+        Deque<Integer> path = new ArrayDeque<>();
+        dfs(candidates, 0, n, target, path, res);
+        return res;
+    }
+
+    private void dfs(int[] candidates, int begin, int len, int target, Deque<Integer> path, List<List<Integer>> res) {
+        // 由于进入更深层的时候，小于 0 的部分被剪去，因此递归终止条件值只判断等于 0 的情况
+        if (target == 0) {
+            res.add(new ArrayList<>(path));
+            return;
+        }
+
+        for (int i = begin; i < len; i++) {
+            // 重点理解这里剪枝，前提是候选数组已经有序
+            if (target - candidates[i] < 0) {
+                break;
+            }
+            path.addLast(candidates[i]);
+            dfs(candidates, i, len, target - candidates[i], path, res);
+            path.removeLast();
+        }
+    }
+
+}
+复杂度分析：
+● 时间复杂度：最坏情况下，回溯算法的时间复杂度为 $O(2^n)$，其中 n 是 candidates 数组的长度。由于每个元素可以被多次使用，实际复杂度会更高；
+● 空间复杂度：空间复杂度主要取决于递归栈的深度，最坏情况下为 O(target)。
+本题总结
+排序的主要目的是为了 剪枝 和 避免重复组合，从而提高算法的效率。有些朋友可能会疑惑什么时候使用 used 数组，什么时候使用 begin 变量。这里为大家简单总结：
+● 排列问题，讲究顺序（即 [2, 2, 3] 与 [2, 3, 2] 视为不同列表时），需要记录哪些数字已经使用过，此时用 used 数组；
+● 组合问题，不讲究顺序（即 [2, 2, 3] 与 [2, 3, 2] 视为相同列表时），需要按照某种顺序搜索，此时使用 begin 变量。
+注意：具体问题应该具体分析， 理解算法的设计思想 是至关重要的，请不要死记硬背。
+特性	used 数组	begin 变量
+适用问题	排列问题（顺序相关）	组合问题（顺序无关）
+核心目的	记录元素是否被使用过	控制搜索的起始位置，避免重复组合
+遍历方式	每次从头遍历所有元素	从 begin 开始遍历后续元素
+典型问题	全排列、带重复元素的排列问题	组合总和、子集问题
+去重方式	通过 used 数组避免重复使用元素	通过 begin 变量避免重复组合
+例题 3：「力扣」第 40 题：组合总和 II（中等）
+● 题目地址：https://leetcode.cn/problems/combination-sum-ii/description/
+给定一个候选人编号的集合 candidates 和一个目标数 target ，找出 candidates 中所有可以使数字和为 target 的组合。
+candidates 中的每个数字在每个组合中只能使用 一次 。
+注意：解集不能包含重复的组合。
+示例 1:
+输入: candidates = [10,1,2,7,6,1,5], target = 8,
+输出:
+[
+[1,1,6],
+[1,2,5],
+[1,7],
+[2,6]
+]
+示例 2:
+输入: candidates = [2,5,2,1,2], target = 5,
+输出:
+[
+[1,2,2],
+[5]
+]
+提示:
+● 1 <= candidates.length <= 100
+● 1 <= candidates[i] <= 50
+● 1 <= target <= 30
+思路分析
+这道题与上一问的区别在于：
+● 第 39 题：candidates 中的数字没有重复，可以无限制重复选择；
+● 第 40 题：candidates 中的数字有重复，并且在每个组合中只能使用一次。
+相同点是：相同数字列表的不同排列视为一个结果。为此我们首先对数组排序，这样可以避免产生重复的结果以及剪去没有必要的分支。以「示例 2」为例，画出递归树如下图所示：
+
+画图的规则是：
+● 每一层按照从小到大的顺序减去 candidates 中的数字，相同的数字第 2 次及其出现的分支剪去，因为它们会产生重复结果；
+● 从上到下产生分支的时候，减去的数字在 candidates 中的下标是不回头的；
+● 如果减去某个数字以后的值小于等于 0，则跳过后面的数字。这是因为数组已排序，减去后面的数字只会使得结果更小。
+● 所有从根结点到叶子结点 0 的路径就是题目要找的结果。
+参考代码：
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Deque;
+import java.util.List;
+
+public class Solution {
+
+    public List<List<Integer>> combinationSum2(int[] candidates, int target) {
+        int n = candidates.length;
+        List<List<Integer>> res = new ArrayList<>();
+        // 排序的目的是剪枝和去重
+        Arrays.sort(candidates);
+        Deque<Integer> path = new ArrayDeque<>(n);
+        dfs(candidates, n, 0, target, path, res);
+        return res;
+    }
+
+    private void dfs(int[] candidates, int n, int begin, int target, Deque<Integer> path, List<List<Integer>> res) {
+        if (target == 0) {
+            res.add(new ArrayList<>(path));
+            return;
+        }
+        for (int i = begin; i < n; i++) {
+            // 大剪枝
+            if (target - candidates[i] < 0) {
+                break;
+            }
+
+            // 小剪枝
+            if (i > begin && candidates[i] == candidates[i - 1]) {
+                continue;
+            }
+            path.addLast(candidates[i]);
+            // 因为元素不可以重复使用，这里递归传递下去的是 i + 1 而不是 i
+            dfs(candidates, n, i + 1, target - candidates[i], path, res);
+            path.removeLast();
+        }
+    }
+
+}
+复杂度分析：
+● 时间复杂度：最坏情况下，我们需要遍历所有可能的组合，时间复杂度为 $O(2^n)$，其中 $n$ 是数组 candidates 的长度。
+● 空间复杂度：递归栈的深度最多为 $n$，因此空间复杂度为 $O(n)$。
+本题总结
+这道题通过回溯算法和剪枝技巧，能够有效地找到所有符合条件的组合。排序和跳过重复元素的处理是避免重复组合的关键。
+例题 4：「力扣」第 78 题：子集（中等）
+● 题目地址：https://leetcode.cn/problems/subsets/description/
+给你一个整数数组 nums ，数组中的元素 互不相同 。返回该数组所有可能的子集（幂集）。
+解集 不能 包含重复的子集。你可以按 任意顺序 返回解集。
+示例 1：
+输入：nums = [1,2,3]
+输出：[[],[1],[2],[1,2],[3],[1,3],[2,3],[1,2,3]]
+示例 2：
+输入：nums = [0]
+输出：[[],[0]]
+提示：
+● 1 <= nums.length <= 10
+● -10 <= nums[i] <= 10
+● nums 中的所有元素 互不相同
+思路分析
+以求 [1, 2, 3] 的子集为例，按照一个数选和不选，画出递归树如下；
+
+如上图所示，所有的叶子结点是问题的答案。
+● 需要的状态变量：
+  ○ 当前考虑的是第几个数，即：数组 nums 的下标，我们命名为 index；
+  ○ 从根结点到叶子结点的路径 path，容易知道，它是一个栈。
+参考代码 1：
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.List;
+
+public class Solution {
+
+    public List<List<Integer>> subsets(int[] nums) {
+        int n = nums.length;
+        List<List<Integer>> res = new ArrayList<>();
+        Deque<Integer> path = new ArrayDeque<>();
+        dfs(nums, n, 0, path, res);
+        return res;
+    }
+
+    private void dfs(int[] nums, int n, int index, Deque<Integer> path, List<List<Integer>> res) {
+        if (index == n) {
+            // 注意：由于全程使用一份变量 path，所以这里需要复制
+            res.add(new ArrayList<>(path));
+            return;
+        }
+
+        // 选 nums[index]
+        path.addLast(nums[index]);
+        dfs(nums, n, index + 1, path, res);
+        path.removeLast();
+
+        // 不选 nums[index]
+        dfs(nums, n, index + 1, path, res);
+    }
+
+}
+符合我们画出的树形图。
+复杂度分析：
+● 时间复杂度：$O(n \times 2^n)$，这里 $n$ 为数组的长度，叶子结点一共有 $2^n$ 个，树的高度为 $n$；
+● 空间复杂度：$O(n \times 2^n)$，理由同时间复杂度。保存子集需要长度为 $2^n$ 的列表，每一个子集的元素最多长度为 $n$。
+仍以求 [1, 2, 3] 的子集为例，按照按照每一层选出一个数产生分支，由于结果集中认为 [1, 2] 与 [2, 1] 是重复元素，我们需要按照顺序选取元素，画出递归树如下：
+
+可以看到所有的结点（包括非叶子结点，包括根结点）都是问题的答案。
+需要的状态变量：
+● 从数组 nums 的哪一个下标开始搜索 start；
+● 从根结点到叶子结点的路径 path。
+参考代码 2：
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.List;
+
+public class Solution {
+
+    public List<List<Integer>> subsets(int[] nums) {
+        List<List<Integer>> res = new ArrayList<>();
+        int n = nums.length;
+        Deque<Integer> path = new ArrayDeque<>();
+        dfs(nums, 0, n, path, res);
+        return res;
+    }
+
+    private void dfs(int[] nums, int begin, int n, Deque<Integer> path, List<List<Integer>> res) {
+        // 在遍历的过程中，收集符合条件的结果
+        res.add(new ArrayList<>(path));
+        for (int i = begin; i < n; i++) {
+            path.addLast(nums[i]);
+            dfs(nums, i + 1, n, path, res);
+            path.removeLast();
+        }
+    }
+
+}
+复杂度分析：
+● 时间复杂度：$O(2^n)$，整棵树的结点个数一共是 $2^n$ 个；
+● 空间复杂度：$O(n \times 2^n)$，保存子集需要长度为 $2^n$ 的列表，每一个子集的元素最多长度为 $n$。
+例题 5：「力扣」第 90 题：子集 II（中等）
+● 题目地址：https://leetcode.cn/problems/subsets-ii/description/
+给你一个整数数组 nums ，其中可能包含重复元素，请你返回该数组所有可能的 子集（幂集）。
+解集 不能 包含重复的子集。返回的解集中，子集可以按 任意顺序 排列。
+示例 1：
+输入：nums = [1,2,2]
+输出：[[],[1],[1,2],[1,2,2],[2],[2,2]]
+示例 2：
+输入：nums = [0]
+输出：[[],[0]]
+
+提示：
+● 1 <= nums.length <= 10
+● -10 <= nums[i] <= 10
+思路分析
+由于数组 nums 中可能包含重复元素，为了避免生成重复的子集，我们需要先对数组排序。按照一个数选和不选，如果不选一个数，则应该跳过与这个数相同的所有数。以 nums = [1, 2, 2, 3] 为例，画出递归树如下：
+
+参考代码 1：
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Deque;
+import java.util.List;
+
+public class Solution {
+
+    public List<List<Integer>> subsetsWithDup(int[] nums) {
+        Arrays.sort(nums);
+        List<List<Integer>> res = new ArrayList<>();
+        Deque<Integer> path = new ArrayDeque<>();
+        int n = nums.length;
+        dfs(nums, 0, n, path, res);
+        return res;
+    }
+
+    private void dfs(int[] nums, int start, int n, Deque<Integer> path, List<List<Integer>> res) {
+        if (start == n) {
+            // 添加当前子集到结果中
+            res.add(new ArrayList<>(path));
+            return;
+        }
+
+        // 选择当前元素
+        path.addLast(nums[start]);
+        dfs(nums, start + 1, n, path, res);
+        // 撤销选择
+        path.removeLast();
+
+        // 不选择当前元素，跳过重复元素
+        while (start + 1 < n && nums[start] == nums[start + 1]) {
+            start++;
+        }
+        dfs(nums, start + 1, n, path, res);
+    }
+
+}
+我们也可以按照从小到大的顺序依次选取，如果当前元素与前一个元素相同，则跳过该分支。即搜索起点一样，必然发生重复，此时跳过该分支。以示例 1，nums = [1, 2, 2] 为例，画出递归树如下图所示：
+
+所有的结点组成了题目要求的结果列表。
+参考代码 2：
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Deque;
+import java.util.List;
+
+public class Solution {
+
+    public List<List<Integer>> subsetsWithDup(int[] nums) {
+        Arrays.sort(nums);
+        List<List<Integer>> res = new ArrayList<>();
+        Deque<Integer> path = new ArrayDeque<>();
+        int n = nums.length;
+        dfs(nums, 0, n, path, res);
+        return res;
+    }
+
+    private void dfs(int[] nums, int start, int len, Deque<Integer> path, List<List<Integer>> res) {
+        res.add(new ArrayList<>(path));
+        for (int i = start; i < len; i++) {
+            // 剪枝条件，不能写成 i > 0
+            if (i > start && nums[i] == nums[i - 1]) {
+                continue;
+            }
+            path.addLast(nums[i]);
+            // 从 i + 1 开始继续遍历，按顺序遍历，所以不会重复
+            dfs(nums, i + 1, len, path, res);
+            path.removeLast();
+        }
+    }
+
+}
+复杂度分析：（理由同力扣第 78 题思路 2）
+● 时间复杂度：$O(2^n)$，整棵树的结点个数最多 $2^n$ 个；
+● 空间复杂度：$O(n \times 2^n)$，保存子集需要长度为 $2^n$ 的列表，每一个子集的元素最多长度为 $n$。
+本节探讨的问题需要运用特定的解题技巧。在分析过程中，我们需要通过列举典型示例，深入观察问题特征，识别无效分支条件，从而实现对搜索空间的优化剪枝。
+例题 1：「力扣」第 60 题：排列序列 （困难）
+● 题目地址：https://leetcode.cn/problems/permutation-sequence/description/
+给出集合 [1,2,3,...,n]，其所有元素共有 n! 种排列。
+按大小顺序列出所有排列情况，并一一标记，当 n = 3 时, 所有排列如下：
+1. "123"
+2. "132"
+3. "213"
+4. "231"
+5. "312"
+6. "321"
+给定 n 和 k，返回第 k 个排列。
+示例 1：
+输入：n = 3, k = 3
+输出："213"
+示例 2：
+输入：n = 4, k = 9
+输出："2314"
+示例 3：
+输入：n = 3, k = 1
+输出："123"
+提示：
+● 1 <= n <= 9
+● 1 <= k <= n!
+思路分析
+本题要我们求的排列，其实就是「力扣」第 46 题全排列中的某一个排列，我们的思路依然是画出递归树，技巧是：在选出某一个数的时候，计算剩下的数字可以组成的全排列个数：如果它小于 k 就跳过（以该数开始的排列都不是我们要找的排列），同时 k 减去跳过的排列数，否则就继续产生新的分支。
+我们以「示例 2」：n = 4，k = 9 为例，画出递归树如下图所示：
+
+编码细节：
+● 题目中说「给定 $n$ 的范围是 [1, 9]」，我们可以先计算出从 0 到 9 的阶乘，放在一个数组里，需要用到的时候可以根据下标直接获得阶乘值，其中 $0!=1$表示没有数可选的时候，也就是到达叶子结点了，排列数只剩下 1 个；
+● 编码的时候，到底是 +1 还是 -1，大于还是大于等于，这些比较容易把人绕晕，不能靠猜。常用的做法是：代入一个具体的数值，认真调试；
+● 本题在深度优先遍历的时候没有回头的过程，因此 path 变量就不需要回溯，这是与其它问题不同的地方。
+参考代码：
+import java.util.Arrays;
+
+public class Solution {
+
+    public String getPermutation(int n, int k) {
+        int[] factorial = calculateFactorial(n);
+        boolean[] used = new boolean[n + 1];
+        Arrays.fill(used, false);
+        StringBuilder path = new StringBuilder();
+        dfs(0, n, k, path, used, factorial);
+        return path.toString();
+    }
+
+    private void dfs(int index, int n, int k, StringBuilder path, boolean[] used, int[] factorial) {
+        if (index == n) {
+            return;
+        }
+
+        // 计算还未确定的数字的全排列的个数，第 1 次进入的时候是 n - 1
+        int count = factorial[n - 1 - index];
+        for (int i = 1; i <= n; i++) {
+            if (used[i]) {
+                continue;
+            }
+            if (count < k) {
+                k -= count;
+                continue;
+            }
+            path.append(i);
+            used[i] = true;
+            dfs(index + 1, n, k, path, used, factorial);
+            return;
+        }
+    }
+
+    private int[] calculateFactorial(int n) {
+        int[] factorial = new int[n + 1];
+        factorial[0] = 1;
+        for (int i = 1; i <= n; i++) {
+            factorial[i] = factorial[i - 1] * i;
+        }
+        return factorial;
+    }
+
+}
+复杂度分析：
+● 时间复杂度：$O(n^2)$。计算阶乘数组的时间复杂度是 $O(n)$，而在 dfs 方法中，每次确定一个数字时，需要遍历 used 数组，总共需要确定 n 个数字，每次遍历的时间复杂度是 $O(n)$，因此总的时间复杂度是 $O(n^2)$；
+● 空间复杂度：$O(n)$。主要的额外空间开销在于 used 数组和 factorial 数组，它们的长度都为 $n + 1$，因此空间复杂度是 $O(n)$。
+例题 2：「力扣」第 216 题：组合总和 III（中等）
+● 题目地址：https://leetcode.cn/problems/combination-sum-iii/description/
+找出所有相加之和为 n 的 k 个数的组合，且满足下列条件：
+● 只使用数字 1 到 9
+● 每个数字 最多使用一次
+返回 所有可能的有效组合的列表 。该列表不能包含相同的组合两次，组合可以以任何顺序返回。
+示例 1:
+输入: k = 3, n = 7
+输出: [[1,2,4]]
+解释:
+1 + 2 + 4 = 7
+没有其他符合的组合了。
+示例 2:
+输入: k = 3, n = 9
+输出: [[1,2,6], [1,3,5], [2,3,4]]
+解释:
+1 + 2 + 6 = 9
+1 + 3 + 5 = 9
+2 + 3 + 4 = 9
+没有其他符合的组合了。
+示例 3:
+输入: k = 4, n = 1
+输出: []
+解释: 不存在有效的组合。
+在[1,9]范围内使用4个不同的数字，我们可以得到的最小和是1+2+3+4 = 10，因为10 > 1，没有有效的组合。
+提示:
+● 2 <= k <= 9
+● 1 <= n <= 60
+思路分析
+本题要求每个数字最多使用一次，因此我们需要固定数字的选取顺序（升序）避免重复组合。以「示例 1」为例，画出递归树如下图所示：
+
+这棵树因为我们使用了较强的剪枝，所以剩得没几个枝叶了。这个重要的剪枝策略是：如果剩余的数值是 n ，接下来要选 k 个数，如果最小的 k 个数之和都严格大于 n ，就把这个分支剪去，如上图标注剪刀的地方就是如此。
+编码细节：
+● 由于「每个数字最多使用一次」，需要参数 start 表示搜索的起点 ，每次递归从 start + 1 开始搜索；
+● 需要参数 path 记录从根结点到当前遍历结点已经选择的数，保存结果时需深拷贝；
+● n、k、start 等基本类型参数在参数传递中的行为是复制，所以它们不需要回溯。
+其它编码细节和计算过程，我们作为注释写在了「参考代码」中：
+参考代码：
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.List;
+
+public class Solution {
+
+    public List<List<Integer>> combinationSum3(int k, int n) {
+        List<List<Integer>> result = new ArrayList<>();
+        // 提前终止条件：k 比 n 大，或者最大的 k 个数 (10 - k,.., 7, 8, 9) 的和 < n
+        if (k > n || n > (19 - k) * k / 2) {
+            return result;
+        }
+        dfs(k, n, 1, new ArrayDeque<>(), result);
+        return result;
+    }
+
+    private void dfs(int k, int n, int start, Deque<Integer> path, List<List<Integer>> result) {
+        if (k == 0) {
+            if (n == 0) {
+                result.add(new ArrayList<>(path));
+            }
+            return;
+        }
+
+        // 剪枝 1 ：剩余数字不够 k 个，即 [start..9] 区间里的数不足 k 个
+        if (10 - start < k) {
+            return;
+        }
+        // 剪枝 2：从 start 开始的最小 k 个数（start, start + 1, .., start + k - 1）的和已经大于剩余值
+        if ((2 * start + k - 1) * k / 2 > n) {
+            return;
+        }
+        // 遍历可能的数字
+        for (int i = start; i <= 9; i++) {
+            // 剪枝 3：当前数字已经大于剩余值
+            if (i > n) {
+                break;
+            }
+            path.addLast(i);
+            dfs(k - 1, n - i, i + 1, path, result);
+            path.removeLast();
+        }
+    }
+
+}
+复杂度分析：
+● 时间复杂度：$O(C_9^k)$，组合问题的最坏情况；
+● 空间复杂度：$O(k)$，递归栈深度和路径长度。
+本题总结
+搜索顺序的合理确定是避免重复解和提高算法效率的首要条件。在组合问题中，为避免生成重复的组合（如[1,2]和[2,1]），我们需要固定元素的选取顺序。通常采用升序搜索。
+例题 3：「力扣」第 77 题：组合（中等）
+● 题目地址：https://leetcode.cn/problems/combinations/description/
+给定两个整数 n 和 k，返回范围 [1, n] 中所有可能的 k 个数的组合。
+你可以按 任何顺序 返回答案。
+示例 1：
+输入：n = 4, k = 2
+输出：
+[
+  [2,4],
+  [3,4],
+  [2,3],
+  [1,2],
+  [1,3],
+  [1,4],
+]
+示例 2：
+输入：n = 1, k = 1
+输出：[[1]]
+提示：
+● 1 <= n <= 20
+● 1 <= k <= n
+思路分析
+组合问题，为了避免得到重复的结果，需要按照顺序搜索，因此在代码中需要设置搜索起点 start。我们从第一个数开始尝试，当选择一个数后，在剩下的数中继续选择下一个数，当组合长度达到 k 时，保存结果。以「示例 1」为例，画出递归树如下：
+
+还需要注意到：当剩余可选的数字数量不足以凑齐我们需要的组合时，可以提前终止搜索。
+如上图所示，在 [1, 2, 3, 4] 中选出 2 个数，搜索起点最多为 3，因为如果从 4 开始搜索，还需要 1 个数，但此时没有可以使用的数字了。
+又比如，当 n = 9，k = 6 时，假设搜索到某一个时刻，刚刚选了数字 7，还需要选 4 个数字，但剩余可选数字：[8, 9]（只有 2 个），明显不够，所以从 7 开始搜索就是浪费时间，我们需要对「剩余可选数字的个数」和「还需要选几个数」的大小关系进行判断。换句话说，如果我们发现剩下的数字「不够用」了，就没必要继续往下找了。
+● 设搜索上界为 max，那么 [max..n] 范围内的数字个数，即「剩余可选数字的个数」是 n - max + 1 ；
+● 我们每次选择一个数，在递归方法传递参数的时候，向下传递一层，k 减 1，因此「还需要选几个数」仍用 k 表示；
+● 为了保证剩下的数字够用，需要满足「剩余可选数字的个数」>= 「还需要选几个数」，即：n - max + 1 ≥ k， 解这个不等式，得 max ≤ n + 1 - k，得到搜索上界 max = n + 1 - k。
+通过这样的剪枝，算法效率可以显著提升，特别是在处理较大 n 和 k 时。
+参考代码 1：
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.List;
+
+public class Solution {
+
+    public List<List<Integer>> combine(int n, int k) {
+        List<List<Integer>> res = new ArrayList<>();
+        Deque<Integer> path = new ArrayDeque<>(k);
+        dfs(n, k, 1, path, res);
+        return res;
+    }
+
+    // n：数字范围上限
+    // k：还剩几个数要选
+    // start：当前搜索的起始数字，以避免重复
+    // path：当前路径，表示已选择的数字
+    private void dfs(int n, int k, int start, Deque<Integer> path, List<List<Integer>> res) {
+        if (k == 0) {
+            res.add(new ArrayList<>(path));
+            return;
+        }
+        // 关键剪枝
+        int max = n + 1 - k;
+        for (int i = start; i <= max; i++) {
+            path.addLast(i);
+            dfs(n, k - 1, i + 1, path, res);
+            path.removeLast();
+        }
+    }
+
+}
+复杂度分析：
+● 时间复杂度：$O(kC_n^k)$，必须生成所有组合数，每个组合需要 $O(k)$ 时间处理；
+● 空间复杂度：$O(k^2)$，递归栈的深度最多为 $k$ 层，路径存储最多 $k$ 个元素。
+根据组合问题的特点：每一个数或者选，或者不选，画出二叉树如下图所示，二叉树最多有 n 层。
+
+和「参考代码 1」一样，可以应用一个较强的剪枝条件，即「剩余可选数字的个数」>= 「还需要选几个数」。
+● 假设搜索起点是 start ，剩余可用的数字范围是 [start..n]，共 n - start + 1 个数字；
+● 设 k 表示还需要选的数字个数；
+● 「剩余可选数字的个数」>= 「还需要选几个数」，即 n - start + 1 >= k ，化简得 start <= n + 1 - k，即当 start > n + 1 - k 时搜索停止。
+参考代码 2：
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.List;
+
+public class Solution {
+
+    public List<List<Integer>> combine(int n, int k) {
+        List<List<Integer>> res = new ArrayList<>();
+        Deque<Integer> path = new ArrayDeque<>(k);
+        dfs(1, n, k, path, res);
+        return res;
+    }
+
+    private void dfs(int start, int n, int k, Deque<Integer> path, List<List<Integer>> res) {
+        if (k == 0) {
+            res.add(new ArrayList<>(path));
+            return;
+        }
+
+        if (start > n - k + 1) {
+            return;
+        }
+        // 不选
+        dfs(start + 1, n, k, path, res);
+
+        // 选
+        path.addLast(start);
+        dfs(start + 1, n, k - 1, path, res);
+        path.removeLast();
+    }
+
+}
+复杂度分析：
+● 时间复杂度：$O(kC_n^k)$，生成所有组合数，每个组合需要 $O(k)$ 时间处理；
+● 空间复杂度：$O(nk)$，递归深度最多 $n$ 层，路径存储最多 $k$ 个元素。
+在本节中，我们将重点探讨字符串处理中的回溯算法应用。字符串问题具有一个显著特征：当进行字符串拼接操作时，每次拼接都会生成全新的字符串对象。这一特性使得字符串处理中的回溯过程与传统回溯算法有所不同：它不需要显式的「撤销选择」（回溯）步骤。
+称为字符串「回溯」问题可能让人产生困惑，因为这类问题通常并不涉及传统意义上的回溯机制。「回溯」在这里更多是一种历史遗留的命名方式，而非对算法实现的确切描述。在学习和讨论时，理解问题的实质比纠结于名称更重要。
+例题：「力扣」第 22 题：括号生成（中等）
+● 题目地址：https://leetcode.cn/problems/generate-parentheses/description/
+数字 n 代表生成括号的对数，请你设计一个函数，用于能够生成所有可能的并且 有效的 括号组合。
+示例 1：
+输入：n = 3
+输出：["((()))","(()())","(())()","()(())","()()()"]
+示例 2：
+输入：n = 1
+输出：["()"]
+提示：
+● 1 <= n <= 8
+思路分析
+以 n = 2 为例，画出递归树结构如下：
+
+规则是：
+● 如果剩余左括号数量大于等于 1，则产生左分支；
+● 如果剩余右括号数量大于等于 1，则产生右分支；
+● 在尝试生成右分支时，若算上当前尝试添加的右括号后，右括号的数量超过左括号的数量，就对该分支进行剪枝。换句话说：当剩余左括号数量 <  剩余右括号数量时，才产生右分支（左括号用得多的前提下，才使用左括号。左括号和右括号使用数量相等时，不能使用右括号）。
+● 当前左右括号的剩余都为 0 时，就得到一个有效的括号的组合。
+参考代码 1：
+import java.util.ArrayList;
+import java.util.List;
+
+public class Solution {
+
+    public List<String> generateParenthesis(int n) {
+        List<String> res = new ArrayList<>();
+        // 执行深度优先遍历，搜索可能的结果
+        dfs("", n, n, res);
+        return res;
+    }
+
+    /**
+     * @param curStr 当前递归得到的结果
+     * @param left   左括号还有几个可以使用
+     * @param right  右括号还有几个可以使用
+     * @param res    结果集
+     */
+    private void dfs(String curStr, int left, int right, List<String> res) {
+        // 因为每一次尝试，都使用新的字符串变量，所以无需回溯
+        // 在递归终止的时候，直接把它添加到结果集即可，注意与「力扣」第 46 题、第 39 题区分
+        if (left == 0 && right == 0) {
+            res.add(curStr);
+            return;
+        }
+        if (left > 0) {
+            dfs(curStr + "(", left - 1, right, res);
+        }
+
+        if (left < right) {
+            dfs(curStr + ")", left, right - 1, res);
+        }
+    }
+
+}
+说明：
+● 字符串有这样的特点，每一次拼接都生成新的字符串；
+● 基本类型变量，在方法传递的时候，其行为是复制。
+所以字符串的深度优先遍历可以没有「回溯」的过程，即：每一次尝试都使用新的变量，深度优先遍历回到原来的地方时，使用的是原来的变量值。我们可以在字符串拼接的时候使用 StringBuilder 类，参考代码如下，大家可以作对比，相信对回溯算法会有新的认识。
+import java.util.ArrayList;
+import java.util.List;
+
+public class Solution {
+
+    public List<String> generateParenthesis(int n) {
+        List<String> res = new ArrayList<>();
+        // 使用 StringBuilder 进行字符串拼接
+        dfs(new StringBuilder(), n, n, res);
+        return res;
+    }
+
+    /**
+     * @param curStr 当前递归得到的结果
+     * @param left   左括号还有几个可以使用
+     * @param right  右括号还有几个可以使用
+     * @param res    结果集
+     */
+    private void dfs(StringBuilder curStr, int left, int right, List<String> res) {
+        // 递归终止条件：左右括号都用完
+        if (left == 0 && right == 0) {
+            res.add(curStr.toString());
+            return;
+        }
+
+        // 如果还有左括号可用，尝试添加左括号
+        if (left > 0) {
+            // 添加左括号
+            curStr.append("(");
+            dfs(curStr, left - 1, right, res);
+            // 回溯，移除最后一个字符
+            curStr.deleteCharAt(curStr.length() - 1);
+        }
+
+        // 如果右括号比左括号多，尝试添加右括号
+        if (left < right) {
+            // 添加右括号
+            curStr.append(")");
+            dfs(curStr, left, right - 1, res);
+            // 回溯，移除最后一个字符
+            curStr.deleteCharAt(curStr.length() - 1);
+        }
+    }
+
+}
+说明：本题的「复杂度分析」涉及到组合数学的「卡特兰数」，已经超出了本书的介绍范围。感兴趣的读者可以自行了解，这里只列出结论。
+复杂度分析：
+● 时间复杂度：$O(\frac{4^n}{\sqrt{n}})$。其中 n 是括号的对数。每个有效的括号组合都需要 2n 步来生成。
+● 空间复杂度：$O(n)$。递归栈的深度是 2n，因此空间复杂度是 $O(n)$。
+
+在算法问题中，二维平面搜索是一类经典题型，常用于考察图的遍历方法。其中，Flood Fill（泛洪填充） 是一种重要的算法思想，其名称来源于洪水从一点扩散到所有可达区域的现象。
+在图像处理中，例如 Photoshop 的魔棒工具，选取颜色相近的连续区域就是 Flood Fill。在扫雷游戏中，点击空白块时，自动展开相连区域，也是 Flood Fill。
+在图论中，Flood Fill 指从某个顶点出发，遍历其所在连通分量的所有顶点。
+Flood Fill 可以使用深度优先遍历，也可以使用广度优先遍历：
+● 深度优先遍历（DFS）：递归或栈实现，适合遍历整个连通区域；
+● 广度优先遍历（BFS）：队列实现，适合寻找最短路径或需要逐层扩展的情况，如扫雷游戏的空格标记。
+Flood Fill 问题的代码实现容易出错，调试也相对困难，大家需要通过经典题目（如「岛屿数量」「图像渲染」）反复练习，提升编码熟练度。
+例题 1：「力扣」第 200 题：岛屿数量（中等）
+● 题目地址：https://leetcode.cn/problems/number-of-islands/description/
+给你一个由 '1'（陆地）和 '0'（水）组成的的二维网格，请你计算网格中岛屿的数量。
+岛屿总是被水包围，并且每座岛屿只能由水平方向和/或竖直方向上相邻的陆地连接形成。
+此外，你可以假设该网格的四条边均被水包围。
+示例 1：
+输入：grid = [
+  ["1","1","1","1","0"],
+  ["1","1","0","1","0"],
+  ["1","1","0","0","0"],
+  ["0","0","0","0","0"]
+]
+输出：1
+示例 2：
+输入：grid = [
+  ["1","1","0","0","0"],
+  ["1","1","0","0","0"],
+  ["0","0","1","0","0"],
+  ["0","0","0","1","1"]
+]
+输出：3
+提示：
+● m == grid.length
+● n == grid[i].length
+● 1 <= m, n <= 300
+● grid[i][j] 的值为 '0' 或 '1'
+思路分析
+我们可以采用深度优先遍历（DFS）或广度优先遍历（BFS）算法来解决该问题。具体做法是：遍历整个二维网格矩阵，当发现值为 '1' 的网格单元时，使用 DFS/BFS，将所有连通（相邻）的 '1' 标记为「已访问」，岛屿计数器加 1。通过这种标记机制确保每个岛屿只被统计一次。
+由于网格中可能存在环状结构，必须对已访问的节点进行标记，主要存在两种实现方案：
+● 标准做法（推荐）：使用独立的布尔型访问矩阵 visited，将访问过的坐标标记为 true，好处是：不修改原始输入数据，符合工程规范。虽然使用了 $O(m \times n)$ 额外空间，但时间复杂度还是 $O(m \times n)$ ，我们和大家介绍过：时间复杂度最优，空间复杂度不滥用即可；
+● 原地修改：修改输入矩阵中的 '1' 为 '0'。节省额外空间，需要确认题目允许修改输入数据，额外空间其实还是  $O(m \times n)$，因为递归调用栈的深度可能还是 $O(m \times n)$。
+关于广度优先遍历的解法将在《第 17 章 第 3 节 广度优先遍历习题选讲 1》中介绍。
+参考代码：
+public class Solution {
+
+    private static final int[][] DIRECTIONS = {{-1, 0}, {0, -1}, {1, 0}, {0, 1}};
+
+    public int numIslands(char[][] grid) {
+        int m = grid.length;
+        int n = grid[0].length;
+        boolean[][] visited = new boolean[m][n];
+        int count = 0;
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (!visited[i][j] && grid[i][j] == '1') {
+                    dfs(i, j, m, n, grid, visited);
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
+
+    private void dfs(int i, int j, int m, int n, char[][] grid, boolean[][] visited) {
+        visited[i][j] = true;
+        for (int k = 0; k < 4; k++) {
+            int newX = i + DIRECTIONS[k][0];
+            int newY = j + DIRECTIONS[k][1];
+            if (inArea(newX, newY, m, n) && grid[newX][newY] == '1' && !visited[newX][newY]) {
+                dfs(newX, newY, m, n, grid, visited);
+            }
+        }
+    }
+
+    private boolean inArea(int x, int y, int m, int n) {
+        return x >= 0 && x < m && y >= 0 && y < n;
+    }
+
+}
+说明：方向数组 DIRECTIONS 和 inArea 属于编程规范，在这里仅供参考。
+复杂度分析：
+● 时间复杂度：$O(m \times n)$，需遍历整个网格；
+● 空间复杂度：$O(m \times n)$，递归栈的深度。
+例题 2：「力扣」第 79 题：单词搜索（中等）
+● 题目地址：https://leetcode.cn/problems/word-search/description/
+给定一个 m x n 二维字符网格 board 和一个字符串单词 word 。如果 word 存在于网格中，返回 true ；否则，返回 false 。
+单词必须按照字母顺序，通过相邻的单元格内的字母构成，其中“相邻”单元格是那些水平相邻或垂直相邻的单元格。同一个单元格内的字母不允许被重复使用。
+示例 1：
+
+输入：board = [["A","B","C","E"],["S","F","C","S"],["A","D","E","E"]], word = "ABCCED"
+输出：true
+示例 2：
+
+输入：board = [["A","B","C","E"],["S","F","C","S"],["A","D","E","E"]], word = "SEE"
+输出：true
+示例 3：
+
+输入：board = [["A","B","C","E"],["S","F","C","S"],["A","D","E","E"]], word = "ABCB"
+输出：false
+提示：
+● m == board.length
+● n = board[i].length
+● 1 <= m, n <= 6
+● 1 <= word.length <= 15
+● board 和 word 仅由大小写英文字母组成
+进阶：你可以使用搜索剪枝的技术来优化解决方案，使其在 board 更大的情况下可以更快解决问题？
+思路分析
+使用回溯算法：遍历网格，找到与单词首字母匹配的位置作为起点，从该位置开始，向四个方向（上、下、左、右）递归搜索，每次访问过的位置要标记，避免重复使用，如果某个方向匹配失败，回溯并尝试其它方向。
+参考代码 1：
+public class Solution3 {
+
+    private static final int[][] DIRECTIONS = {{-1, 0}, {0, -1}, {0, 1}, {1, 0}};
+
+    public boolean exist(char[][] board, String word) {
+        int m = board.length;
+        int n = board[0].length;
+
+        boolean[][] visited = new boolean[m][n];
+        char[] charArray = word.toCharArray();
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (dfs(i, j, 0, m, n, visited, board, charArray)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean dfs(int x, int y, int index, int m, int n, boolean[][] visited, char[][] board, char[] charArray) {
+        if (index == charArray.length - 1) {
+            return board[x][y] == charArray[index];
+        }
+        if (board[x][y] == charArray[index]) {
+            visited[x][y] = true;
+            for (int[] direction : DIRECTIONS) {
+                int newX = x + direction[0];
+                int newY = y + direction[1];
+                if (inArea(newX, newY, m, n) && !visited[newX][newY]) {
+                    if (dfs(newX, newY, index + 1, m, n, visited, board, charArray)) {
+                        return true;
+                    }
+                }
+            }
+            visited[x][y] = false;
+        }
+        return false;
+    }
+
+    private boolean inArea(int x, int y, int m, int n) {
+        return x >= 0 && x < m && y >= 0 && y < n;
+    }
+
+}
+复杂度分析：
+● 时间复杂度：$O(m \times n)$，需遍历整个网格；
+● 空间复杂度：$O(m \times n)$，递归栈的深度。
+优化常源于特殊情况的针对性处理，如快速排序对有序数组和有大量重复元素的 pivot 优化。同理，本题中优先处理稀有字符可显著提升效率。
+● 若目标单词含稀有字符（如 'B' 仅出现 2 次，而 'A' 出现 20 次），优先从 'B' 开始搜索，最多只需尝试 2 个起点，而非 20 个；
+● 如果起点字符匹配概率低，DFS 会更快失败，避免深入无意义的路径。
+因此，优先从出现频率低的字符开始搜索，能更快触发失败条件，减少整体计算量。
+参考代码 2：
+public class Solution {
+
+    private static final int[][] DIRECTIONS = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
+
+    public boolean exist(char[][] board, String word) {
+        int m = board.length;
+        int n = board[0].length;
+        char[] charArray = word.toCharArray();
+        int wordLen = word.length();
+        // 优化 1：单词长度超过网格总单元格数
+        if (wordLen > m * n) {
+            return false;
+        }
+        // 优化 2：检查字符频率是否匹配
+        // z 的 ASCII 为 122，因此数组开 123 个空间
+        int[] boardCount = new int[123];
+        int[] wordCount = new int[123];
+        for (char[] row : board) {
+            for (char c : row) {
+                boardCount[c]++;
+            }
+        }
+        // 检查单词中的字符是否都存在于网格中
+        for (char c : charArray) {
+            wordCount[c]++;
+            if (wordCount[c] > boardCount[c]) {
+                return false;
+            }
+        }
+
+        // 优化 3：是否反向搜索
+        boolean shouldSearchBackward = wordCount[charArray[0]] > wordCount[charArray[wordLen - 1]];
+        char startChar = shouldSearchBackward ? charArray[wordLen - 1] : charArray[0];
+        int startIndex = shouldSearchBackward ? wordLen - 1 : 0;
+        int step = shouldSearchBackward ? -1 : 1;
+        boolean[][] visited = new boolean[m][n];
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (board[i][j] == startChar) {
+                    if (dfs(i, j, startIndex, step, m, n, board, charArray, visited)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    // step、m、n、board、charArray、visited 全局共享，可以设置成为成员变量
+    private boolean dfs(int x, int y, int index, int step, int m, int n, char[][] board, char[] charArray, boolean[][] visited) {
+        if (index == (step > 0 ? charArray.length - 1 : 0)) {
+            return board[x][y] == charArray[index];
+        }
+
+        if (board[x][y] == charArray[index]) {
+            visited[x][y] = true;
+            for (int[] direction : DIRECTIONS) {
+                int newX = x + direction[0];
+                int newY = y + direction[1];
+                if (inArea(newX, newY, m, n) && !visited[newX][newY]) {
+                    if (dfs(newX, newY, index + step, step, m, n, board, charArray, visited)) {
+                        return true;
+                    }
+                }
+            }
+            visited[x][y] = false;
+        }
+        return false;
+    }
+
+    private boolean inArea(int x, int y, int m, int n) {
+        return x < m && y < n && x >= 0 && y >= 0;
+    }
+
+}
+复杂度分析：
+● 时间复杂度：$O(m \times n)$，需遍历整个网格；
+● 空间复杂度：$O(m \times n)$，递归栈的深度。
+
+例题：「力扣」第 51 题：N 皇后（困难）
+● 题目地址：https://leetcode.cn/problems/n-queens/description/
+按照国际象棋的规则，皇后可以攻击与之处在同一行或同一列或同一斜线上的棋子。
+n 皇后问题 研究的是如何将 n 个皇后放置在 n × n 的棋盘上，并且使皇后彼此之间不能相互攻击。
+给你一个整数 n ，返回所有不同的 n 皇后问题 的解决方案。
+每一种解法包含一个不同的 n 皇后问题 的棋子放置方案，该方案中 'Q' 和 '.' 分别代表了皇后和空位。
+示例 1：
+
+输入：n = 4
+输出：[[".Q..","...Q","Q...","..Q."],["..Q.","Q...","...Q",".Q.."]]
+解释：如上图所示，4 皇后问题存在两个不同的解法。
+示例 2：
+输入：n = 1
+输出：[["Q"]]
+提示：
+● 1 <= n <= 9
+思路分析
+先尝试画出递归树，思路是：逐行放置皇后，确保每行只有一个皇后。在逐行放置皇后的过程中，检查不在同一列，不在同一主对角线方向（左上到右下）上，不在同一副对角放心（右上到左下）上。以 4 皇后问题为例，画出递归树如下：
+
+编码细节：由于我们是一行一行放置的，行的位置肯定不冲突，也不需要记录，需要记录的是之前的行放置的皇后在哪一列、哪个主对角线和哪个副对角线。
+● 记录列相对简单，有 n 个列，使用长度为 n 的布尔数组就好，
+● 如何记录之前的皇后摆放在哪条主对角线上呢？我们依然是画图分析，如下图所示：
+  ○ n × n 的棋盘有 n + (n - 1) 条主对角线，主对角线上的元素的特点是：横坐标 - 纵坐标的值是确定的、且是唯一的；
+  ○ 因此如果某个皇后可以放置在下标为 row 的行和下标为 col 的列，那么它占据的主对角线的下标应该为 row - col；
+  ○ 由于数组的下标值不能为负数，因此给所有的 row - col 都加上 n - 1 。
+
+● 类似地，记录之前的皇后摆放在哪条副对角线上：
+  ○ n × n 的棋盘有 n + (n - 1) 条副对角线，主对角线上的元素的特点是：横坐标 + 纵坐标的值是确定的、且是唯一的；
+  ○ 因此如果某个皇后可以放置在下标为 row 的行和下标为 col 的列，那么它占据的副对角线的下标应该为 row + col；
+● 我们使用变量 path （一维列表）记录棋盘， path 的下标代表放置皇后位置的横坐标，path 的值代表对应的放置皇后位置的纵坐标，在递归深度到达 n，即每一行每一列都摆放上皇后，且 n 个皇后不能互相攻击的时候，把一维列表转换为二维棋盘。
+参考代码：
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.List;
+
+public class Solution {
+
+    public List<List<String>> solveNQueens(int n) {
+        List<List<String>> res = new ArrayList<>();
+        boolean[] cols = new boolean[n];
+        boolean[] main = new boolean[2 * n - 1];
+        boolean[] sub = new boolean[2 * n - 1];
+        Deque<Integer> path = new ArrayDeque<>();
+        dfs(0, n, path, cols, main, sub, res);
+        return res;
+    }
+
+    private void dfs(int row, int n, Deque<Integer> path, boolean[] cols, boolean[] main, boolean[] sub, List<List<String>> res) {
+        if (row == n) {
+            // 深度优先遍历到下标为 n，表示 [0.. n - 1] 已填完，得到了一个结果
+            List<String> board = convert2board(path, n);
+            res.add(board);
+            return;
+        }
+
+        // 针对下标为 row 的每一列，尝试是否可以放置
+        for (int col = 0; col < n; col++) {
+            if (!cols[col] && !main[row - col + n - 1] && !sub[row + col]) {
+                path.addLast(col);
+                cols[col] = true;
+                main[row - col + n - 1] = true;
+                sub[row + col] = true;
+
+                dfs(row + 1, n, path, cols, main, sub, res);
+
+                sub[row + col] = false;
+                main[row - col + n - 1] = false;
+                cols[col] = false;
+                path.removeLast();
+            }
+        }
+    }
+
+    private List<String> convert2board(Deque<Integer> path, int n) {
+        List<String> board = new ArrayList<>();
+        for (Integer num : path) {
+            StringBuilder row = new StringBuilder();
+            row.append(".".repeat(n));
+            row.replace(num, num + 1, "Q");
+            board.add(row.toString());
+        }
+        return board;
+    }
+
+}
+复杂度分析：
+● 时间复杂度：$O(N!)$，第一行尝试 $N$ 种放法，第二行尝试 $N- 1$ 种放法，但受限于不能同列同对角线，实际比 $N!$ 小一些；
+● 空间复杂度：$O(N)$，使用了 3 个布尔数组，大小分别为 $N$、$2N - 1$、$2N - 1$ 。
+本题总结
+使用三个布尔数组检测冲突。

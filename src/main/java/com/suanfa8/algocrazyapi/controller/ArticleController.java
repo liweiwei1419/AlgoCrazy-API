@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -60,14 +61,22 @@ public class ArticleController {
     @Operation(summary = "分页查询文章列表")
     @Parameter(name = "current", description = "当前页")
     @Parameter(name = "size", description = "每页显示条数")
+    @Parameter(name = "keyword", required = false, description = "搜索关键字")
     @GetMapping("/page")
-    public Result<IPage<Article>> getArticlePage(@RequestParam(defaultValue = "1") Integer current, @RequestParam(defaultValue = "10") Integer size) {
+    public Result<IPage<Article>> getArticlePage(@RequestParam(defaultValue = "1") Integer current, @RequestParam(defaultValue = "10") Integer size, @RequestParam("title") String keyword) {
         log.info("current => {}", current);
         log.info("size => {}", size);
+        log.info("keyword => {}", keyword);
         // 创建分页对象
         Page<Article> page = new Page<>(current, size);
+        // 创建查询条件
+        QueryWrapper<Article> queryWrapper = new QueryWrapper<Article>().select("id", "title", "url", "category", "author", "created_at", "updated_at").orderByDesc("updated_at");
+        // 如果传入了 title 参数，则添加模糊查询条件
+        if (StringUtils.isNotBlank(keyword)) {
+            queryWrapper.like("title", keyword);
+        }
         // 执行分页查询
-        IPage<Article> articlePage = articleService.page(page, new QueryWrapper<Article>().select("id", "title", "url", "category", "author", "created_at", "updated_at").orderByDesc("updated_at"));
+        IPage<Article> articlePage = articleService.page(page, queryWrapper);
         return Result.success(articlePage);
     }
 
@@ -130,7 +139,8 @@ public class ArticleController {
     }
 
     @GetMapping("/book/{url}")
-    public Result<ArticleDetailDto> queryByUrl(@PathVariable String url){
+    public Result<ArticleDetailDto> queryByUrl(@PathVariable String url) {
+        articleService.lambdaUpdate().eq(Article::getUrl, url).setSql("view_count = view_count + 1").update();
         Article article = articleService.queryByUrl(url);
         ArticleDetailDto articleDetailDto = new ArticleDetailDto();
         articleDetailDto.setId(article.getId());
