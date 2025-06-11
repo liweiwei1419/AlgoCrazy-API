@@ -18,4 +18,6 @@ public interface IArticleService extends IService<Article> {
 
     Article queryByUrl(String url);
 
+    boolean incrementLikeCount(Long id);
+
 }

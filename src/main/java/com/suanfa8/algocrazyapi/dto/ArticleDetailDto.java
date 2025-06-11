@@ -23,6 +23,8 @@ public class ArticleDetailDto {
 
     private String sourceUrl;
 
+    private String solutionUrl;
+
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;

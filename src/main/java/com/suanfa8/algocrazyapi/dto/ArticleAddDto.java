@@ -15,6 +15,8 @@ public class ArticleAddDto {
 
     private String sourceUrl;
 
+    private String solutionUrl;
+
     private String title;
 
 }

@@ -55,6 +55,7 @@ public class ArticleController {
         article.setContent(articleAddDto.getContent());
         article.setParentId(Long.parseLong(articleAddDto.getParentId()));
         article.setSourceUrl(articleAddDto.getSourceUrl());
+        article.setSolutionUrl(articleAddDto.getSolutionUrl());
         return articleService.articleCreate(article) == 1;
     }
 
@@ -70,7 +71,7 @@ public class ArticleController {
         // 创建分页对象
         Page<Article> page = new Page<>(current, size);
         // 创建查询条件
-        QueryWrapper<Article> queryWrapper = new QueryWrapper<Article>().select("id", "title", "url", "category", "author", "created_at", "updated_at").orderByDesc("updated_at");
+        QueryWrapper<Article> queryWrapper = new QueryWrapper<Article>().select("id", "title", "url", "category", "created_at", "updated_at", "view_count", "like_count").orderByDesc("updated_at");
         // 如果传入了 title 参数，则添加模糊查询条件
         if (StringUtils.isNotBlank(keyword)) {
             queryWrapper.like("title", keyword);
@@ -111,6 +112,7 @@ public class ArticleController {
         article.setContent(articleUpdateDto.getContent());
         article.setParentId(Long.parseLong(articleUpdateDto.getParentId()));
         article.setSourceUrl(articleUpdateDto.getSourceUrl());
+        article.setSolutionUrl(articleUpdateDto.getSolutionUrl());
         return Result.success(articleService.update(article) == 1);
     }
 
@@ -148,11 +150,22 @@ public class ArticleController {
         articleDetailDto.setTitle(article.getTitle());
         articleDetailDto.setAuthor(article.getAuthor());
         articleDetailDto.setSourceUrl(article.getSourceUrl());
+        articleDetailDto.setSolutionUrl(article.getSolutionUrl());
         articleDetailDto.setCreatedAt(article.getCreatedAt());
         articleDetailDto.setUpdatedAt(article.getUpdatedAt());
         articleDetailDto.setLikeCount(article.getLikeCount());
         articleDetailDto.setViewCount(article.getViewCount());
         return Result.success(articleDetailDto);
+    }
+
+
+    @Operation(summary = "文章点赞")
+    @Parameter(name = "id", required = true, description = "文章 ID", in = ParameterIn.PATH)
+    @PostMapping("/{id}/like")
+    public Result<Boolean> incrementLikeCount(@PathVariable Long id) {
+        log.info("文章点赞 => {}", id);
+        boolean result = articleService.incrementLikeCount(id);
+        return Result.success(result);
     }
 
 }

@@ -17,6 +17,8 @@ public class ArticleUpdateDto {
 
     private String sourceUrl;
 
+    private String solutionUrl;
+
     private String title;
 
 }

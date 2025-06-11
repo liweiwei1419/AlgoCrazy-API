@@ -1,6 +1,7 @@
 package com.suanfa8.algocrazyapi.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.suanfa8.algocrazyapi.entity.Article;
@@ -36,6 +37,14 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     public Article queryByUrl(String url) {
         LambdaQueryWrapper<Article> articleLambdaQueryWrapper = new LambdaQueryWrapper<Article>().eq(Article::getUrl, url);
         return articleMapper.selectOne(articleLambdaQueryWrapper);
+    }
+
+    @Override
+    public boolean incrementLikeCount(Long id) {
+        // 使用 MyBatis-Plus 的 LambdaUpdateWrapper
+        LambdaUpdateWrapper<Article> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(Article::getId, id).setSql("like_count = like_count + 1");
+        return this.update(updateWrapper);
     }
 
 
