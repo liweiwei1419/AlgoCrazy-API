@@ -80,4 +80,8 @@ public class Article {
 
     @TableField("is_folder")
     private Boolean isFolder;
+
+    @TableField("book_check")
+    private Boolean bookCheck;
+
 }

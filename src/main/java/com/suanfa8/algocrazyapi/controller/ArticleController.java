@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.suanfa8.algocrazyapi.common.Result;
+import com.suanfa8.algocrazyapi.common.ResultCode;
 import com.suanfa8.algocrazyapi.dto.ArticleAddDto;
 import com.suanfa8.algocrazyapi.dto.ArticleDetailDto;
 import com.suanfa8.algocrazyapi.dto.ArticleUpdateDto;
@@ -24,7 +25,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.Mapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -126,7 +126,6 @@ public class ArticleController {
                 // 更新时间一直都要更新
                 .set(true, Article::getUpdatedAt, LocalDateTime.now());
         return Result.success(articleService.update(lambdaUpdateWrapper));
-
     }
 
 
@@ -198,9 +197,25 @@ public class ArticleController {
     @GetMapping("/chapter/{id}")
     public Result<List<Article>> chapters(@PathVariable("id") Long id) {
         QueryWrapper<Article> queryWrapper = new QueryWrapper<>();
-        queryWrapper.select("id", "title", "author", "parent_id", "display_order", "created_at", "updated_at", "view_count", "like_count").eq("parent_id", id).eq("is_folder", false).orderByAsc("display_order");
+        queryWrapper.select("id", "title", "author", "parent_id", "display_order", "created_at", "updated_at", "view_count", "like_count", "book_check").eq("parent_id", id).eq("is_folder", false).orderByAsc("display_order");
         List<Article> articleList = articleService.list(queryWrapper);
         return Result.success(articleList);
+    }
+
+    @GetMapping("/toggleBookCheck/{id}")
+    public Result<Boolean> toggleBookCheck(@PathVariable("id") Long id) {
+        // 先获取当前文章的 book_check 状态
+        Article article = articleService.getById(id);
+        // 切换 book_check 状态
+        boolean newBookCheck = !article.getBookCheck();
+
+        // 更新数据库
+        // 3. 使用 LambdaUpdateWrapper 仅更新 book_check 字段
+        boolean isUpdated = articleService.lambdaUpdate()
+                .eq(Article::getId, id)  // WHERE id = ?
+                .set(Article::getBookCheck, newBookCheck)  // SET book_check = ?
+                .update();  // 执行更新
+        return isUpdated ? Result.success(newBookCheck) : Result.fail(ResultCode.FAILED);
     }
 
 }
