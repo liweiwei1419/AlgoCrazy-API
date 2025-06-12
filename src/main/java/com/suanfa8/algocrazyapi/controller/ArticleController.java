@@ -187,4 +187,20 @@ public class ArticleController {
         return articleService.downloadArticleAsMarkdown(article);
     }
 
+    @GetMapping("/chapters")
+    public Result<List<Article>> chapters() {
+        QueryWrapper<Article> queryWrapper = new QueryWrapper<>();
+        queryWrapper.ne("parent_id", 0).eq("is_folder", true).orderByAsc("id");
+        List<Article> articleList = articleService.list(queryWrapper);
+        return Result.success(articleList);
+    }
+
+    @GetMapping("/chapter/{id}")
+    public Result<List<Article>> chapters(@PathVariable("id") Long id) {
+        QueryWrapper<Article> queryWrapper = new QueryWrapper<>();
+        queryWrapper.select("id", "title", "author", "parent_id", "display_order", "created_at", "updated_at", "view_count", "like_count").eq("parent_id", id).eq("is_folder", false).orderByAsc("display_order");
+        List<Article> articleList = articleService.list(queryWrapper);
+        return Result.success(articleList);
+    }
+
 }
