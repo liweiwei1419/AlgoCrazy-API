@@ -14,7 +14,7 @@ RUN_SCRIPT="run.sh"  # 远程服务器上的启动脚本
 
 # 1. 执行 Maven 打包（跳过测试）
 echo "正在执行 Maven 打包（跳过测试）..."
-# mvn clean package -DskipTests
+mvnd clean package -DskipTests
 
 if [ $? -ne 0 ]; then
     echo "Maven 打包失败，请检查错误"
