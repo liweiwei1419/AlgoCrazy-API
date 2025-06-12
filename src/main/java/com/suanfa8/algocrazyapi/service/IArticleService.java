@@ -3,6 +3,8 @@ package com.suanfa8.algocrazyapi.service;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.suanfa8.algocrazyapi.entity.Article;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 
@@ -19,5 +21,7 @@ public interface IArticleService extends IService<Article> {
     Article queryByUrl(String url);
 
     boolean incrementLikeCount(Long id);
+
+    ResponseEntity<InputStreamResource> downloadArticleAsMarkdown(Article article);
 
 }

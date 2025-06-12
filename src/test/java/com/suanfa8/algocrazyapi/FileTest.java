@@ -12,10 +12,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TextTest {
+public class FileTest {
 
     @Test
-    public void test02() {
+    public void testArticlesSplit02() {
         String inputFile = "b.txt";
         String outputPrefix = "";
         String splitPattern = "例题 \\d+："; // 匹配"例题 1："、"例题 2："等

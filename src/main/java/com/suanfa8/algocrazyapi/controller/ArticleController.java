@@ -1,7 +1,9 @@
 package com.suanfa8.algocrazyapi.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.suanfa8.algocrazyapi.common.Result;
 import com.suanfa8.algocrazyapi.dto.ArticleAddDto;
@@ -17,6 +19,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,6 +33,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -71,7 +76,7 @@ public class ArticleController {
         // 创建分页对象
         Page<Article> page = new Page<>(current, size);
         // 创建查询条件
-        QueryWrapper<Article> queryWrapper = new QueryWrapper<Article>().select("id", "title", "url", "category", "created_at", "updated_at", "view_count", "like_count").orderByDesc("updated_at");
+        QueryWrapper<Article> queryWrapper = new QueryWrapper<Article>().select("id", "title", "url", "category", "created_at", "updated_at", "view_count", "like_count").eq("is_folder", false).eq("like_count", 0).orderByDesc("updated_at");
         // 如果传入了 title 参数，则添加模糊查询条件
         if (StringUtils.isNotBlank(keyword)) {
             queryWrapper.like("title", keyword);
@@ -103,17 +108,25 @@ public class ArticleController {
     @PutMapping("/update")
     public Result<Boolean> updateArticle(@RequestBody ArticleUpdateDto articleUpdateDto) {
         log.info("更新文章 => {}", articleUpdateDto);
+        LambdaUpdateWrapper<Article> lambdaUpdateWrapper = Wrappers.<Article>lambdaUpdate().eq(Article::getId, Long.parseLong(articleUpdateDto.getId()))
+                // 仅当 DTO 字段非空时更新
+                .set(StringUtils.isNotBlank(articleUpdateDto.getTitle()), Article::getTitle, articleUpdateDto.getTitle())
+                // 更新 content
+                .set(StringUtils.isNotBlank(articleUpdateDto.getContent()), Article::getContent, articleUpdateDto.getContent())
+                // 更新作者
+                .set(StringUtils.isNotBlank(articleUpdateDto.getAuthor()), Article::getAuthor, articleUpdateDto.getAuthor())
+                // 更新分类
+                .set(StringUtils.isNotBlank(articleUpdateDto.getCategory()), Article::getCategory, articleUpdateDto.getCategory())
+                // 更新父结点 id
+                .set(StringUtils.isNotBlank(articleUpdateDto.getParentId()), Article::getParentId, Long.parseLong(articleUpdateDto.getParentId()))
+                // 更新原题链接
+                .set(StringUtils.isNotBlank(articleUpdateDto.getSourceUrl()), Article::getSourceUrl, articleUpdateDto.getSourceUrl())
+                // 更新题解链接
+                .set(StringUtils.isNotBlank(articleUpdateDto.getSolutionUrl()), Article::getSolutionUrl, articleUpdateDto.getSolutionUrl())
+                // 更新时间一直都要更新
+                .set(true, Article::getUpdatedAt, LocalDateTime.now());
+        return Result.success(articleService.update(lambdaUpdateWrapper));
 
-        Article article = new Article();
-        article.setId(Long.parseLong(articleUpdateDto.getId()));
-        article.setAuthor(articleUpdateDto.getAuthor());
-        article.setTitle(articleUpdateDto.getTitle());
-        article.setCategory(articleUpdateDto.getCategory());
-        article.setContent(articleUpdateDto.getContent());
-        article.setParentId(Long.parseLong(articleUpdateDto.getParentId()));
-        article.setSourceUrl(articleUpdateDto.getSourceUrl());
-        article.setSolutionUrl(articleUpdateDto.getSolutionUrl());
-        return Result.success(articleService.update(article) == 1);
     }
 
 
@@ -166,6 +179,12 @@ public class ArticleController {
         log.info("文章点赞 => {}", id);
         boolean result = articleService.incrementLikeCount(id);
         return Result.success(result);
+    }
+
+    @GetMapping("/{id}/download")
+    public ResponseEntity<InputStreamResource> downloadArticleAsMarkdown(@PathVariable Long id) {
+        Article article = articleService.getOptById(id).orElseThrow(() -> new RuntimeException("Article not found with id: " + id));
+        return articleService.downloadArticleAsMarkdown(article);
     }
 
 }

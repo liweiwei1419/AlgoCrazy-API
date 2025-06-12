@@ -8,8 +8,15 @@ import com.suanfa8.algocrazyapi.entity.Article;
 import com.suanfa8.algocrazyapi.mapper.ArticleMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -122,6 +129,27 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     @Override
     public List<Article> getTitleAndIdSelect() {
         return articleMapper.getTitleAndIdSelect();
+    }
+
+    @Override
+    public ResponseEntity<InputStreamResource> downloadArticleAsMarkdown(Article article) {
+        if (article == null || article.getContent() == null) {
+            throw new IllegalArgumentException("Article or content cannot be null");
+        }
+
+        // 获取文件名，使用 url 字段作为基础
+        String filename = StringUtils.isNotBlank(article.getUrl()) ? article.getUrl() + ".md" : "article_" + article.getId() + ".md";
+        // 将内容转换为字节数组
+        byte[] contentBytes = article.getContent().getBytes(StandardCharsets.UTF_8);
+        // 创建输入流
+        InputStream inputStream = new ByteArrayInputStream(contentBytes);
+        // 设置响应头
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename);
+        headers.add(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, must-revalidate");
+        headers.add(HttpHeaders.PRAGMA, "no-cache");
+        headers.add(HttpHeaders.EXPIRES, "0");
+        return ResponseEntity.ok().headers(headers).contentLength(contentBytes.length).contentType(MediaType.APPLICATION_OCTET_STREAM).body(new InputStreamResource(inputStream));
     }
 
 }
