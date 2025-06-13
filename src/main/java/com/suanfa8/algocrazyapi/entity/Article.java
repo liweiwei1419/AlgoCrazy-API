@@ -84,4 +84,7 @@ public class Article {
     @TableField("book_check")
     private Boolean bookCheck;
 
+    @TableField("suggestion")
+    private String suggestion;
+
 }

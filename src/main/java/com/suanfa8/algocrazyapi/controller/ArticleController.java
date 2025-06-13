@@ -10,6 +10,7 @@ import com.suanfa8.algocrazyapi.common.ResultCode;
 import com.suanfa8.algocrazyapi.dto.ArticleAddDto;
 import com.suanfa8.algocrazyapi.dto.ArticleDetailDto;
 import com.suanfa8.algocrazyapi.dto.ArticleUpdateDto;
+import com.suanfa8.algocrazyapi.dto.SuggestionUpdateDto;
 import com.suanfa8.algocrazyapi.dto.TitleAndIdSelectDto;
 import com.suanfa8.algocrazyapi.entity.Article;
 import com.suanfa8.algocrazyapi.service.IArticleService;
@@ -25,6 +26,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.Mapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -197,7 +199,7 @@ public class ArticleController {
     @GetMapping("/chapter/{id}")
     public Result<List<Article>> chapters(@PathVariable("id") Long id) {
         QueryWrapper<Article> queryWrapper = new QueryWrapper<>();
-        queryWrapper.select("id", "title", "author", "parent_id", "display_order", "created_at", "updated_at", "view_count", "like_count", "book_check").eq("parent_id", id).eq("is_folder", false).orderByAsc("display_order");
+        queryWrapper.select("id", "title", "author", "parent_id", "display_order", "created_at", "updated_at", "view_count", "like_count", "book_check", "suggestion").eq("parent_id", id).eq("is_folder", false).orderByAsc("display_order");
         List<Article> articleList = articleService.list(queryWrapper);
         return Result.success(articleList);
     }
@@ -211,11 +213,16 @@ public class ArticleController {
 
         // 更新数据库
         // 3. 使用 LambdaUpdateWrapper 仅更新 book_check 字段
-        boolean isUpdated = articleService.lambdaUpdate()
-                .eq(Article::getId, id)  // WHERE id = ?
+        boolean isUpdated = articleService.lambdaUpdate().eq(Article::getId, id)  // WHERE id = ?
                 .set(Article::getBookCheck, newBookCheck)  // SET book_check = ?
                 .update();  // 执行更新
         return isUpdated ? Result.success(newBookCheck) : Result.fail(ResultCode.FAILED);
+    }
+
+    @PostMapping("/suggestion/")
+    public Result<Boolean> updateSuggestion(@RequestBody SuggestionUpdateDto suggestionUpdateDto) {
+        boolean isUpdated = articleService.lambdaUpdate().eq(Article::getId, suggestionUpdateDto.getId()).set(Article::getSuggestion, suggestionUpdateDto.getSuggestion()).update();  // 执行更新
+        return isUpdated ? Result.success(isUpdated) : Result.fail(ResultCode.FAILED);
     }
 
 }
