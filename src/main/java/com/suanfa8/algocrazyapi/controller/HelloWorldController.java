@@ -20,9 +20,8 @@ public class HelloWorldController {
 
     @Operation(summary = "测试 hello world")
     @GetMapping("/world")
-    public User world() {
-        System.out.println("123456");
-        return new User(1419L, "liweiwei1419", "123456");
+    public String world() {
+        return "hello algo crazy";
     }
 
 }

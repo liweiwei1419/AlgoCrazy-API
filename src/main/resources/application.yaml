@@ -15,6 +15,19 @@ spring:
     hikari:
       maximum-pool-size: 20
       minimum-idle: 5
+  data:
+    redis:
+      host: dance8.fun
+      port: 6379
+      password: 123456
+      database: 0
+      timeout: 10000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-wait: 10000ms
+          max-idle: 8
+          min-idle: 0
 
 mybatis-plus:
   configuration:
@@ -51,3 +64,8 @@ knife4j:
   enable: true
   setting:
     language: zh_cn
+
+jwt:
+  secret: 123456
+  # 过期时间，604800 秒，7 天
+  expiration: 604800

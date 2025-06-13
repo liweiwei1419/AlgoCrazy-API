@@ -4,6 +4,8 @@ import com.suanfa8.algocrazyapi.common.Result;
 import com.suanfa8.algocrazyapi.dto.ArticleTreeNode;
 import com.suanfa8.algocrazyapi.service.IArticleTreeService;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -11,8 +13,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
+@Slf4j
 @RestController
 @RequestMapping("/tree")
 public class ArticleTreeController {
@@ -20,10 +25,12 @@ public class ArticleTreeController {
     @Resource
     private IArticleTreeService articleTreeService;
 
+
     // 获取完整树形结构
     @GetMapping("/all")
     public Result<List<ArticleTreeNode>> getArticleTree() {
-        return Result.success(articleTreeService.getFullTree());
+        List<ArticleTreeNode> articleTree = articleTreeService.getFullTree();
+        return Result.success(articleTree != null ? articleTree : Collections.emptyList());
     }
 
     // 移动结点
