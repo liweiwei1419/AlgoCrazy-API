@@ -5,6 +5,7 @@ import com.suanfa8.algocrazyapi.dto.ArticleTreeNode;
 import com.suanfa8.algocrazyapi.service.IArticleTreeService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,12 +26,51 @@ public class ArticleTreeController {
     @Resource
     private IArticleTreeService articleTreeService;
 
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
+    private static final String CACHE_KEY = "article:fullTree";
+    private static final long CACHE_EXPIRE_HOURS = 1;
 
     // 获取完整树形结构
     @GetMapping("/all")
     public Result<List<ArticleTreeNode>> getArticleTree() {
-        List<ArticleTreeNode> articleTree = articleTreeService.getFullTree();
-        return Result.success(articleTree != null ? articleTree : Collections.emptyList());
+        // 尝试从缓存获取
+        List<ArticleTreeNode> cached = getFromCache();
+        if (cached != null) {
+            return Result.success(cached);
+        }
+        // 从数据库获取
+        List<ArticleTreeNode> tree = articleTreeService.getFullTree();
+        List<ArticleTreeNode> result = tree != null ? tree : Collections.emptyList();
+        // 存入缓存
+        saveToCache(result);
+        return Result.success(result);
+    }
+
+    private List<ArticleTreeNode> getFromCache() {
+        try {
+            return (List<ArticleTreeNode>) redisTemplate.opsForValue().get(CACHE_KEY);
+        } catch (Exception e) {
+            // 缓存获取失败时直接返回null，走数据库查询
+            return null;
+        }
+    }
+
+    private void saveToCache(List<ArticleTreeNode> tree) {
+        try {
+            redisTemplate.opsForValue().set(CACHE_KEY, tree, CACHE_EXPIRE_HOURS, TimeUnit.HOURS);
+        } catch (Exception e) {
+            // 缓存失败不影响主流程
+        }
+    }
+
+    // 当数据更新时清除缓存
+    public void clearCache() {
+        try {
+            redisTemplate.delete(CACHE_KEY);
+        } catch (Exception e) {
+            // 清除缓存失败不影响主流程
+        }
     }
 
     // 移动结点
