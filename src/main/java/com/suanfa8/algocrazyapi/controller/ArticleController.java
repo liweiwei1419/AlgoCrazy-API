@@ -14,6 +14,7 @@ import com.suanfa8.algocrazyapi.dto.SuggestionUpdateDto;
 import com.suanfa8.algocrazyapi.dto.TitleAndIdSelectDto;
 import com.suanfa8.algocrazyapi.entity.Article;
 import com.suanfa8.algocrazyapi.service.IArticleService;
+import com.suanfa8.algocrazyapi.utils.UploadUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -21,12 +22,13 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.Mapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -38,6 +40,9 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Tag(name = "文章")
 @CrossOrigin
@@ -48,6 +53,12 @@ public class ArticleController {
 
     @Resource
     private IArticleService articleService;
+
+    @Resource
+    private UploadUtils uploadUtils;
+
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
 
     @Operation(summary = "创建文章")
     @Parameter(name = "article", description = "文章对象", required = true)
@@ -190,19 +201,77 @@ public class ArticleController {
 
     @GetMapping("/chapters")
     public Result<List<Article>> chapters() {
-        QueryWrapper<Article> queryWrapper = new QueryWrapper<>();
-        queryWrapper.ne("parent_id", 0).eq("is_folder", true).orderByAsc("id");
-        List<Article> articleList = articleService.list(queryWrapper);
+        String cacheKey = "article:chapters:list";
+        // 尝试从Redis获取
+        Object cachedData = redisTemplate.opsForValue().get(cacheKey);
+        System.out.println("cachedData => " + cachedData);
+        List<Article> articleList = null;
+        if (cachedData instanceof List) {
+            try {
+                articleList = (List<Article>) cachedData;
+            } catch (ClassCastException e) {
+
+                System.out.println("Redis cache type mismatch for key: " + cacheKey);
+                log.warn("Redis cache type mismatch for key: {}", cacheKey, e);
+            }
+        }
+
+        if (articleList == null || articleList.isEmpty()) {
+            // 缓存未命中或类型不匹配，查询数据库
+            QueryWrapper<Article> queryWrapper = new QueryWrapper<>();
+            queryWrapper.ne("parent_id", 0).eq("is_folder", true).orderByAsc("id");
+            articleList = articleService.list(queryWrapper);
+
+            // 存入Redis，设置过期时间（例如1小时）
+            System.out.println("articleList => " + articleList);
+            try {
+                redisTemplate.opsForValue().set(cacheKey, articleList, 1, TimeUnit.DAYS);
+            } catch (Exception e) {
+                // 为什么缓存设置会失败？
+                // 打印异常信息
+                e.printStackTrace();
+            }
+        }
         return Result.success(articleList);
     }
 
+
     @GetMapping("/chapter/{id}")
     public Result<List<Article>> chapters(@PathVariable("id") Long id) {
+//        String cacheKey = "article:chapter:" + id;
+//        // 尝试从Redis获取
+//        Object cachedData = redisTemplate.opsForValue().get(cacheKey);
+//        List<Article> articleList = null;
+//
+//        if (cachedData instanceof List) {
+//            try {
+//                articleList = (List<Article>) cachedData;
+//            } catch (ClassCastException e) {
+//                log.warn("Redis cache type mismatch for key: {}", cacheKey, e);
+//            }
+//        }
+//
+//        if (articleList == null || articleList.isEmpty()) {
+//            // 缓存未命中或类型不匹配，查询数据库
+//            QueryWrapper<Article> queryWrapper = new QueryWrapper<>();
+//            queryWrapper.select("id", "title", "author", "parent_id", "display_order", "created_at", "updated_at", "view_count", "like_count", "book_check", "suggestion")
+//                    .eq("parent_id", id)
+//                    .eq("is_folder", false)
+//                    .orderByAsc("display_order");
+//            articleList = articleService.list(queryWrapper);
+//
+//            // 存入Redis，设置过期时间（例如1小时）
+//            redisTemplate.opsForValue().set(cacheKey, articleList, 1, TimeUnit.DAYS);
+//        }
+
+
+        // 缓存未命中或类型不匹配，查询数据库
         QueryWrapper<Article> queryWrapper = new QueryWrapper<>();
         queryWrapper.select("id", "title", "author", "parent_id", "display_order", "created_at", "updated_at", "view_count", "like_count", "book_check", "suggestion").eq("parent_id", id).eq("is_folder", false).orderByAsc("display_order");
         List<Article> articleList = articleService.list(queryWrapper);
         return Result.success(articleList);
     }
+
 
     @GetMapping("/toggleBookCheck/{id}")
     public Result<Boolean> toggleBookCheck(@PathVariable("id") Long id) {
@@ -223,6 +292,56 @@ public class ArticleController {
     public Result<Boolean> updateSuggestion(@RequestBody SuggestionUpdateDto suggestionUpdateDto) {
         boolean isUpdated = articleService.lambdaUpdate().eq(Article::getId, suggestionUpdateDto.getId()).set(Article::getSuggestion, suggestionUpdateDto.getSuggestion()).update();  // 执行更新
         return isUpdated ? Result.success(isUpdated) : Result.fail(ResultCode.FAILED);
+    }
+
+
+    @GetMapping("/uploadLeetcodeImageToCOS/{id}")
+    public Result<Boolean> uploadLeetcodeImageToCOS(@PathVariable Long id) {
+        // 先根据 id 查询 Article 的文章内容
+        Article article = articleService.getById(id);
+        if (article == null) {
+            return Result.fail(500, "文章不存在");
+        }
+        String content = article.getContent();
+        if (content == null) {
+            return Result.success(true);
+        }
+
+        // 用于存储替换后的新内容
+        StringBuilder newContentBuilder = new StringBuilder();
+        // 正则表达式匹配 Markdown 图片链接
+        Pattern pattern = java.util.regex.Pattern.compile("!\\[[^\\]]*\\]\\(([^)]+)\\)");
+        Matcher matcher = pattern.matcher(content);
+        int lastIndex = 0;
+
+        while (matcher.find()) {
+            // 提取匹配到的图片链接
+            String oldUrl = matcher.group(1);
+            // 将匹配到的链接之前的内容添加到新内容中
+            newContentBuilder.append(content, lastIndex, matcher.start(1));
+
+            try {
+                // 调用上传工具类将图片上传到 COS
+                String newUrl = uploadUtils.uploadByUrl(oldUrl);
+                // 将新链接添加到新内容中
+                newContentBuilder.append(newUrl);
+            } catch (Exception e) {
+                log.error("图片上传失败，链接: {}", oldUrl, e);
+                // 上传失败则保留原链接
+                newContentBuilder.append(oldUrl);
+            }
+            // 更新 lastIndex 为匹配到的链接之后的位置
+            lastIndex = matcher.end(1);
+        }
+        // 添加剩余的内容
+        newContentBuilder.append(content.substring(lastIndex));
+
+        // 获取替换后的新内容
+        String newContent = newContentBuilder.toString();
+        // 更新 Article 的 content 为新的 content
+        article.setContent(newContent);
+        boolean isUpdated = articleService.updateById(article);
+        return isUpdated ? Result.success(true) : Result.fail(500, "文章内容更新失败");
     }
 
 }

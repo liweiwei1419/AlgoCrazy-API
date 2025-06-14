@@ -69,3 +69,11 @@ jwt:
   secret: 123456
   # 过期时间，604800 秒，7 天
   expiration: 604800
+
+tencent:
+  cos:
+    secretId: AKIDd6LLFsELDpFPMDpCKG0VnrmMvNhuxpSv
+    secretKey: NXVGn7E7mETUGn83kDSghT3SdaJo57JL
+    region: ap-shanghai
+    bucketName: suanfa8-1252206550
+    prefix: https://suanfa8-1252206550.cos.ap-shanghai.myqcloud.com/suanfa8/
