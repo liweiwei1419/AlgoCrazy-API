@@ -299,6 +299,7 @@ public class ArticleController {
     public Result<Boolean> uploadLeetcodeImageToCOS(@PathVariable Long id) {
         // 先根据 id 查询 Article 的文章内容
         Article article = articleService.getById(id);
+
         if (article == null) {
             return Result.fail(500, "文章不存在");
         }
@@ -310,7 +311,7 @@ public class ArticleController {
         // 用于存储替换后的新内容
         StringBuilder newContentBuilder = new StringBuilder();
         // 正则表达式匹配 Markdown 图片链接
-        Pattern pattern = java.util.regex.Pattern.compile("!\\[[^\\]]*\\]\\(([^)]+)\\)");
+        Pattern pattern = Pattern.compile("!\\[[^\\]]*\\]\\(([^)]+)\\)");
         Matcher matcher = pattern.matcher(content);
         int lastIndex = 0;
 
@@ -321,8 +322,9 @@ public class ArticleController {
             newContentBuilder.append(content, lastIndex, matcher.start(1));
 
             try {
+                String prefix = article.getUrl();
                 // 调用上传工具类将图片上传到 COS
-                String newUrl = uploadUtils.uploadByUrlToMinio(oldUrl);
+                String newUrl = uploadUtils.uploadByUrlToMinio(prefix, oldUrl);
                 // 将新链接添加到新内容中
                 newContentBuilder.append(newUrl);
             } catch (Exception e) {

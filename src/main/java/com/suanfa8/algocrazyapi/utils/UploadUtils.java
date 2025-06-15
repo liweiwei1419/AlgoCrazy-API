@@ -67,11 +67,11 @@ public class UploadUtils {
      *
      * @param imageUrl 图片的 URL 地址
      * @return MinIO 存储的图片 URL
-     * @throws  下载图片或上传文件时发生 IO 异常
+     * @throws 下载图片或上传文件时发生 IO 异常
      */
-    public String uploadByUrlToMinio(String imageUrl) throws IOException {
+    public String uploadByUrlToMinio(String prefix, String imageUrl) throws IOException {
         // 创建临时文件
-        File tempFile = File.createTempFile("temp-image", getFileExtension(imageUrl));
+        File tempFile = File.createTempFile(prefix + '-', getFileExtension(imageUrl));
         tempFile.deleteOnExit();
         // 下载图片到临时文件
         downloadImageFromUrl(imageUrl, tempFile);
