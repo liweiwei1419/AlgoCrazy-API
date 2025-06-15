@@ -322,7 +322,7 @@ public class ArticleController {
 
             try {
                 // 调用上传工具类将图片上传到 COS
-                String newUrl = uploadUtils.uploadByUrl(oldUrl);
+                String newUrl = uploadUtils.uploadByUrlToMinio(oldUrl);
                 // 将新链接添加到新内容中
                 newContentBuilder.append(newUrl);
             } catch (Exception e) {

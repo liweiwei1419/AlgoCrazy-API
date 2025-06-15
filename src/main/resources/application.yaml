@@ -28,6 +28,12 @@ spring:
           max-wait: 10000ms
           max-idle: 8
           min-idle: 0
+  minio:
+    access-key: pM4vquf3BqwzQHbvUyvO
+    secret-key: ACxa2JrShmH8qwGqdC8KRqz9sy5oTtmK8F0NDApE
+    url: https://minio.dance8.fun
+    bucket-name: algo-crazy
+
 
 mybatis-plus:
   configuration:
@@ -77,3 +83,4 @@ tencent:
     region: ap-shanghai
     bucketName: suanfa8-1252206550
     prefix: https://suanfa8-1252206550.cos.ap-shanghai.myqcloud.com/suanfa8/
+
