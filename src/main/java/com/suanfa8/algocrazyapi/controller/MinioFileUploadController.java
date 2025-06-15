@@ -1,7 +1,9 @@
 package com.suanfa8.algocrazyapi.controller;
 
 import com.suanfa8.algocrazyapi.common.Result;
+import com.suanfa8.algocrazyapi.config.MinioConfig;
 import com.suanfa8.algocrazyapi.utils.MinioUtils;
+import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -25,6 +27,9 @@ import java.util.UUID;
 @RequestMapping("/file")
 public class MinioFileUploadController {
 
+    @Resource
+    private MinioConfig minioConfig;
+
     @Autowired
     private MinioUtils minioUtils;
 
@@ -34,12 +39,12 @@ public class MinioFileUploadController {
      * @Description 上传文件
      */
     @PostMapping("/upload")
-    public Result<String> uploadFile(@RequestParam("file") MultipartFile file) {
+    public String uploadFile(@RequestParam("file") MultipartFile file) {
         // @RequestParam("fileName") String fileName
         String fileName = file.getOriginalFilename();
         fileName = UUID.randomUUID() + fileName.substring(fileName.lastIndexOf("."));
         minioUtils.upload(file, fileName);
-        return Result.success("上传成功");
+        return minioConfig.getUrl() + "/" + minioConfig.getBucketName() + "/" + fileName;
     }
 
     /**
