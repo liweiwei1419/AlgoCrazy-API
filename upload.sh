@@ -5,12 +5,20 @@
 # 使用方法：./deploy_algocrazy.sh
 
 # 设置变量
+PROJECT_DIR="/Users/liwei/Downloads/归档/AlgoCrazy-API"  # 项目根目录
 JAR_NAME="algo-crazy-api-0.0.1-SNAPSHOT.jar"
-LOCAL_TARGET_DIR="./target"
+LOCAL_TARGET_DIR="$PROJECT_DIR/target"
 REMOTE_SERVER="dance8.fun"
 REMOTE_DIR="/root/springboot-projects/algocrazy"
 SSH_USER="root"  # 根据实际情况修改用户名
 RUN_SCRIPT="run.sh"  # 远程服务器上的启动脚本
+
+# 0. 进入项目目录
+echo "正在进入项目目录: $PROJECT_DIR"
+cd "$PROJECT_DIR" || {
+    echo "无法进入项目目录: $PROJECT_DIR"
+    exit 1
+}
 
 # 1. 执行 Maven 打包（跳过测试）
 echo "正在执行 Maven 打包（跳过测试）..."
