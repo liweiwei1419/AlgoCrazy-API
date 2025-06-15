@@ -31,7 +31,8 @@ public class SecurityConfig {
             "/authenticate",
             "/hello/world",
             "/tree/**",
-            "/article/**"
+            "/article/**",
+            "/file/**"
 //            "/article/liwei", "/user/register", "/ok", "/user/login", "/messages/**", "/logout", "/captcha", "/favicon.ico",
 //            // 下面是 swagger-ui 放行的页面
 //            "/doc.html","/swagger-ui/**", "/webjars/**", "/v2/**", "/swagger-resources/**",
