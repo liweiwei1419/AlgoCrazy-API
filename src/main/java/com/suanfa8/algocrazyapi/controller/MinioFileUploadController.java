@@ -13,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * @Description minio 文件上传控制器
@@ -31,7 +32,10 @@ public class MinioFileUploadController {
      * @Description 上传文件
      */
     @GetMapping("/upload")
-    public Result<String> uploadFile(@RequestParam("file") MultipartFile file, @RequestParam("fileName") String fileName) {
+    public Result<String> uploadFile(@RequestParam("file") MultipartFile file) {
+        // @RequestParam("fileName") String fileName
+        String fileName = file.getOriginalFilename();
+        fileName = UUID.randomUUID() + fileName.substring(fileName.lastIndexOf("."));
         minioUtils.upload(file, fileName);
         return Result.success("上传成功");
     }
