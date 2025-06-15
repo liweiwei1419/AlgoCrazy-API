@@ -71,12 +71,16 @@ public class UploadUtils {
      */
     public String uploadByUrlToMinio(String prefix, String imageUrl) throws IOException {
         // 创建临时文件
-        File tempFile = File.createTempFile(prefix + '/', getFileExtension(imageUrl));
+        File tempFile = File.createTempFile("temp-image", getFileExtension(imageUrl));
         tempFile.deleteOnExit();
         // 下载图片到临时文件
         downloadImageFromUrl(imageUrl, tempFile);
+        // 处理 prefix，确保以 / 结尾
+        if (!prefix.endsWith("/")) {
+            prefix = prefix + "/";
+        }
         // 调用 MinioUtils 的上传方法
-        String objectName = tempFile.getName();
+        String objectName = prefix + "suanfa8/" + tempFile.getName();
         return minioUtils.upload(tempFile, objectName);
     }
 
