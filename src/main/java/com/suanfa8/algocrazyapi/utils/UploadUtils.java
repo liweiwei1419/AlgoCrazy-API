@@ -80,7 +80,7 @@ public class UploadUtils {
             prefix = prefix + "/";
         }
         // 调用 MinioUtils 的上传方法
-        String objectName = prefix + "suanfa8/" + tempFile.getName();
+        String objectName = prefix + tempFile.getName();
         return minioUtils.upload(tempFile, objectName);
     }
 
