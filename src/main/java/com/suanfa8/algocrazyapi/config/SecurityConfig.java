@@ -30,6 +30,7 @@ public class SecurityConfig {
     private static final String[] URL_WHITELIST = {
             "/authenticate",
             "/hello/world",
+            "/hello/greet",
             "/tree/**",
             "/article/**",
             "/file/**"
