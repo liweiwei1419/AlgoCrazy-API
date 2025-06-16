@@ -2,6 +2,7 @@ package com.suanfa8.algocrazyapi.controller;
 
 import com.suanfa8.algocrazyapi.common.Result;
 import com.suanfa8.algocrazyapi.dto.ArticleTreeNode;
+import com.suanfa8.algocrazyapi.dto.BookTreeNode;
 import com.suanfa8.algocrazyapi.service.IArticleTreeService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -29,9 +30,10 @@ public class ArticleTreeController {
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
     private static final String CACHE_KEY = "article:fullTree";
+    private static final String BOOK_CACHE_KEY = "book:fullTree";
     private static final long CACHE_EXPIRE_HOURS = 1;
 
-    // 获取完整树形结构
+    // 获取完整树形结构，用于测试
     @GetMapping("/all")
     public Result<List<ArticleTreeNode>> getArticleTree() {
         // 尝试从缓存获取
@@ -47,6 +49,31 @@ public class ArticleTreeController {
         return Result.success(result);
     }
 
+    // 用于书本目录
+    @GetMapping("/book")
+    public Result<List<BookTreeNode>> getBookTree() {
+        // 尝试从缓存获取
+        List<BookTreeNode> cached = getFromCacheBook();
+        if (cached != null) {
+            return Result.success(cached);
+        }
+        // 从数据库获取
+        List<BookTreeNode> tree = articleTreeService.getBookTree();
+        List<BookTreeNode> result = tree != null ? tree : Collections.emptyList();
+        // 存入缓存
+        saveToCacheBook(result);
+        return Result.success(result);
+    }
+
+    private List<BookTreeNode> getFromCacheBook() {
+        try {
+            return (List<BookTreeNode>) redisTemplate.opsForValue().get(BOOK_CACHE_KEY);
+        } catch (Exception e) {
+            // 缓存获取失败时直接返回null，走数据库查询
+            return null;
+        }
+    }
+
     private List<ArticleTreeNode> getFromCache() {
         try {
             return (List<ArticleTreeNode>) redisTemplate.opsForValue().get(CACHE_KEY);
@@ -59,6 +86,13 @@ public class ArticleTreeController {
     private void saveToCache(List<ArticleTreeNode> tree) {
         try {
             redisTemplate.opsForValue().set(CACHE_KEY, tree, CACHE_EXPIRE_HOURS, TimeUnit.HOURS);
+        } catch (Exception e) {
+            // 缓存失败不影响主流程
+        }
+    }
+    private void saveToCacheBook(List<BookTreeNode> tree) {
+        try {
+            redisTemplate.opsForValue().set(BOOK_CACHE_KEY, tree, CACHE_EXPIRE_HOURS, TimeUnit.HOURS);
         } catch (Exception e) {
             // 缓存失败不影响主流程
         }

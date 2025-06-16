@@ -2,6 +2,7 @@ package com.suanfa8.algocrazyapi.service;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.suanfa8.algocrazyapi.dto.ArticleTreeNode;
+import com.suanfa8.algocrazyapi.dto.BookTreeNode;
 import com.suanfa8.algocrazyapi.entity.Article;
 import com.suanfa8.algocrazyapi.mapper.ArticleMapper;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,39 @@ import java.util.Objects;
 public class ArticleTreeServiceImpl  implements IArticleTreeService {
 
     private final ArticleMapper articleMapper;
+
+    @Override
+    public List<BookTreeNode> getBookTree() {
+        // 1. 一次性查询所有结点（不包含 content 大字段）
+        List<Article> allArticles = articleMapper.selectAllWithoutContent();
+        // 2. 构建 ID 到结点的映射
+        Map<Long, BookTreeNode> nodeMap = new HashMap<>();
+        allArticles.forEach(article -> {
+            BookTreeNode node = new BookTreeNode();
+            BeanUtils.copyProperties(article, node);
+            node.setIndex(article.getId().toString());
+            nodeMap.put(article.getId(), node);
+        });
+        // 3. 构建树结构
+        List<BookTreeNode> roots = new ArrayList<>();
+        for (Article article : allArticles) {
+            BookTreeNode node = nodeMap.get(article.getId());
+            if (Objects.isNull(article.getParentId())) {
+                continue;
+            }
+            if (article.getParentId() == 0L) {
+                roots.add(node);
+            } else {
+                BookTreeNode parent = nodeMap.get(article.getParentId());
+                // 确保children列表已初始化
+                if (parent.getChildren() == null) {
+                    parent.setChildren(new ArrayList<>());
+                }
+                parent.getChildren().add(node);
+            }
+        }
+        return roots;
+    }
 
     // 获取完整树形结构
     @Override
