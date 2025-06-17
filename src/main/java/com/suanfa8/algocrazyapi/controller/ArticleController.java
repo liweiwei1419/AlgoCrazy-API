@@ -204,16 +204,9 @@ public class ArticleController {
         String cacheKey = "article:chapters:list";
         // 尝试从Redis获取
         Object cachedData = redisTemplate.opsForValue().get(cacheKey);
-        System.out.println("cachedData => " + cachedData);
         List<Article> articleList = null;
         if (cachedData instanceof List) {
-            try {
-                articleList = (List<Article>) cachedData;
-            } catch (ClassCastException e) {
-
-                System.out.println("Redis cache type mismatch for key: " + cacheKey);
-                log.warn("Redis cache type mismatch for key: {}", cacheKey, e);
-            }
+            articleList = (List<Article>) cachedData;
         }
 
         if (articleList == null || articleList.isEmpty()) {
@@ -221,14 +214,10 @@ public class ArticleController {
             QueryWrapper<Article> queryWrapper = new QueryWrapper<>();
             queryWrapper.ne("parent_id", 0).eq("is_folder", true).orderByAsc("id");
             articleList = articleService.list(queryWrapper);
-
             // 存入Redis，设置过期时间（例如1小时）
-            System.out.println("articleList => " + articleList);
             try {
                 redisTemplate.opsForValue().set(cacheKey, articleList, 1, TimeUnit.DAYS);
             } catch (Exception e) {
-                // 为什么缓存设置会失败？
-                // 打印异常信息
                 e.printStackTrace();
             }
         }
@@ -238,33 +227,6 @@ public class ArticleController {
 
     @GetMapping("/chapter/{id}")
     public Result<List<Article>> chapters(@PathVariable("id") Long id) {
-//        String cacheKey = "article:chapter:" + id;
-//        // 尝试从Redis获取
-//        Object cachedData = redisTemplate.opsForValue().get(cacheKey);
-//        List<Article> articleList = null;
-//
-//        if (cachedData instanceof List) {
-//            try {
-//                articleList = (List<Article>) cachedData;
-//            } catch (ClassCastException e) {
-//                log.warn("Redis cache type mismatch for key: {}", cacheKey, e);
-//            }
-//        }
-//
-//        if (articleList == null || articleList.isEmpty()) {
-//            // 缓存未命中或类型不匹配，查询数据库
-//            QueryWrapper<Article> queryWrapper = new QueryWrapper<>();
-//            queryWrapper.select("id", "title", "author", "parent_id", "display_order", "created_at", "updated_at", "view_count", "like_count", "book_check", "suggestion")
-//                    .eq("parent_id", id)
-//                    .eq("is_folder", false)
-//                    .orderByAsc("display_order");
-//            articleList = articleService.list(queryWrapper);
-//
-//            // 存入Redis，设置过期时间（例如1小时）
-//            redisTemplate.opsForValue().set(cacheKey, articleList, 1, TimeUnit.DAYS);
-//        }
-
-
         // 缓存未命中或类型不匹配，查询数据库
         QueryWrapper<Article> queryWrapper = new QueryWrapper<>();
         queryWrapper.select("id", "title", "author", "parent_id", "display_order", "created_at", "updated_at", "view_count", "like_count", "book_check", "suggestion").eq("parent_id", id).eq("is_folder", false).orderByAsc("display_order");
