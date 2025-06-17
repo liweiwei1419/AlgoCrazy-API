@@ -42,8 +42,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     @Override
     public Article queryByUrl(String url) {
-        LambdaQueryWrapper<Article> articleLambdaQueryWrapper = new LambdaQueryWrapper<Article>().eq(Article::getUrl, url);
-        return articleMapper.selectOne(articleLambdaQueryWrapper);
+        return articleMapper.selectOne(new LambdaQueryWrapper<Article>().eq(Article::getUrl, url));
     }
 
     @Override
@@ -55,7 +54,11 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     }
 
 
-    // 如果 article 有 sourceUrl，自动生成并设置 url
+    /**
+     * 如果 article 有 sourceUrl，自动生成并设置 url
+     *
+     * @param article
+     */
     private void generateAndSetArticleUrl(Article article) {
         if (StringUtils.isNotBlank(article.getSourceUrl())) {
             String url = generateUrlFromSource(article.getSourceUrl(), article.getTitle());
@@ -73,10 +76,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             if (b == null) {
                 b = extractMiddlePart(sourceUrl, "problems/", "/"); // 尝试另一种可能的格式
             }
-
             // 2. 从 title 提取「第 X 题」中的数字作为 a
             String a = extractNumberFromTitle(title);
-
             // 3. 组合成 a-b 格式
             if (a != null && b != null) {
                 return a + "-" + b;
@@ -107,10 +108,11 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         Matcher matcher = pattern.matcher(title);
         if (matcher.find()) {
             String numberStr = matcher.group(1);
-            // 将字符串转为整数，再格式化为4位，不足前面补0
+            // 将字符串转为整数，再格式化为 4 位，不足前面补 0
             try {
                 int number = Integer.parseInt(numberStr);
-                return String.format("%04d", number); // 格式化为4位，不足补0
+                // 格式化为 4 位，不足补 0
+                return String.format("%04d", number);
             } catch (NumberFormatException e) {
                 log.error("提取的数字格式错误: " + numberStr, e);
                 return null;

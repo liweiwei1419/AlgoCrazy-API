@@ -23,6 +23,7 @@ import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseEntity;
@@ -65,7 +66,6 @@ public class ArticleController {
     @PostMapping("/create")
     public Boolean articleCreate(@RequestBody ArticleAddDto articleAddDto) {
         log.info("创建文章 => {}", articleAddDto);
-
         Article article = new Article();
         article.setAuthor(articleAddDto.getAuthor());
         article.setTitle(articleAddDto.getTitle());
@@ -152,6 +152,7 @@ public class ArticleController {
     }
 
 
+    @Operation(summary = "供单选框使用，获得所有文章的标题和 id")
     @GetMapping("/articles")
     public Result<List<TitleAndIdSelectDto>> getTitleAndIdSelect() {
         List<Article> titleAndIdSelect = articleService.getTitleAndIdSelect();
@@ -164,6 +165,7 @@ public class ArticleController {
         }
         return Result.success(titleAndIdSelectDtos);
     }
+
 
     @GetMapping("/book/{url}")
     public Result<ArticleDetailDto> queryByUrl(@PathVariable String url) {
@@ -199,31 +201,19 @@ public class ArticleController {
         return articleService.downloadArticleAsMarkdown(article);
     }
 
-    @GetMapping("/chapters")
-    public Result<List<Article>> chapters() {
-        String cacheKey = "article:chapters:list";
-        // 尝试从Redis获取
-        Object cachedData = redisTemplate.opsForValue().get(cacheKey);
-        List<Article> articleList = null;
-        if (cachedData instanceof List) {
-            articleList = (List<Article>) cachedData;
-        }
 
-        if (articleList == null || articleList.isEmpty()) {
-            // 缓存未命中或类型不匹配，查询数据库
-            QueryWrapper<Article> queryWrapper = new QueryWrapper<>();
-            queryWrapper.ne("parent_id", 0).eq("is_folder", true).orderByAsc("id");
-            articleList = articleService.list(queryWrapper);
-            // 存入Redis，设置过期时间（例如1小时）
-            try {
-                redisTemplate.opsForValue().set(cacheKey, articleList, 1, TimeUnit.DAYS);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+    @Operation(summary = "获得所有二级目录，在「审核进度」页面")
+    @GetMapping("/chapters")
+    @Cacheable(value = "articleChapters", key = "'article:chapters:list'")
+    public Result<List<Article>> chapters() {
+        log.info("查询数据库，获得所有二级目录，在「审核进度」页面");
+        QueryWrapper<Article> queryWrapper = new QueryWrapper<>();
+        // parent_id 不等于 0，parent_id = 0 是一级目录
+        // is_folder 等于 true，is_folder 等于 false 是文章
+        queryWrapper.ne("parent_id", 0).eq("is_folder", true).orderByAsc("id");
+        List<Article> articleList = articleService.list(queryWrapper);
         return Result.success(articleList);
     }
-
 
     @GetMapping("/chapter/{id}")
     public Result<List<Article>> chapters(@PathVariable("id") Long id) {
@@ -244,9 +234,7 @@ public class ArticleController {
 
         // 更新数据库
         // 3. 使用 LambdaUpdateWrapper 仅更新 book_check 字段
-        boolean isUpdated = articleService.lambdaUpdate().eq(Article::getId, id)  // WHERE id = ?
-                .set(Article::getBookCheck, newBookCheck)  // SET book_check = ?
-                .update();  // 执行更新
+        boolean isUpdated = articleService.lambdaUpdate().eq(Article::getId, id).set(Article::getBookCheck, newBookCheck).update();
         return isUpdated ? Result.success(newBookCheck) : Result.fail(ResultCode.FAILED);
     }
 
