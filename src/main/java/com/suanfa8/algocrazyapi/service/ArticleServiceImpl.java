@@ -154,4 +154,22 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         return ResponseEntity.ok().headers(headers).contentLength(contentBytes.length).contentType(MediaType.APPLICATION_OCTET_STREAM).body(new InputStreamResource(inputStream));
     }
 
+
+    @Override
+    public void updateViewCount(Long id, int viewCount) {
+        LambdaUpdateWrapper<Article> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(Article::getId, id)
+                .set(Article::getViewCount, viewCount);
+        update(updateWrapper);
+    }
+
+
+    @Override
+    public void updateLikeCount(Long id, int likeCount) {
+        LambdaUpdateWrapper<Article> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(Article::getId, id)
+                .set(Article::getLikeCount, likeCount);
+        update(updateWrapper);
+    }
+
 }

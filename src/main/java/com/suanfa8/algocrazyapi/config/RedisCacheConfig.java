@@ -18,10 +18,13 @@ public class RedisCacheConfig {
 
     @Bean
     public RedisCacheManager cacheManager(RedisConnectionFactory redisConnectionFactory) {
-        RedisCacheConfiguration cacheConfig = RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofHours(1)) // 设置缓存过期时间为 1 小时
-                .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer())).serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()));
+        // 默认缓存配置，设置 1 小时过期
+        RedisCacheConfiguration defaultCacheConfig = RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofHours(1)).serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer())).serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()));
 
-        return RedisCacheManager.builder(redisConnectionFactory).cacheDefaults(cacheConfig).build();
+        // 为 articleTitleAndId 缓存设置 30 天过期时间
+        RedisCacheConfiguration articleTitleAndIdCacheConfig = defaultCacheConfig.entryTtl(Duration.ofDays(30));
+
+        return RedisCacheManager.builder(redisConnectionFactory).cacheDefaults(defaultCacheConfig).withInitialCacheConfigurations(java.util.Map.of("articleTitleAndId", articleTitleAndIdCacheConfig)).build();
     }
 
 }

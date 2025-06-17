@@ -23,10 +23,13 @@ import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -41,6 +44,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -61,9 +65,14 @@ public class ArticleController {
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
 
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
+
+
     @Operation(summary = "创建文章")
     @Parameter(name = "article", description = "文章对象", required = true)
     @PostMapping("/create")
+    @CacheEvict(value = {"titleAndIdSelect", "articleById", "articleByUrl"}, allEntries = true)
     public Boolean articleCreate(@RequestBody ArticleAddDto articleAddDto) {
         log.info("创建文章 => {}", articleAddDto);
         Article article = new Article();
@@ -76,6 +85,34 @@ public class ArticleController {
         article.setSolutionUrl(articleAddDto.getSolutionUrl());
         return articleService.articleCreate(article) == 1;
     }
+
+
+    @Operation(summary = "更新文章")
+    @Parameter(name = "article", description = "文章对象", required = true)
+    @PutMapping("/update")
+    @CacheEvict(value = {"articleById", "articleByUrl", "titleAndIdSelect"}, allEntries = true)
+    public Result<Boolean> updateArticle(@RequestBody ArticleUpdateDto articleUpdateDto) {
+        log.info("更新文章 => {}", articleUpdateDto);
+        LambdaUpdateWrapper<Article> lambdaUpdateWrapper = Wrappers.<Article>lambdaUpdate().eq(Article::getId, Long.parseLong(articleUpdateDto.getId()))
+                // 仅当 DTO 字段非空时更新
+                .set(StringUtils.isNotBlank(articleUpdateDto.getTitle()), Article::getTitle, articleUpdateDto.getTitle())
+                // 更新 content
+                .set(StringUtils.isNotBlank(articleUpdateDto.getContent()), Article::getContent, articleUpdateDto.getContent())
+                // 更新作者
+                .set(StringUtils.isNotBlank(articleUpdateDto.getAuthor()), Article::getAuthor, articleUpdateDto.getAuthor())
+                // 更新分类
+                .set(StringUtils.isNotBlank(articleUpdateDto.getCategory()), Article::getCategory, articleUpdateDto.getCategory())
+                // 更新父结点 id
+                .set(StringUtils.isNotBlank(articleUpdateDto.getParentId()), Article::getParentId, Long.parseLong(articleUpdateDto.getParentId()))
+                // 更新原题链接
+                .set(StringUtils.isNotBlank(articleUpdateDto.getSourceUrl()), Article::getSourceUrl, articleUpdateDto.getSourceUrl())
+                // 更新题解链接
+                .set(StringUtils.isNotBlank(articleUpdateDto.getSolutionUrl()), Article::getSolutionUrl, articleUpdateDto.getSolutionUrl())
+                // 更新时间一直都要更新
+                .set(true, Article::getUpdatedAt, LocalDateTime.now());
+        return Result.success(articleService.update(lambdaUpdateWrapper));
+    }
+
 
     @Operation(summary = "分页查询文章列表")
     @Parameter(name = "current", description = "当前页")
@@ -103,48 +140,29 @@ public class ArticleController {
     @Operation(summary = "根据 ID 查询单个文章")
     @Parameter(name = "id", required = true, description = "文章 ID", in = ParameterIn.PATH)
     @GetMapping("/{id}")
+    @Cacheable(value = "articleById", key = "#id", unless = "#result == null")
     public Result<Article> getArticleById(@PathVariable Long id) {
         log.info("查询文章 => {}", id);
-        // 先增加阅读量
-        articleService.lambdaUpdate().eq(Article::getId, id).setSql("view_count = view_count + 1").update();
+        // 增加阅读量
+        incrementViewCount(id);
         // 再查询文章
         Article article = articleService.getById(id);
         if (article == null) {
             return Result.fail(500, "文章不存在");
         }
+        // 从缓存获取阅读量
+        String viewCountStr = stringRedisTemplate.opsForValue().get("article:view_count:" + id);
+        if (viewCountStr != null) {
+            article.setViewCount(Integer.parseInt(viewCountStr));
+        }
         return Result.success(article);
-    }
-
-
-    @Operation(summary = "更新文章")
-    @Parameter(name = "article", description = "文章对象", required = true)
-    @PutMapping("/update")
-    public Result<Boolean> updateArticle(@RequestBody ArticleUpdateDto articleUpdateDto) {
-        log.info("更新文章 => {}", articleUpdateDto);
-        LambdaUpdateWrapper<Article> lambdaUpdateWrapper = Wrappers.<Article>lambdaUpdate().eq(Article::getId, Long.parseLong(articleUpdateDto.getId()))
-                // 仅当 DTO 字段非空时更新
-                .set(StringUtils.isNotBlank(articleUpdateDto.getTitle()), Article::getTitle, articleUpdateDto.getTitle())
-                // 更新 content
-                .set(StringUtils.isNotBlank(articleUpdateDto.getContent()), Article::getContent, articleUpdateDto.getContent())
-                // 更新作者
-                .set(StringUtils.isNotBlank(articleUpdateDto.getAuthor()), Article::getAuthor, articleUpdateDto.getAuthor())
-                // 更新分类
-                .set(StringUtils.isNotBlank(articleUpdateDto.getCategory()), Article::getCategory, articleUpdateDto.getCategory())
-                // 更新父结点 id
-                .set(StringUtils.isNotBlank(articleUpdateDto.getParentId()), Article::getParentId, Long.parseLong(articleUpdateDto.getParentId()))
-                // 更新原题链接
-                .set(StringUtils.isNotBlank(articleUpdateDto.getSourceUrl()), Article::getSourceUrl, articleUpdateDto.getSourceUrl())
-                // 更新题解链接
-                .set(StringUtils.isNotBlank(articleUpdateDto.getSolutionUrl()), Article::getSolutionUrl, articleUpdateDto.getSolutionUrl())
-                // 更新时间一直都要更新
-                .set(true, Article::getUpdatedAt, LocalDateTime.now());
-        return Result.success(articleService.update(lambdaUpdateWrapper));
     }
 
 
     @Operation(summary = "删除文章")
     @Parameter(name = "id", required = true, description = "文章 ID", in = ParameterIn.PATH)
     @DeleteMapping("/{id}")
+    @CacheEvict(value = {"articleById", "articleByUrl", "titleAndIdSelect"}, allEntries = true)
     public Result<Boolean> deleteArticle(@PathVariable Long id) {
         log.info("删除文章 => {}", id);
         boolean result = articleService.removeById(id);
@@ -154,6 +172,7 @@ public class ArticleController {
 
     @Operation(summary = "供单选框使用，获得所有文章的标题和 id")
     @GetMapping("/articles")
+    @Cacheable(value = "articleTitleAndId", key = "'allArticlesTitleAndId'", unless = "#result == null")
     public Result<List<TitleAndIdSelectDto>> getTitleAndIdSelect() {
         List<Article> titleAndIdSelect = articleService.getTitleAndIdSelect();
         List<TitleAndIdSelectDto> titleAndIdSelectDtos = new ArrayList<>();
@@ -168,6 +187,7 @@ public class ArticleController {
 
 
     @GetMapping("/book/{url}")
+    @Cacheable(value = "articleByUrl", key = "#url", unless = "#result == null")
     public Result<ArticleDetailDto> queryByUrl(@PathVariable String url) {
         articleService.lambdaUpdate().eq(Article::getUrl, url).setSql("view_count = view_count + 1").update();
         Article article = articleService.queryByUrl(url);
@@ -191,8 +211,67 @@ public class ArticleController {
     @PostMapping("/{id}/like")
     public Result<Boolean> incrementLikeCount(@PathVariable Long id) {
         log.info("文章点赞 => {}", id);
-        boolean result = articleService.incrementLikeCount(id);
+        // 增加点赞数
+        boolean result = incrementArticleLikeCount(id);
         return Result.success(result);
+    }
+
+    /**
+     * 增加文章阅读量
+     * @param id 文章 ID
+     */
+    private void incrementViewCount(Long id) {
+        String key = "article:view_count:" + id;
+        stringRedisTemplate.opsForValue().increment(key);
+    }
+
+    /**
+     * 增加文章点赞数
+     * @param id 文章 ID
+     * @return 操作结果
+     */
+    private boolean incrementArticleLikeCount(Long id) {
+        String key = "article:like_count:" + id;
+        stringRedisTemplate.opsForValue().increment(key);
+        return true;
+    }
+
+    /**
+     * 定时任务，每分钟将缓存中的阅读量和点赞数同步到数据库
+     */
+    @Scheduled(fixedRate = 60000)
+    public void syncViewAndLikeCountToDatabase() {
+        // 获取所有文章的阅读量缓存键
+        Set<String> viewCountKeys = stringRedisTemplate.keys("article:view_count:*");
+        if (viewCountKeys != null) {
+            for (String key : viewCountKeys) {
+                String idStr = key.replace("article:view_count:", "");
+                Long id = Long.parseLong(idStr);
+                String viewCountStr = stringRedisTemplate.opsForValue().get(key);
+                if (viewCountStr != null) {
+                    int viewCount = Integer.parseInt(viewCountStr);
+                    articleService.updateViewCount(id, viewCount);
+                    // 同步后清除缓存
+                    stringRedisTemplate.delete(key);
+                }
+            }
+        }
+
+        // 获取所有文章的点赞数缓存键
+        Set<String> likeCountKeys = stringRedisTemplate.keys("article:like_count:*");
+        if (likeCountKeys != null) {
+            for (String key : likeCountKeys) {
+                String idStr = key.replace("article:like_count:", "");
+                Long id = Long.parseLong(idStr);
+                String likeCountStr = stringRedisTemplate.opsForValue().get(key);
+                if (likeCountStr != null) {
+                    int likeCount = Integer.parseInt(likeCountStr);
+                    articleService.updateLikeCount(id, likeCount);
+                    // 同步后清除缓存
+                    stringRedisTemplate.delete(key);
+                }
+            }
+        }
     }
 
     @GetMapping("/{id}/download")

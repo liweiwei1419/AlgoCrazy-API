@@ -24,4 +24,8 @@ public interface IArticleService extends IService<Article> {
 
     ResponseEntity<InputStreamResource> downloadArticleAsMarkdown(Article article);
 
+    // 缓存同步：更新阅读量
+    void updateViewCount(Long id, int viewCount);
+    // 缓存同步：更新点赞量
+    void updateLikeCount(Long id, int likeCount);
 }
