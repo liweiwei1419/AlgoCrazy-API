@@ -29,7 +29,7 @@ public class User implements UserDetails{
     private String nickname;
     private String avatar;
     private String email;
-    private Integer role_id;
+    private Integer roleId;
     private String homepage;
     private Integer deleted;
     private LocalDateTime createTime;
@@ -38,9 +38,9 @@ public class User implements UserDetails{
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         // 根据 role_id 动态设置权限
-        if (role_id != null) {
+        if (roleId != null) {
             String role = "ROLE_USER"; // 默认角色
-            if (role_id == 1) {
+            if (roleId == 1) {
                 role = "ROLE_ADMIN";
             }
             return Collections.singletonList(new SimpleGrantedAuthority(role));

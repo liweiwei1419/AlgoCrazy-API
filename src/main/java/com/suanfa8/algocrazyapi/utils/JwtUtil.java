@@ -1,5 +1,6 @@
 package com.suanfa8.algocrazyapi.utils;
 
+import com.suanfa8.algocrazyapi.entity.User;
 import com.suanfa8.algocrazyapi.service.JwtRedisService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
@@ -48,7 +49,23 @@ public class JwtUtil {
             throw new IllegalArgumentException("UserDetails cannot be null");
         }
 
+        User user = (User) userDetails;
         Map<String, Object> claims = new HashMap<>();
+        // 添加头像、用户名、邮箱和角色 ID 到 claims 中
+        claims.put("avatar", user.getAvatar());
+        claims.put("username", user.getUsername());
+        claims.put("email", user.getEmail());
+        claims.put("role_id", user.getRoleId());
+        claims.put("role", userDetails.getAuthorities());
+        // claims 里面可以放用户信息对吗
+        // 可以，但是要注意不要放敏感信息，比如密码，因为这个信息会被暴露在 JWT 中
+        // setSubject 是什么呢？
+        // setSubject 是用来设置 JWT 的主题（Subject）的，主题是一个字符串，用来表示这个 JWT 所代表的用户。
+        // 比如，我们可以把用户的 ID 作为主题，这样就可以在 JWT 中标识这个用户。
+
+        // claims 和 Subject 的区别？
+        // claims 是用来存储 JWT 的额外信息的，比如用户的角色，权限，过期时间等等。
+        // Subject 是用来标识这个 JWT 所代表的用户的，比如用户的 ID。
         return Jwts.builder().setClaims(claims).setSubject(userDetails.getUsername()).setIssuedAt(new Date(System.currentTimeMillis())).setExpiration(new Date(System.currentTimeMillis() + expiration)).signWith(getSigningKey(), SignatureAlgorithm.HS512).compact();
     }
 
