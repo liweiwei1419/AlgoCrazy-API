@@ -2,6 +2,7 @@ package com.suanfa8.algocrazyapi.config;
 
 import com.suanfa8.algocrazyapi.filter.JwtRequestFilter;
 import com.suanfa8.algocrazyapi.service.UserDetailsServiceImpl;
+import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,15 +21,19 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 public class SecurityConfig {
 
-    @Autowired
+    @Resource
     private UserDetailsServiceImpl userDetailsService;
 
-    @Autowired
+    @Resource
     private JwtRequestFilter jwtRequestFilter;
 
 
     private static final String[] URL_WHITELIST = {
-            "/authenticate",
+            // 放行的 URL 路径
+            "/auth/authenticate",
+
+            "/user/register", "/user/send-verification-code", "/user/reset-password",
+
             "/hello/world",
             "/hello/greet",
             "/tree/**",

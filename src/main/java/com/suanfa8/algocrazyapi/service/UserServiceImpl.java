@@ -6,9 +6,9 @@ import com.suanfa8.algocrazyapi.dto.UserRegisterDTO;
 import com.suanfa8.algocrazyapi.dto.UserResetPasswordDTO;
 import com.suanfa8.algocrazyapi.entity.User;
 import com.suanfa8.algocrazyapi.mapper.UserMapper;
-import com.suanfa8.algocrazyapi.service.UserService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -16,6 +16,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -28,6 +30,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private StringRedisTemplate redisTemplate;
 
     @Override
     public User register(UserRegisterDTO userRegisterDTO) {
@@ -56,12 +61,37 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void resetPassword(UserResetPasswordDTO userResetPasswordDTO) {
-        User user = userMapper.selectOne(new QueryWrapper<User>().eq("email", userResetPasswordDTO.getEmail()));
+        String username = userResetPasswordDTO.getEmail();
+        String code = userResetPasswordDTO.getCode();
+        String newPassword = userResetPasswordDTO.getNewPassword();
+        String storedCode = redisTemplate.opsForValue().get("verification_code:" + username);
+        if (storedCode == null || !storedCode.equals(code)) {
+            throw new RuntimeException("验证码无效或已过期");
+        }
+        // 根据用户名查询用户，orElseThrow，帮我写
+        User user = userMapper.selectByUsername(username);
         if (user == null) {
             throw new RuntimeException("用户不存在");
         }
-        user.setPassword(passwordEncoder.encode(userResetPasswordDTO.getNewPassword()));
-        user.setUpdateTime(LocalDateTime.now());
+        user.setPassword(passwordEncoder.encode(newPassword));
+        // 加强测试
         userMapper.updateById(user);
+        redisTemplate.delete("verification_code:" + username);
     }
+
+
+    @Override
+    public void sendVerificationCode(String username) {
+        // 验证码是 5 分钟
+        String code = generateVerificationCode();
+        redisTemplate.opsForValue().set("verification_code:" + username, code, 5, TimeUnit.MINUTES);
+        // 这里可以集成邮件服务发送验证码，当前简单打印日志
+        System.out.println("用户 " + username + " 的验证码是: " + code);
+    }
+
+    private String generateVerificationCode() {
+        Random random = new Random();
+        return String.format("%06d", random.nextInt(1000000));
+    }
+
 }

@@ -72,9 +72,12 @@ knife4j:
     language: zh_cn
 
 jwt:
-  secret: 123456
-  # 过期时间，604800 秒，7 天
-  expiration: 604800
+  secret: 7ekaVma5Ud63zO8enUd9YcwQg8C8P/V7N0dFWHgjFI6Oz0DMwQQOggRevx+aviSfvte8cNg1Y/HbpVUpLx0zhg==
+  # 过期时间，3600 毫秒，1 小时
+  expiration: 3600000
+#  refreshExpiration: 604800
+#  # 过期时间，604800 秒，7 天
+#  expiration: 604800
 
 tencent:
   cos:

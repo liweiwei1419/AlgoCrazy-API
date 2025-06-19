@@ -19,7 +19,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @RestController
+@RequestMapping("/auth")
 public class AuthController {
+
+    @Autowired
+    private JwtRedisService jwtRedisService;
 
     @Autowired
     private AuthenticationManager authenticationManager;
@@ -36,22 +40,15 @@ public class AuthController {
         try {
             String password = authenticationRequest.getPassword();
             log.info("username: {}, password: {}", username, password);
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(username, username + "@@@@@@" + password)
-            );
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, username + "@@@@@@" + password));
         } catch (BadCredentialsException e) {
             throw new Exception("Incorrect username or password", e);
         }
-
         final UserDetails userDetails = userDetailsService.loadUserByUsername(username);
         final String jwt = jwtUtil.generateToken(userDetails);
         jwtRedisService.saveJwt(userDetails.getUsername(), jwt);
         return ResponseEntity.ok(new AuthenticationResponse(jwt));
     }
-
-    @Autowired
-    private JwtRedisService jwtRedisService;
-
 
 }
 

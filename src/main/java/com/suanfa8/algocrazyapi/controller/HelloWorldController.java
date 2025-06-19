@@ -3,6 +3,9 @@ package com.suanfa8.algocrazyapi.controller;
 import com.suanfa8.algocrazyapi.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.Mapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,6 +30,19 @@ public class HelloWorldController {
     @GetMapping("/world")
     public String world() {
         return "Hello from SpringBoot!";
+    }
+
+
+    @Operation(summary = "测试资源受限方法")
+    @GetMapping("/download")
+    @PreAuthorize("hasRole('ROLE_USER')")
+    public String download() {
+        SecurityContext securityContext = SecurityContextHolder.getContext();
+        if (securityContext.getAuthentication() != null) {
+            User user = (User) securityContext.getAuthentication().getPrincipal();
+            return "Hello " + user.getUsername() + "!";
+        }
+        return "Hello Download!";
     }
 
 

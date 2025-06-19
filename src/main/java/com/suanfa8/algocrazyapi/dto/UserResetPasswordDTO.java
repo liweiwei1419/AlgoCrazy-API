@@ -4,6 +4,11 @@ import lombok.Data;
 
 @Data
 public class UserResetPasswordDTO {
+
     private String email;
+
     private String newPassword;
+
+    private String code;
+
 }
