@@ -35,7 +35,7 @@ public class HelloWorldController {
 
     @Operation(summary = "测试资源受限方法")
     @GetMapping("/download")
-    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('USER')")
     public String download() {
         SecurityContext securityContext = SecurityContextHolder.getContext();
         if (securityContext.getAuthentication() != null) {

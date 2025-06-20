@@ -31,6 +31,8 @@ public class SecurityConfig {
     private static final String[] URL_WHITELIST = {
             // 放行的 URL 路径
             "/auth/authenticate",
+            // 添加退出登录接口路径
+            "/auth/logout",
 
             "/user/register", "/user/send-verification-code", "/user/reset-password",
 
