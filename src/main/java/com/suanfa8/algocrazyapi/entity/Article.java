@@ -101,4 +101,8 @@ public class Article {
     @TableField("suggestion")
     private String suggestion;
 
+    // 一句话题解
+    @TableField("one_sentence_solution")
+    private String oneSentenceSolution;
+
 }

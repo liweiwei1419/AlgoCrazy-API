@@ -10,6 +10,7 @@ import com.suanfa8.algocrazyapi.common.ResultCode;
 import com.suanfa8.algocrazyapi.dto.ArticleAddDto;
 import com.suanfa8.algocrazyapi.dto.ArticleDetailDto;
 import com.suanfa8.algocrazyapi.dto.ArticleUpdateDto;
+import com.suanfa8.algocrazyapi.dto.OneSentenceSolutionUpdateDto;
 import com.suanfa8.algocrazyapi.dto.SuggestionUpdateDto;
 import com.suanfa8.algocrazyapi.dto.TitleAndIdSelectDto;
 import com.suanfa8.algocrazyapi.entity.Article;
@@ -219,7 +220,7 @@ public class ArticleController {
     public Result<List<Article>> chapters(@PathVariable("id") Long id) {
         // 缓存未命中或类型不匹配，查询数据库
         QueryWrapper<Article> queryWrapper = new QueryWrapper<>();
-        queryWrapper.select("id", "title", "author", "parent_id", "display_order", "created_at", "updated_at", "view_count", "like_count", "book_check", "suggestion").eq("parent_id", id).eq("is_folder", false).orderByAsc("display_order");
+        queryWrapper.select("id", "title", "author", "parent_id", "display_order", "created_at", "updated_at", "view_count", "like_count", "book_check", "suggestion", "one_sentence_solution", "source_url", "solution_url").eq("parent_id", id).eq("is_folder", false).orderByAsc("display_order");
         List<Article> articleList = articleService.list(queryWrapper);
         return Result.success(articleList);
     }
@@ -231,7 +232,6 @@ public class ArticleController {
         Article article = articleService.getById(id);
         // 切换 book_check 状态
         boolean newBookCheck = !article.getBookCheck();
-
         // 更新数据库
         // 3. 使用 LambdaUpdateWrapper 仅更新 book_check 字段
         boolean isUpdated = articleService.lambdaUpdate().eq(Article::getId, id).set(Article::getBookCheck, newBookCheck).update();
@@ -240,7 +240,16 @@ public class ArticleController {
 
     @PostMapping("/suggestion/")
     public Result<Boolean> updateSuggestion(@RequestBody SuggestionUpdateDto suggestionUpdateDto) {
+        // 标准 update 方法，只修改一个字段
         boolean isUpdated = articleService.lambdaUpdate().eq(Article::getId, suggestionUpdateDto.getId()).set(Article::getSuggestion, suggestionUpdateDto.getSuggestion()).update();  // 执行更新
+        return isUpdated ? Result.success(isUpdated) : Result.fail(ResultCode.FAILED);
+    }
+
+
+    @PostMapping("/oneSentenceSolution/")
+    public Result<Boolean> updateoneSentenceSolution(@RequestBody OneSentenceSolutionUpdateDto oneSentenceSolutionUpdateDto) {
+        // 标准 update 方法，只修改一个字段
+        boolean isUpdated = articleService.lambdaUpdate().eq(Article::getId, oneSentenceSolutionUpdateDto.getId()).set(Article::getOneSentenceSolution, oneSentenceSolutionUpdateDto.getOneSentenceSolution()).update();  // 执行更新
         return isUpdated ? Result.success(isUpdated) : Result.fail(ResultCode.FAILED);
     }
 

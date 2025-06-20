@@ -41,7 +41,7 @@ public class AlgoCrazyApiApplicationTests {
                 // 使用正则表达式匹配 ```java 行中的 ::open 并替换为空
                 content = content.replaceAll("(?m)^```java\\s*::open", "```java");
                 article.setContent(content);
-                // 更新记录，我只更改 content 字段，其他字段保持不变，用 Wapper 是不是好点
+                // 更新记录，注意，这里的更新是所有查询出来的字段都更新，不建议这么做
                 articleMapper.updateById(article);
             }
         }
