@@ -22,7 +22,7 @@ cd "$PROJECT_DIR" || {
 
 # 1. 执行 Maven 打包（跳过测试）
 echo "正在执行 Maven 打包（跳过测试）..."
-mvnd clean package -DskipTests
+mvn clean package -DskipTests
 
 if [ $? -ne 0 ]; then
     echo "Maven 打包失败，请检查错误"
