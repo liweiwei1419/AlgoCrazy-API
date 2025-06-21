@@ -134,6 +134,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         // 明确指定允许的前端源地址
         configuration.addAllowedOriginPattern("http://localhost:5173");
+        configuration.addAllowedOriginPattern("https://algocrazy.dance8.fun");
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
