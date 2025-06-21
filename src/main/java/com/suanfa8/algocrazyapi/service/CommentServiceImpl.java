@@ -7,7 +7,6 @@ import com.suanfa8.algocrazyapi.entity.Comment;
 import com.suanfa8.algocrazyapi.mapper.CommentMapper;
 import com.suanfa8.algocrazyapi.utils.DingTalkGroupNotificationUtil;
 import jakarta.annotation.Resource;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -31,15 +30,17 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     @Override
     public Comment addComment(Comment comment) {
         int insert = commentsMapper.insert(comment);
+        String userNickname = comment.getUserNickname();
+        Integer articleId = comment.getArticleId();
         if (insert > 0) {
-            // 如果是回复评论，更新父评论的回复数量
             if (comment.getParentCommentId() != null) {
+                // 如果是回复评论，更新父评论的回复数量
                 updateReplyCount(comment.getParentCommentId(), 1);
                 // 有新回复，发送通知
-                dingTalkGroupNotificationUtil.sendNewReplyNotification();
-            }else {
+                dingTalkGroupNotificationUtil.sendNewReplyNotification(userNickname, articleId, comment.getContent());
+            } else {
                 // 有新评论，发送通知
-                dingTalkGroupNotificationUtil.sendNewCommentNotification();
+                dingTalkGroupNotificationUtil.sendNewCommentNotification(userNickname, articleId, comment.getContent());
             }
             return comment;
         }
@@ -47,12 +48,12 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     }
 
     @Override
-    public boolean incrementLikeCount(Long id) {
+    public boolean incrementLikeCount(Integer id) {
         return baseMapper.incrementLikeCount(id);
     }
 
     @Override
-    public boolean deleteComment(Long id) {
+    public boolean deleteComment(Integer id) {
         Comment comment = getById(id);
         if (comment != null && comment.getParentCommentId() != null) {
             // 如果是回复评论，减少父评论的回复数量
@@ -67,17 +68,16 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     }
 
     @Override
-    public List<Comment> getRepliesByCommentId(Long commentId) {
+    public List<Comment> getRepliesByCommentId(Integer commentId) {
         LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Comment::getParentCommentId, commentId).orderByDesc(Comment::getCreatedAt);
         return commentsMapper.selectList(queryWrapper);
     }
 
     @Override
-    public boolean updateReplyCount(Long commentId, int increment) {
+    public boolean updateReplyCount(Integer commentId, int increment) {
         LambdaUpdateWrapper<Comment> updateWrapper = new LambdaUpdateWrapper<>();
-        updateWrapper.eq(Comment::getId, commentId)
-                .setSql("reply_count = reply_count + " + increment);
+        updateWrapper.eq(Comment::getId, commentId).setSql("reply_count = reply_count + " + increment);
         return update(updateWrapper);
     }
 }

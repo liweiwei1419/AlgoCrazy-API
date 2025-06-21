@@ -89,3 +89,12 @@ CREATE TABLE article_like_records
 -- 在 comments 表中添加 reply_count 字段，用于记录回复数量，默认值为 0
 ALTER TABLE comments
     ADD COLUMN reply_count INTEGER DEFAULT 0;
+
+-- 为 comments 表添加 reply_to_user_id 字段
+ALTER TABLE comments ADD COLUMN reply_to_user_id BIGINT REFERENCES suanfa8_user(id);
+-- -- 为 comments 表添加 reply_to_user_nickname 字段
+-- ALTER TABLE comments ADD COLUMN reply_to_user_nickname VARCHAR(100);
+
+-- 为 comments 表添加 reply_to_comment_id 字段，用于记录回复的评论 ID
+ALTER TABLE comments
+    ADD COLUMN reply_to_comment_id INTEGER REFERENCES comments (id);

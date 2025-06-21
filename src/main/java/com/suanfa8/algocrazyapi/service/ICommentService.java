@@ -11,15 +11,15 @@ public interface ICommentService extends IService<Comment> {
 
     Comment addComment(Comment comment);
 
-    boolean incrementLikeCount(Long id);
+    boolean incrementLikeCount(Integer id);
 
-    boolean deleteComment(Long id);
+    boolean deleteComment(Integer id);
 
     boolean updateComment(Comment comment);
 
     // 获取指定评论的回复列表
-    List<Comment> getRepliesByCommentId(Long commentId);
+    List<Comment> getRepliesByCommentId(Integer commentId);
 
     // 更新评论的回复数量
-    boolean updateReplyCount(Long commentId, int increment);
+    boolean updateReplyCount(Integer commentId, int increment);
 }

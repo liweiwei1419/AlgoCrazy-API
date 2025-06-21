@@ -8,6 +8,7 @@ import com.suanfa8.algocrazyapi.service.ICommentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -28,21 +29,22 @@ public class CommentController {
     @Parameter(name = "articleId", required = true, description = "文章 ID")
     @GetMapping("/comments")
     public Result<List<Comment>> getCommentsByArticleId(@RequestParam String articleId) {
-        System.out.println("articleId ++++++++ " + articleId + " +++++++++++++++");
-        List<Comment> comments = commentService.getCommentsByArticleId(Integer.parseInt(articleId));
-        return Result.success(comments);
+        return Result.success(commentService.getCommentsByArticleId(Integer.parseInt(articleId)));
     }
 
     @Operation(summary = "添加评论")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @PostMapping("/add")
     public Result<Comment> addComment(@RequestBody CommentAddDto commentAddDto) {
+        System.out.println("commentAddDto => " + commentAddDto);
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Comment comment = new Comment();
-        comment.setArticleId(commentAddDto.getArticle_id());
-        comment.setContent(commentAddDto.getContent());
+        // 复制相同字段（要求 DTO 和 Entity 字段名一致）
+        BeanUtils.copyProperties(commentAddDto, comment);
+        // 手动设置 DTO 没有的字段
         comment.setUserId(user.getId());
         comment.setUserNickname(user.getNickname());
+        System.out.println("comment => " + comment);
         Comment newComment = commentService.addComment(comment);
         return Result.success(newComment);
     }
@@ -50,23 +52,23 @@ public class CommentController {
     @Operation(summary = "获取指定评论的回复列表")
     @Parameter(name = "commentId", required = true, description = "评论 ID")
     @GetMapping("/{commentId}/replies")
-    public Result<List<Comment>> getRepliesByCommentId(@PathVariable Long commentId) {
+    public Result<List<Comment>> getRepliesByCommentId(@PathVariable Integer commentId) {
         List<Comment> replies = commentService.getRepliesByCommentId(commentId);
         return Result.success(replies);
     }
 
     @Operation(summary = "评论点赞")
     @Parameter(name = "id", required = true, description = "评论 ID")
-    @PostMapping("/{id}/like")
-    public Result<Boolean> incrementLikeCount(@PathVariable Long id) {
-        boolean result = commentService.incrementLikeCount(id);
+    @PostMapping("/{commentId}/like")
+    public Result<Boolean> incrementLikeCount(@PathVariable Integer commentId) {
+        boolean result = commentService.incrementLikeCount(commentId);
         return Result.success(result);
     }
 
     @Operation(summary = "逻辑删除评论")
     @Parameter(name = "id", required = true, description = "评论 ID")
     @DeleteMapping("/{id}")
-    public Result<Boolean> deleteComment(@PathVariable Long id) {
+    public Result<Boolean> deleteComment(@PathVariable Integer id) {
         boolean result = commentService.deleteComment(id);
         return Result.success(result);
     }
@@ -77,4 +79,5 @@ public class CommentController {
         boolean result = commentService.updateComment(comment);
         return Result.success(result);
     }
+
 }

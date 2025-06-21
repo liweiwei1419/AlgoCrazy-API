@@ -23,11 +23,13 @@ import java.util.List;
 public class Comment {
 
     @TableId(type = IdType.AUTO)
-    private Long id;
+    private Integer id;
 
     @TableField("article_id")
     private Integer articleId;
 
+    // 解决返回给前端精度丢失的问题
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     @TableField("user_id")
     private Long userId;
 
@@ -35,7 +37,7 @@ public class Comment {
     private String content;
 
     @TableField("parent_comment_id")
-    private Long parentCommentId;
+    private Integer parentCommentId;
 
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
@@ -77,5 +79,12 @@ public class Comment {
 
     @TableField("reply_count")
     private Integer replyCount = 0;
+
+
+    @TableField("reply_to_comment_id")
+    private Integer replyToCommentId;
+
+    @TableField("reply_to_user_id")
+    private Long replyToUserId;
 
 }

@@ -10,11 +10,12 @@ import java.util.List;
 @Mapper
 public interface CommentMapper extends BaseMapper<Comment> {
 
-    List<Comment> getCommentsByArticleId(Long articleId);
+    // List<Comment> getCommentsByArticleId(Integer articleId);
 
-    default boolean incrementLikeCount(Long id) {
+    default boolean incrementLikeCount(Integer id) {
         LambdaUpdateWrapper<Comment> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(Comment::getId, id).setSql("like_count = like_count + 1");
         return update(updateWrapper) > 0;
     }
+
 }
