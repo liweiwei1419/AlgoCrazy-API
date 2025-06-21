@@ -9,6 +9,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -21,6 +22,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
 
+// 允许方法级别的注释
+@EnableMethodSecurity(securedEnabled = true)  // 添加到类注解上
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -38,11 +41,9 @@ public class SecurityConfig {
             // 添加退出登录接口路径
             "/comment/comments",
             "/comment/add",
-
-
+            "/comment/*/replies",
 
             "/user/register", "/user/send-verification-code", "/user/reset-password",
-
             "/hello/world",
             "/hello/greet",
             "/tree/**",
