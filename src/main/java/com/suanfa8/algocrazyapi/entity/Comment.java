@@ -74,4 +74,8 @@ public class Comment {
     @TableField("like_count")
     private Integer likeCount = 0;
 
+
+    @TableField("reply_count")
+    private Integer replyCount = 0;
+
 }

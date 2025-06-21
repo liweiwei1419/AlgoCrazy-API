@@ -16,4 +16,10 @@ public interface ICommentService extends IService<Comment> {
     boolean deleteComment(Long id);
 
     boolean updateComment(Comment comment);
+
+    // 获取指定评论的回复列表
+    List<Comment> getRepliesByCommentId(Long commentId);
+
+    // 更新评论的回复数量
+    boolean updateReplyCount(Long commentId, int increment);
 }

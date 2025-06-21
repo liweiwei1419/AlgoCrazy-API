@@ -40,20 +40,23 @@ VALUES (1, '基础排序算法'),
 
 
 -- 为 articles 表添加一句话题解字段，字段名为 one_sentence_solution，类型为 VARCHAR(255)
-ALTER TABLE articles ADD COLUMN one_sentence_solution VARCHAR(255);
+ALTER TABLE articles
+    ADD COLUMN one_sentence_solution VARCHAR(255);
 
-CREATE TABLE comments (
-                          id SERIAL PRIMARY KEY,
-                          article_id INTEGER NOT NULL REFERENCES articles(id),
-                          user_id INTEGER NOT NULL REFERENCES suanfa8_user(id),
-                          content TEXT NOT NULL,
-                          parent_comment_id INTEGER REFERENCES comments(id), -- 用于支持二级评论，指向父评论 ID
-                          created_at TIMESTAMP DEFAULT NOW(),
-                          updated_at TIMESTAMP DEFAULT NOW(),
-                          is_deleted BOOLEAN DEFAULT FALSE -- 添加 is_deleted 字段，默认值为 FALSE
+CREATE TABLE comments
+(
+    id                SERIAL PRIMARY KEY,
+    article_id        INTEGER NOT NULL REFERENCES articles (id),
+    user_id           INTEGER NOT NULL REFERENCES suanfa8_user (id),
+    content           TEXT    NOT NULL,
+    parent_comment_id INTEGER REFERENCES comments (id), -- 用于支持二级评论，指向父评论 ID
+    created_at        TIMESTAMP DEFAULT NOW(),
+    updated_at        TIMESTAMP DEFAULT NOW(),
+    is_deleted        BOOLEAN   DEFAULT FALSE           -- 添加 is_deleted 字段，默认值为 FALSE
 );
 
-ALTER TABLE comments ADD COLUMN like_count INTEGER DEFAULT 0;
+ALTER TABLE comments
+    ADD COLUMN like_count INTEGER DEFAULT 0;
 
 
 alter table public.suanfa8_user
@@ -74,10 +77,15 @@ alter table public.comments
 
 
 -- 创建文章点赞记录表
-CREATE TABLE article_like_records (
-                                      id SERIAL PRIMARY KEY,
-                                      user_id BIGINT NOT NULL REFERENCES suanfa8_user(id), -- 关联用户表
-                                      article_id BIGINT NOT NULL REFERENCES articles(id),  -- 关联文章表
-                                      created_at TIMESTAMP DEFAULT NOW(),
-                                      UNIQUE (user_id, article_id) -- 确保一个用户对一篇文章只能有一条点赞记录
+CREATE TABLE article_like_records
+(
+    id         SERIAL PRIMARY KEY,
+    user_id    BIGINT NOT NULL REFERENCES suanfa8_user (id), -- 关联用户表
+    article_id BIGINT NOT NULL REFERENCES articles (id),     -- 关联文章表
+    created_at TIMESTAMP DEFAULT NOW(),
+    UNIQUE (user_id, article_id)                             -- 确保一个用户对一篇文章只能有一条点赞记录
 );
+
+-- 在 comments 表中添加 reply_count 字段，用于记录回复数量，默认值为 0
+ALTER TABLE comments
+    ADD COLUMN reply_count INTEGER DEFAULT 0;

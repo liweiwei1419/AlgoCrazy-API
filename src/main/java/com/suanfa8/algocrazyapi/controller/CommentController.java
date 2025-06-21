@@ -24,8 +24,6 @@ public class CommentController {
     @Autowired
     private ICommentService commentService;
 
-
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @Operation(summary = "获取文章评论列表")
     @Parameter(name = "articleId", required = true, description = "文章 ID")
     @GetMapping("/comments")
@@ -34,13 +32,11 @@ public class CommentController {
         return Result.success(comments);
     }
 
-
-    // todo 权限验证
     @Operation(summary = "添加评论")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @PostMapping("/add")
     public Result<Comment> addComment(@RequestBody CommentAddDto commentAddDto) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        // commentAddDto 转换成为 Comment
         Comment comment = new Comment();
         comment.setArticleId(commentAddDto.getArticle_id());
         comment.setContent(commentAddDto.getContent());
@@ -48,6 +44,14 @@ public class CommentController {
         comment.setUserNickname(user.getNickname());
         Comment newComment = commentService.addComment(comment);
         return Result.success(newComment);
+    }
+
+    @Operation(summary = "获取指定评论的回复列表")
+    @Parameter(name = "commentId", required = true, description = "评论 ID")
+    @GetMapping("/{commentId}/replies")
+    public Result<List<Comment>> getRepliesByCommentId(@PathVariable Long commentId) {
+        List<Comment> replies = commentService.getRepliesByCommentId(commentId);
+        return Result.success(replies);
     }
 
     @Operation(summary = "评论点赞")
@@ -72,5 +76,4 @@ public class CommentController {
         boolean result = commentService.updateComment(comment);
         return Result.success(result);
     }
-
 }

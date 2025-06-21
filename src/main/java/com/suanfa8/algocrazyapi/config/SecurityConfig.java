@@ -36,7 +36,10 @@ public class SecurityConfig {
             // 放行的 URL 路径
             "/auth/authenticate",
             // 添加退出登录接口路径
-            "/auth/logout",
+            "/comment/comments",
+            "/comment/add",
+
+
 
             "/user/register", "/user/send-verification-code", "/user/reset-password",
 
