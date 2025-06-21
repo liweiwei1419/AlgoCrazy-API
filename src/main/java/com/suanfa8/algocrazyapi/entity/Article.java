@@ -82,7 +82,9 @@ public class Article {
     @TableField("deleted_at")
     private LocalDateTime deletedAt;
 
-    // 新增树形结构字段
+    /**
+     * 新增树形结构字段
+     */
     @TableField("parent_id")
     private Long parentId;
 

@@ -241,7 +241,7 @@ public class ArticleController {
     @PostMapping("/suggestion/")
     public Result<Boolean> updateSuggestion(@RequestBody SuggestionUpdateDto suggestionUpdateDto) {
         // 标准 update 方法，只修改一个字段
-        boolean isUpdated = articleService.lambdaUpdate().eq(Article::getId, suggestionUpdateDto.getId()).set(Article::getSuggestion, suggestionUpdateDto.getSuggestion()).update();  // 执行更新
+        boolean isUpdated = articleService.lambdaUpdate().eq(Article::getId, suggestionUpdateDto.getId()).set(Article::getSuggestion, suggestionUpdateDto.getSuggestion()).update();
         return isUpdated ? Result.success(isUpdated) : Result.fail(ResultCode.FAILED);
     }
 
@@ -249,7 +249,7 @@ public class ArticleController {
     @PostMapping("/oneSentenceSolution/")
     public Result<Boolean> updateoneSentenceSolution(@RequestBody OneSentenceSolutionUpdateDto oneSentenceSolutionUpdateDto) {
         // 标准 update 方法，只修改一个字段
-        boolean isUpdated = articleService.lambdaUpdate().eq(Article::getId, oneSentenceSolutionUpdateDto.getId()).set(Article::getOneSentenceSolution, oneSentenceSolutionUpdateDto.getOneSentenceSolution()).update();  // 执行更新
+        boolean isUpdated = articleService.lambdaUpdate().eq(Article::getId, oneSentenceSolutionUpdateDto.getId()).set(Article::getOneSentenceSolution, oneSentenceSolutionUpdateDto.getOneSentenceSolution()).update();
         return isUpdated ? Result.success(isUpdated) : Result.fail(ResultCode.FAILED);
     }
 

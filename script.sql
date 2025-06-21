@@ -37,3 +37,30 @@ VALUES (1, '基础排序算法'),
        (24, '单源短路径'),
        (25, '最小生成树'),
        (26, '暂时无法分类');
+
+
+-- 为 articles 表添加一句话题解字段，字段名为 one_sentence_solution，类型为 VARCHAR(255)
+ALTER TABLE articles ADD COLUMN one_sentence_solution VARCHAR(255);
+
+CREATE TABLE comments (
+                          id SERIAL PRIMARY KEY,
+                          article_id INTEGER NOT NULL REFERENCES articles(id),
+                          user_id INTEGER NOT NULL REFERENCES suanfa8_user(id),
+                          content TEXT NOT NULL,
+                          parent_comment_id INTEGER REFERENCES comments(id), -- 用于支持二级评论，指向父评论 ID
+                          created_at TIMESTAMP DEFAULT NOW(),
+                          updated_at TIMESTAMP DEFAULT NOW(),
+                          is_deleted BOOLEAN DEFAULT FALSE -- 添加 is_deleted 字段，默认值为 FALSE
+);
+
+ALTER TABLE comments ADD COLUMN like_count INTEGER DEFAULT 0;
+
+
+alter table public.suanfa8_user
+    rename column deleted to is_deleted;
+
+alter table public.suanfa8_user
+    rename column create_time to created_at;
+
+alter table public.suanfa8_user
+    rename column update_time to updated_at;

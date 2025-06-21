@@ -1,11 +1,13 @@
 package com.suanfa8.algocrazyapi.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.suanfa8.algocrazyapi.config.CustomMd5PasswordEncoder;
 import com.suanfa8.algocrazyapi.dto.UserLoginDTO;
 import com.suanfa8.algocrazyapi.dto.UserRegisterDTO;
 import com.suanfa8.algocrazyapi.dto.UserResetPasswordDTO;
 import com.suanfa8.algocrazyapi.entity.User;
 import com.suanfa8.algocrazyapi.mapper.UserMapper;
+import jakarta.annotation.Resource;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -22,13 +24,13 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class UserServiceImpl implements UserService {
 
-    @Autowired
+    @Resource
     private UserMapper userMapper;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    @Resource
+    private CustomMd5PasswordEncoder passwordEncoder;
 
-    @Autowired
+    @Resource
     private AuthenticationManager authenticationManager;
 
     @Autowired
@@ -41,12 +43,12 @@ public class UserServiceImpl implements UserService {
         if (existingUser != null) {
             throw new RuntimeException("用户名已存在");
         }
-
         User user = new User();
         BeanUtils.copyProperties(userRegisterDTO, user);
-        user.setPassword(passwordEncoder.encode(userRegisterDTO.getPassword()));
-        user.setCreateTime(LocalDateTime.now());
-        user.setUpdateTime(LocalDateTime.now());
+        user.setPassword(passwordEncoder.passwordEncrypt(userRegisterDTO.getPassword(), userRegisterDTO.getUsername()));
+        user.setCreatedAt(LocalDateTime.now());
+        user.setUpdatedAt(LocalDateTime.now());
+        user.setRoleId(0);
         userMapper.insert(user);
         return user;
     }

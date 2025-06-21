@@ -1,14 +1,23 @@
 package com.suanfa8.algocrazyapi.config;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+@Component
 public class CustomMd5PasswordEncoder implements PasswordEncoder {
 
     private final int hashIterations;
+
+    /**
+     * 添加默认构造函数，设置默认的迭代次数
+     */
+    public CustomMd5PasswordEncoder() {
+        this.hashIterations = 1024;
+    }
 
     public CustomMd5PasswordEncoder(int hashIterations) {
         this.hashIterations = hashIterations;
@@ -16,7 +25,6 @@ public class CustomMd5PasswordEncoder implements PasswordEncoder {
 
     @Override
     public String encode(CharSequence rawPassword) {
-        // System.out.println(rawPassword);
         // 对于没有 salt 的情况，直接返回原始密码（或者可以抛出异常）
         return rawPassword.toString();
     }

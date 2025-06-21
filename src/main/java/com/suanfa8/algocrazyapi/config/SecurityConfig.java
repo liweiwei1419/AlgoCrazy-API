@@ -3,7 +3,6 @@ package com.suanfa8.algocrazyapi.config;
 import com.suanfa8.algocrazyapi.filter.JwtRequestFilter;
 import com.suanfa8.algocrazyapi.service.UserDetailsServiceImpl;
 import jakarta.annotation.Resource;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -74,7 +73,6 @@ public class SecurityConfig {
      */
     @Bean
     public PasswordEncoder passwordEncoder() {
-        // return new BCryptPasswordEncoder();
         return new CustomMd5PasswordEncoder(1024);
     }
 
