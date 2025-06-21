@@ -13,21 +13,25 @@ import java.util.List;
 public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> implements ICommentService {
 
     @Resource
-    private  CommentMapper commentsMapper;
+    private CommentMapper commentsMapper;
 
     @Override
-    public List<Comment> getCommentsByArticleId(Long articleId) {
+    public List<Comment> getCommentsByArticleId(Integer articleId) {
         LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Comment::getArticleId, articleId)
-                .isNull(Comment::getParentCommentId);
-        List<Comment> comments = commentsMapper.selectList(queryWrapper);
-        return comments;
+        queryWrapper.eq(Comment::getArticleId, articleId).isNull(Comment::getParentCommentId).orderByDesc(Comment::getCreatedAt);
+        return commentsMapper.selectList(queryWrapper);
     }
 
     @Override
     public Comment addComment(Comment comment) {
-        commentsMapper.insert(comment);
-        return comment;
+        // 执行插入操作，insert 返回插入成功的记录数
+        int insert = commentsMapper.insert(comment);
+        // 插入成功后，comment 对象已经包含数据库生成的新值，如自增主键
+        if (insert > 0) {
+            return comment;
+        }
+        // 插入失败返回 null
+        return null;
     }
 
 

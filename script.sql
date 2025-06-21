@@ -64,3 +64,20 @@ alter table public.suanfa8_user
 
 alter table public.suanfa8_user
     rename column update_time to updated_at;
+
+
+alter table public.comments
+    alter column user_id type BIGINT using user_id::BIGINT;
+
+alter table public.comments
+    add user_nickname varchar(100);
+
+
+-- 创建文章点赞记录表
+CREATE TABLE article_like_records (
+                                      id SERIAL PRIMARY KEY,
+                                      user_id BIGINT NOT NULL REFERENCES suanfa8_user(id), -- 关联用户表
+                                      article_id BIGINT NOT NULL REFERENCES articles(id),  -- 关联文章表
+                                      created_at TIMESTAMP DEFAULT NOW(),
+                                      UNIQUE (user_id, article_id) -- 确保一个用户对一篇文章只能有一条点赞记录
+);

@@ -52,8 +52,9 @@ public class JwtUtil {
         User user = (User) userDetails;
         Map<String, Object> claims = new HashMap<>();
         // 添加头像、用户名、邮箱和角色 ID 到 claims 中
+        claims.put("user_id", user.getId());
         claims.put("avatar", user.getAvatar());
-        claims.put("username", user.getUsername());
+        claims.put("nickname", user.getNickname());
         claims.put("email", user.getEmail());
         claims.put("role_id", user.getRoleId());
         claims.put("role", userDetails.getAuthorities());
@@ -82,7 +83,7 @@ public class JwtUtil {
         }
     }
 
-    private boolean isTokenExpired(String token) {
+    public boolean isTokenExpired(String token) {
         try {
             return extractExpiration(token).before(new Date());
         } catch (JwtException | IllegalArgumentException e) {
@@ -98,7 +99,7 @@ public class JwtUtil {
         return extractClaims(token).getExpiration();
     }
 
-    private Claims extractClaims(String token) throws JwtException {
+    public Claims extractClaims(String token) throws JwtException {
         if (token == null || token.trim().isEmpty()) {
             throw new IllegalArgumentException("Token cannot be null or empty");
         }

@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface ICommentService extends IService<Comment> {
 
-    List<Comment> getCommentsByArticleId(Long articleId);
+    List<Comment> getCommentsByArticleId(Integer articleId);
 
     Comment addComment(Comment comment);
 

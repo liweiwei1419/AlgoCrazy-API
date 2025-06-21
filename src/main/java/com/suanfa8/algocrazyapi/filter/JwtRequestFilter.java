@@ -1,5 +1,7 @@
 package com.suanfa8.algocrazyapi.filter;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.suanfa8.algocrazyapi.exception.JwtExpiredException;
 import com.suanfa8.algocrazyapi.service.UserDetailsServiceImpl;
 import com.suanfa8.algocrazyapi.utils.JwtUtil;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -7,7 +9,10 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,7 +21,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
+@Slf4j
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter {
 
@@ -25,6 +33,9 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
     @Autowired
     private JwtUtil jwtUtil;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
@@ -36,7 +47,9 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             try {
                 username = jwtUtil.extractUsername(jwt);
             } catch (ExpiredJwtException e) {
-                // 处理 token 过期
+                log.error("JWT token has expired", e);
+                // 直接在过滤器中处理异常并返回响应
+                handleJwtExpiredException(response);
             }
         }
 
@@ -49,6 +62,17 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             }
         }
         chain.doFilter(request, response);
+    }
+
+    private void handleJwtExpiredException(HttpServletResponse response) throws IOException {
+        response.setStatus(HttpStatus.UNAUTHORIZED.value());
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+
+        Map<String, String> errorResponse = new HashMap<>();
+        errorResponse.put("message", "JWT token has expired");
+
+        // 将错误信息转换为 JSON 格式写入响应
+        objectMapper.writeValue(response.getWriter(), errorResponse);
     }
 
 }

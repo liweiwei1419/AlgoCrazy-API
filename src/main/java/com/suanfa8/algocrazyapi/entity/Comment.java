@@ -26,7 +26,7 @@ public class Comment {
     private Long id;
 
     @TableField("article_id")
-    private Long articleId;
+    private Integer articleId;
 
     @TableField("user_id")
     private Long userId;
@@ -54,6 +54,9 @@ public class Comment {
      */
     @TableField(exist = false)
     private User user;
+
+    @TableField("user_nickname")
+    private String userNickname;
 
     /**
      * 二级评论列表

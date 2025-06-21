@@ -14,6 +14,8 @@ import com.suanfa8.algocrazyapi.dto.OneSentenceSolutionUpdateDto;
 import com.suanfa8.algocrazyapi.dto.SuggestionUpdateDto;
 import com.suanfa8.algocrazyapi.dto.TitleAndIdSelectDto;
 import com.suanfa8.algocrazyapi.entity.Article;
+import com.suanfa8.algocrazyapi.entity.User;
+import com.suanfa8.algocrazyapi.service.IArticleLikeRecordService;
 import com.suanfa8.algocrazyapi.service.IArticleService;
 import com.suanfa8.algocrazyapi.utils.UploadUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -28,6 +30,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -61,6 +64,10 @@ public class ArticleController {
 
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
+
+    @Autowired
+    private IArticleLikeRecordService articleLikeRecordService;
+
 
     @Operation(summary = "创建文章")
     @Parameter(name = "article", description = "文章对象", required = true)
@@ -305,4 +312,13 @@ public class ArticleController {
         return isUpdated ? Result.success(true) : Result.fail(500, "文章内容更新失败");
     }
 
+
+
+
+    @PostMapping("/{articleId}/like")
+    public boolean likeArticle(@PathVariable Long articleId) {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Long userId = user.getId();
+        return articleLikeRecordService.likeArticle(userId, articleId);
+    }
 }
