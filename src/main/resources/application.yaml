@@ -100,3 +100,8 @@ tencent:
     bucketName: suanfa8-1252206550
     prefix: https://suanfa8-1252206550.cos.ap-shanghai.myqcloud.com/suanfa8/
 
+dingtalk:
+  custom-robot-token: 38bb269585b2439c6ec0c291997b318caf8d5c594da4ef866c46fce914f62dc3
+  user-id: 13671597056
+  secret: SECf8723bce4b996782f7ea585fd2823bd5a713bc273820b3d6f2a80bb4152ae652
+

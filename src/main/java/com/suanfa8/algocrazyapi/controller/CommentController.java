@@ -28,6 +28,7 @@ public class CommentController {
     @Parameter(name = "articleId", required = true, description = "文章 ID")
     @GetMapping("/comments")
     public Result<List<Comment>> getCommentsByArticleId(@RequestParam String articleId) {
+        System.out.println("articleId ++++++++ " + articleId + " +++++++++++++++");
         List<Comment> comments = commentService.getCommentsByArticleId(Integer.parseInt(articleId));
         return Result.success(comments);
     }

@@ -5,7 +5,9 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.suanfa8.algocrazyapi.entity.Comment;
 import com.suanfa8.algocrazyapi.mapper.CommentMapper;
+import com.suanfa8.algocrazyapi.utils.DingTalkGroupNotificationUtil;
 import jakarta.annotation.Resource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,6 +17,9 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
 
     @Resource
     private CommentMapper commentsMapper;
+
+    @Resource
+    private DingTalkGroupNotificationUtil dingTalkGroupNotificationUtil;
 
     @Override
     public List<Comment> getCommentsByArticleId(Integer articleId) {
@@ -30,6 +35,11 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
             // 如果是回复评论，更新父评论的回复数量
             if (comment.getParentCommentId() != null) {
                 updateReplyCount(comment.getParentCommentId(), 1);
+                // 有新回复，发送通知
+                dingTalkGroupNotificationUtil.sendNewReplyNotification();
+            }else {
+                // 有新评论，发送通知
+                dingTalkGroupNotificationUtil.sendNewCommentNotification();
             }
             return comment;
         }
