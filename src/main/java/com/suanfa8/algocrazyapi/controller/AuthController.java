@@ -6,6 +6,7 @@ import com.suanfa8.algocrazyapi.dto.LogoutRequest;
 import com.suanfa8.algocrazyapi.service.JwtRedisService;
 import com.suanfa8.algocrazyapi.service.UserDetailsServiceImpl;
 import com.suanfa8.algocrazyapi.utils.JwtUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -55,12 +56,13 @@ public class AuthController {
         return ResponseEntity.ok(new AuthenticationResponse(jwt));
     }
 
-
+    // @RequestBody LogoutRequest logoutRequest
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(@RequestBody LogoutRequest logoutRequest) {
+    public ResponseEntity<?> logout(HttpServletRequest request) {
+        // 从请求头中获得 token
+        String token = request.getHeader("Authorization");
         try {
-            String token = logoutRequest.getToken();
             if (token != null && token.startsWith("Bearer ")) {
                 token = token.substring(7);
             }
