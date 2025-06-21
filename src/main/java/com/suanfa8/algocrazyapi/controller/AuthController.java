@@ -71,6 +71,7 @@ public class AuthController {
             jwtRedisService.deleteJwt(username);
             return ResponseEntity.ok("退出登录成功");
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.badRequest().body("退出登录失败: " + e.getMessage());
         }
     }
