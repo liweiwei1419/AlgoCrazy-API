@@ -116,4 +116,16 @@ public class UserServiceImpl implements IUserService {
         return userMap;
     }
 
+    @Override
+    public String getNicknameById(Long userId) {
+        if (userId == null) {
+            return null;
+        }
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        // 只查询 nickname 字段
+        queryWrapper.select(User::getNickname).eq(User::getId, userId);
+        User user = userMapper.selectOne(queryWrapper);
+        return user != null ? user.getNickname() : null;
+    }
+
 }

@@ -33,36 +33,8 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Comment::getArticleId, articleId).isNull(Comment::getParentCommentId).orderByDesc(Comment::getCreatedAt);
         List<Comment> comments = commentsMapper.selectList(queryWrapper);
-        // 把 Comments 里的 userId 和 replyToUserId 全部拿出来，一次性查询用户信息
-        // 第 1 步：收集所有 userId 和 replyToUserId
-        Set<Long> userIds = new HashSet<>();
-        for (Comment comment : comments) {
-            if (comment.getUserId() != null) {
-                userIds.add(comment.getUserId());
-            }
-            if (comment.getReplyToUserId() != null) {
-                userIds.add(comment.getReplyToUserId());
-            }
-        }
-
-        // 第 2 步：一次性查询用户信息
-        Map<Long, User> userMap = userService.getUserMapByIds(new ArrayList<>(userIds));
-        // 第 3 步：设置用户昵称和头像
-        for (Comment comment : comments) {
-            if (comment.getUserId() != null) {
-                User user = userMap.get(comment.getUserId());
-                if (user != null) {
-                    comment.setUserNickname(user.getNickname());
-                    comment.setUserAvatar(user.getAvatar());
-                }
-            }
-            if (comment.getReplyToUserId() != null) {
-                User replyToUser = userMap.get(comment.getReplyToUserId());
-                if (replyToUser != null) {
-                    comment.setReplyToUserNickname(replyToUser.getNickname());
-                }
-            }
-        }
+        // 调用公共方法填充用户信息
+        fillUserInfoForComments(comments);
         return comments;
     }
 
@@ -81,9 +53,54 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
                 // 有新评论，发送通知
                 dingTalkGroupNotificationUtil.sendNewCommentNotification(userNickname, articleId, comment.getContent());
             }
+            Long replyToUserId = comment.getReplyToUserId();
+            if (replyToUserId!= null) {
+                // 根据 replyToUserId 只查询用户名
+                String replyToUserNickname = userService.getNicknameById(replyToUserId);
+                if (replyToUserNickname!= null) {
+                    comment.setReplyToUserNickname(replyToUserNickname);
+                }
+            }
             return comment;
         }
         return null;
+    }
+
+    /**
+     * 为评论列表填充用户昵称、头像和回复用户昵称
+     * @param comments 评论列表
+     */
+    private void fillUserInfoForComments(List<Comment> comments) {
+        // 收集所有 userId 和 replyToUserId
+        Set<Long> userIds = new HashSet<>();
+        for (Comment comment : comments) {
+            if (comment.getUserId() != null) {
+                userIds.add(comment.getUserId());
+            }
+            if (comment.getReplyToUserId() != null) {
+                userIds.add(comment.getReplyToUserId());
+            }
+        }
+
+        // 一次性查询用户信息
+        Map<Long, User> userMap = userService.getUserMapByIds(new ArrayList<>(userIds));
+
+        // 设置用户昵称和头像
+        for (Comment comment : comments) {
+            if (comment.getUserId() != null) {
+                User user = userMap.get(comment.getUserId());
+                if (user != null) {
+                    comment.setUserNickname(user.getNickname());
+                    comment.setUserAvatar(user.getAvatar());
+                }
+            }
+            if (comment.getReplyToUserId() != null) {
+                User replyToUser = userMap.get(comment.getReplyToUserId());
+                if (replyToUser != null) {
+                    comment.setReplyToUserNickname(replyToUser.getNickname());
+                }
+            }
+        }
     }
 
     @Override
@@ -110,7 +127,9 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     public List<Comment> getRepliesByCommentId(Integer commentId) {
         LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Comment::getParentCommentId, commentId).orderByAsc(Comment::getCreatedAt);
-        return commentsMapper.selectList(queryWrapper);
+        List<Comment> comments = commentsMapper.selectList(queryWrapper);
+        fillUserInfoForComments(comments);
+        return comments;
     }
 
     @Override

@@ -8,6 +8,7 @@ import com.suanfa8.algocrazyapi.service.ICommentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.annotation.Resource;
 import jakarta.annotation.security.PermitAll;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +34,7 @@ import java.util.List;
 @RequestMapping("/comment")
 public class CommentController {
 
-    @Autowired
+    @Resource
     private ICommentService commentService;
 
     @Operation(summary = "获取文章评论列表")
@@ -47,9 +48,8 @@ public class CommentController {
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @PostMapping("/add")
     public Result<Comment> addComment(@RequestBody CommentAddDto commentAddDto) {
-        System.out.println("commentAddDto => " + commentAddDto);
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Long userId =user.getId();
+        Long userId = user.getId();
         String userNickname = user.getNickname();
         Comment comment = new Comment();
         // 复制相同字段（要求 DTO 和 Entity 字段名一致）
@@ -64,7 +64,6 @@ public class CommentController {
         newComment.setUserNickname(userNickname);
         newComment.setUserAvatar(user.getAvatar());
         newComment.setCreatedAt(LocalDateTime.now());
-        System.out.println("返回值 => " + newComment);
         return Result.success(newComment);
     }
 
