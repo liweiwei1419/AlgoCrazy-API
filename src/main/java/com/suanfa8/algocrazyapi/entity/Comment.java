@@ -55,8 +55,9 @@ public class Comment {
      * 评论用户信息
      */
     @TableField(exist = false)
-    private User user;
+    private String userAvatar;
 
+    // todo 这个字段可以不存
     @TableField("user_nickname")
     private String userNickname;
 
@@ -76,15 +77,16 @@ public class Comment {
     @TableField("like_count")
     private Integer likeCount = 0;
 
-
     @TableField("reply_count")
     private Integer replyCount = 0;
-
 
     @TableField("reply_to_comment_id")
     private Integer replyToCommentId;
 
     @TableField("reply_to_user_id")
     private Long replyToUserId;
+
+    @TableField(exist = false)
+    private String replyToUserNickname;
 
 }

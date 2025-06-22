@@ -1,7 +1,7 @@
 package com.suanfa8.algocrazyapi;
 
 import com.suanfa8.algocrazyapi.dto.UserRegisterDTO;
-import com.suanfa8.algocrazyapi.service.UserService;
+import com.suanfa8.algocrazyapi.service.IUserService;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -10,7 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 public class UserTest {
 
     @Resource
-    private UserService userService;
+    private IUserService userService;
 
     @Test
     public void testRegister() {

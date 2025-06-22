@@ -4,7 +4,7 @@ import com.suanfa8.algocrazyapi.dto.UserLoginDTO;
 import com.suanfa8.algocrazyapi.dto.UserRegisterDTO;
 import com.suanfa8.algocrazyapi.dto.UserResetPasswordDTO;
 import com.suanfa8.algocrazyapi.entity.User;
-import com.suanfa8.algocrazyapi.service.UserService;
+import com.suanfa8.algocrazyapi.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
 
     @Autowired
-    private UserService userService;
+    private IUserService userService;
 
 
     @PostMapping("/register")

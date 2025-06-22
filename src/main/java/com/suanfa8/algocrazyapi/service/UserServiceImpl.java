@@ -1,5 +1,6 @@
 package com.suanfa8.algocrazyapi.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.suanfa8.algocrazyapi.config.CustomMd5PasswordEncoder;
 import com.suanfa8.algocrazyapi.dto.UserLoginDTO;
@@ -14,15 +15,17 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 @Service
-public class UserServiceImpl implements UserService {
+public class UserServiceImpl implements IUserService {
 
     @Resource
     private UserMapper userMapper;
@@ -94,6 +97,23 @@ public class UserServiceImpl implements UserService {
     private String generateVerificationCode() {
         Random random = new Random();
         return String.format("%06d", random.nextInt(1000000));
+    }
+
+    @Override
+    public Map<Long, User> getUserMapByIds(List<Long> userIds) {
+        if (userIds.isEmpty()) {
+            return new HashMap<>();
+        }
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        // 只查询 id、nickname 和 avatar 字段
+        queryWrapper.select(User::getId, User::getNickname, User::getAvatar)
+                .in(User::getId, userIds);
+        List<User> users = userMapper.selectList(queryWrapper);
+        Map<Long, User> userMap = new HashMap<>(userIds.size());
+        for (User user : users) {
+            userMap.put(user.getId(), user);
+        }
+        return userMap;
     }
 
 }

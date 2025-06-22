@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @CrossOrigin
@@ -48,14 +49,22 @@ public class CommentController {
     public Result<Comment> addComment(@RequestBody CommentAddDto commentAddDto) {
         System.out.println("commentAddDto => " + commentAddDto);
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Long userId =user.getId();
+        String userNickname = user.getNickname();
         Comment comment = new Comment();
         // 复制相同字段（要求 DTO 和 Entity 字段名一致）
         BeanUtils.copyProperties(commentAddDto, comment);
         // 手动设置 DTO 没有的字段
-        comment.setUserId(user.getId());
-        comment.setUserNickname(user.getNickname());
-        System.out.println("comment => " + comment);
+        comment.setUserId(userId);
+        comment.setUserNickname(userNickname);
+
         Comment newComment = commentService.addComment(comment);
+        // 这里创建时间与数据库不一致，避免再查一次
+        newComment.setUserId(userId);
+        newComment.setUserNickname(userNickname);
+        newComment.setUserAvatar(user.getAvatar());
+        newComment.setCreatedAt(LocalDateTime.now());
+        System.out.println("返回值 => " + newComment);
         return Result.success(newComment);
     }
 

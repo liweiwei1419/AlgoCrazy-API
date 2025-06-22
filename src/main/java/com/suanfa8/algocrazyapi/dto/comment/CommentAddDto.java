@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.Data;
 import lombok.ToString;
 
+// 评论与回复共用
 @Data
 @ToString
 // 驼峰转下划线
@@ -18,10 +19,11 @@ public class CommentAddDto {
 
     private String userId;
 
+    // 回复才有
     private Integer parentCommentId;
-
+    // 回复才有
     private Long replyToUserId;
-
+    // 回复才有
     private Integer replyToCommentId;
 
 }
