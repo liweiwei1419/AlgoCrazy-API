@@ -70,7 +70,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     @Override
     public List<Comment> getRepliesByCommentId(Integer commentId) {
         LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Comment::getParentCommentId, commentId).orderByDesc(Comment::getCreatedAt);
+        queryWrapper.eq(Comment::getParentCommentId, commentId).orderByAsc(Comment::getCreatedAt);
         return commentsMapper.selectList(queryWrapper);
     }
 

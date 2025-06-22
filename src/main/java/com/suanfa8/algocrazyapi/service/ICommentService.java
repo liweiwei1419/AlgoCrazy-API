@@ -17,9 +17,19 @@ public interface ICommentService extends IService<Comment> {
 
     boolean updateComment(Comment comment);
 
-    // 获取指定评论的回复列表
+    /**
+     * 获取指定评论的回复列表
+     *
+     * @param commentId
+     * @return
+     */
     List<Comment> getRepliesByCommentId(Integer commentId);
 
-    // 更新评论的回复数量
+    /**
+     * 更新评论的回复数量
+     * @param commentId
+     * @param increment
+     * @return
+     */
     boolean updateReplyCount(Integer commentId, int increment);
 }
