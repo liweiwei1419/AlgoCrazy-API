@@ -1,5 +1,6 @@
 package com.suanfa8.algocrazyapi.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.suanfa8.algocrazyapi.entity.Comment;
 
@@ -32,4 +33,13 @@ public interface ICommentService extends IService<Comment> {
      * @return
      */
     boolean updateReplyCount(Integer commentId, int increment);
+
+    /**
+     * 分页显示评论列表，按评论创建时间倒序排列
+     * @param pageNum 页码
+     * @param pageSize 每页数量
+     * @return 分页后的评论列表
+     */
+    IPage<Comment> listComments(Integer pageNum, Integer pageSize);
+
 }

@@ -2,6 +2,8 @@ package com.suanfa8.algocrazyapi.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.suanfa8.algocrazyapi.entity.Comment;
 import com.suanfa8.algocrazyapi.entity.User;
@@ -138,4 +140,26 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         updateWrapper.eq(Comment::getId, commentId).setSql("reply_count = reply_count + " + increment);
         return update(updateWrapper);
     }
+
+    @Override
+    public IPage<Comment> listComments( Integer pageNum, Integer pageSize) {
+        // 设置默认页码和每页数量
+        if (pageNum == null || pageNum < 1) {
+            pageNum = 1;
+        }
+        if (pageSize == null || pageSize < 1) {
+            pageSize = 10;
+        }
+
+        // 创建 Page 对象
+        Page<Comment> page = new Page<>(pageNum, pageSize);
+        LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
+        // 按评论创建时间倒序排列
+        queryWrapper.orderByDesc(Comment::getCreatedAt);
+        IPage<Comment> commentPage = this.page(page, queryWrapper);
+        // 调用公共方法填充用户信息
+        fillUserInfoForComments(commentPage.getRecords());
+        return commentPage;
+    }
+
 }

@@ -1,5 +1,6 @@
 package com.suanfa8.algocrazyapi.controller;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.suanfa8.algocrazyapi.common.Result;
 import com.suanfa8.algocrazyapi.dto.comment.CommentAddDto;
 import com.suanfa8.algocrazyapi.entity.Comment;
@@ -97,6 +98,27 @@ public class CommentController {
     @PutMapping("/update")
     public Result<Boolean> updateComment(@RequestBody Comment comment) {
         boolean result = commentService.updateComment(comment);
+        return Result.success(result);
+    }
+
+
+
+
+    // 分页显示评论列表
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    @GetMapping("/list")
+    public Result<IPage<Comment>> listComments(
+                                              @RequestParam(required = false) Integer pageNum,
+                                              @RequestParam(required = false) Integer pageSize) {
+        IPage<Comment> commentIPage = commentService.listComments( pageNum, pageSize);
+        return Result.success(commentIPage);
+    }
+
+    // 添加根据 id 删除评论的接口
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    @DeleteMapping("/delete/{id}")
+    public Result<Boolean> deleteCommentById(@PathVariable Integer id) {
+        boolean result = commentService.deleteComment(id);
         return Result.success(result);
     }
 
