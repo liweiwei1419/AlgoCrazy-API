@@ -68,7 +68,6 @@ public class ArticleController {
     @Autowired
     private IArticleLikeRecordService articleLikeRecordService;
 
-
     @Operation(summary = "创建文章")
     @Parameter(name = "article", description = "文章对象", required = true)
     @PostMapping("/create")
@@ -84,6 +83,7 @@ public class ArticleController {
         article.setSolutionUrl(articleAddDto.getSolutionUrl());
         return articleService.articleCreate(article) == 1;
     }
+
 
     @Operation(summary = "分页查询文章列表")
     @Parameter(name = "current", description = "当前页")
@@ -212,7 +212,7 @@ public class ArticleController {
 
     @Operation(summary = "获得所有二级目录，在「审核进度」页面")
     @GetMapping("/chapters")
-    @Cacheable(value = "articleChapters", key = "'article:chapters:list'")
+    // @Cacheable(value = "articleChapters", key = "'article:chapters:list'")
     public Result<List<Article>> chapters() {
         log.info("查询数据库，获得所有二级目录，在「审核进度」页面");
         QueryWrapper<Article> queryWrapper = new QueryWrapper<>();
@@ -254,7 +254,7 @@ public class ArticleController {
 
 
     @PostMapping("/oneSentenceSolution/")
-    public Result<Boolean> updateoneSentenceSolution(@RequestBody OneSentenceSolutionUpdateDto oneSentenceSolutionUpdateDto) {
+    public Result<Boolean> updateOneSentenceSolution(@RequestBody OneSentenceSolutionUpdateDto oneSentenceSolutionUpdateDto) {
         // 标准 update 方法，只修改一个字段
         boolean isUpdated = articleService.lambdaUpdate().eq(Article::getId, oneSentenceSolutionUpdateDto.getId()).set(Article::getOneSentenceSolution, oneSentenceSolutionUpdateDto.getOneSentenceSolution()).update();
         return isUpdated ? Result.success(isUpdated) : Result.fail(ResultCode.FAILED);
