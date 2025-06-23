@@ -7,6 +7,7 @@ import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
+import java.util.Map;
 
 public interface IArticleService extends IService<Article> {
 
@@ -24,4 +25,7 @@ public interface IArticleService extends IService<Article> {
 
     ResponseEntity<InputStreamResource> downloadArticleAsMarkdown(Article article);
 
+    Map<Integer, Article> getArticleMapByIds(List<Integer> articleIds);
+
 }
+

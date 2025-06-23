@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.suanfa8.algocrazyapi.entity.Article;
 import com.suanfa8.algocrazyapi.entity.Comment;
 import com.suanfa8.algocrazyapi.entity.User;
 import com.suanfa8.algocrazyapi.mapper.CommentMapper;
@@ -16,7 +17,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> implements ICommentService {
@@ -27,8 +30,17 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     @Resource
     private DingTalkGroupNotificationUtil dingTalkGroupNotificationUtil;
 
+    /**
+     * 注入用户服务
+     */
     @Resource
-    private IUserService userService; // 注入用户服务
+    private IUserService userService;
+
+    /**
+     * 注入文章服务
+     */
+    @Resource
+    private IArticleService articleService;
 
     @Override
     public List<Comment> getCommentsByArticleId(Integer articleId) {
@@ -56,10 +68,10 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
                 dingTalkGroupNotificationUtil.sendNewCommentNotification(userNickname, articleId, comment.getContent());
             }
             Long replyToUserId = comment.getReplyToUserId();
-            if (replyToUserId!= null) {
+            if (replyToUserId != null) {
                 // 根据 replyToUserId 只查询用户名
                 String replyToUserNickname = userService.getNicknameById(replyToUserId);
-                if (replyToUserNickname!= null) {
+                if (replyToUserNickname != null) {
                     comment.setReplyToUserNickname(replyToUserNickname);
                 }
             }
@@ -70,6 +82,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
 
     /**
      * 为评论列表填充用户昵称、头像和回复用户昵称
+     *
      * @param comments 评论列表
      */
     private void fillUserInfoForComments(List<Comment> comments) {
@@ -142,7 +155,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     }
 
     @Override
-    public IPage<Comment> listComments( Integer pageNum, Integer pageSize) {
+    public IPage<Comment> listComments(Integer pageNum, Integer pageSize) {
         // 设置默认页码和每页数量
         if (pageNum == null || pageNum < 1) {
             pageNum = 1;
@@ -159,7 +172,26 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         IPage<Comment> commentPage = this.page(page, queryWrapper);
         // 调用公共方法填充用户信息
         fillUserInfoForComments(commentPage.getRecords());
+        fillArticleInfoForComments(commentPage.getRecords());
         return commentPage;
+    }
+
+
+    private void fillArticleInfoForComments(List<Comment> comments) {
+        // 收集所有的 articleId
+        Set<Integer> articleIds = comments.stream().map(Comment::getArticleId).filter(Objects::nonNull).collect(Collectors.toCollection(HashSet::new));
+        // 一次性查询用户信息
+        Map<Integer, Article> articleMap = articleService.getArticleMapByIds(new ArrayList<>(articleIds));
+        // 设置用户昵称和头像
+        for (Comment comment : comments) {
+            Article article = articleMap.get(comment.getArticleId());
+            if (article != null) {
+                comment.setArticleTitle(article.getTitle());
+                comment.setArticleUrl(article.getUrl());
+            }
+        }
+
+        System.out.println(comments);
     }
 
 }

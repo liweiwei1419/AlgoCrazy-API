@@ -47,7 +47,7 @@ public class ImportExcelTest {
                 // 处理每个单元格的值
                 article.setTitle(getCellValue(titleCell));
                 article.setSourceUrl(getCellValue(sourceUrlCell));
-                article.setParentId(Long.parseLong(getCellValue(pIdCell)));
+                article.setParentId(Integer.parseInt(getCellValue(pIdCell)));
                 article.setAuthor("liweiwei1419");
                 article.setContent("");
                 article.setDisplayOrder(Integer.parseInt(getCellValue(displayOrderCell)));

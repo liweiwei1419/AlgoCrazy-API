@@ -41,7 +41,7 @@ public class MyBatisPlusMapperTest {
     @Test
     public void testUpdate(){
         Article article = new Article();
-        article.setId(1L);
+        article.setId(1);
         article.setTitle("测试修改");
         article.setContent("测试");
 

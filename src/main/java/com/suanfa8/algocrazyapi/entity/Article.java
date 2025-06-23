@@ -28,7 +28,7 @@ import java.util.List;
 public class Article {
 
     @TableId(type = IdType.AUTO)
-    private Long id;
+    private Integer id;
 
     @TableField("author")
     private String author;
@@ -86,7 +86,7 @@ public class Article {
      * 新增树形结构字段
      */
     @TableField("parent_id")
-    private Long parentId;
+    private Integer parentId;
 
     @TableField("display_order")
     private Integer displayOrder;

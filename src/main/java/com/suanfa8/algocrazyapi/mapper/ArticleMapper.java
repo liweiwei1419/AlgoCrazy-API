@@ -21,7 +21,7 @@ public interface ArticleMapper extends BaseMapper<Article> {
 
     // 获取某个结点的直接子结点
     @Select("SELECT * FROM articles WHERE parent_id = #{parentId} AND is_deleted = false ORDER BY display_order ASC")
-    List<Article> selectChildren(@Param("parentId") Long parentId);
+    List<Article> selectChildren(@Param("parentId") Integer parentId);
 
     // 获取子树的所有结点
     @Select("SELECT * FROM articles WHERE (path LIKE CONCAT(#{path}, ',%') OR path = #{path} OR id = #{id} ORDER BY path, display_order")

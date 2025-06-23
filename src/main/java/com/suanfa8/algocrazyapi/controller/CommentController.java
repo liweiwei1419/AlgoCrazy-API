@@ -102,15 +102,11 @@ public class CommentController {
     }
 
 
-
-
     // 分页显示评论列表
     @PreAuthorize("hasAnyRole('ADMIN')")
     @GetMapping("/list")
-    public Result<IPage<Comment>> listComments(
-                                              @RequestParam(required = false) Integer pageNum,
-                                              @RequestParam(required = false) Integer pageSize) {
-        IPage<Comment> commentIPage = commentService.listComments( pageNum, pageSize);
+    public Result<IPage<Comment>> listComments(@RequestParam(required = false) Integer pageNum, @RequestParam(required = false) Integer pageSize) {
+        IPage<Comment> commentIPage = commentService.listComments(pageNum, pageSize);
         return Result.success(commentIPage);
     }
 

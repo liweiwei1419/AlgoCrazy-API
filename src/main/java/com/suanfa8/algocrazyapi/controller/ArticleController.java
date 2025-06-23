@@ -79,7 +79,7 @@ public class ArticleController {
         article.setTitle(articleAddDto.getTitle());
         article.setCategory(articleAddDto.getCategory());
         article.setContent(articleAddDto.getContent());
-        article.setParentId(Long.parseLong(articleAddDto.getParentId()));
+        article.setParentId(Integer.parseInt(articleAddDto.getParentId()));
         article.setSourceUrl(articleAddDto.getSourceUrl());
         article.setSolutionUrl(articleAddDto.getSolutionUrl());
         return articleService.articleCreate(article) == 1;

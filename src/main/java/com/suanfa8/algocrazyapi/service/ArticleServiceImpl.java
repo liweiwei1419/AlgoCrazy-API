@@ -17,7 +17,9 @@ import org.springframework.stereotype.Service;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -152,6 +154,20 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         headers.add(HttpHeaders.PRAGMA, "no-cache");
         headers.add(HttpHeaders.EXPIRES, "0");
         return ResponseEntity.ok().headers(headers).contentLength(contentBytes.length).contentType(MediaType.APPLICATION_OCTET_STREAM).body(new InputStreamResource(inputStream));
+    }
+
+    @Override
+    public Map<Integer, Article> getArticleMapByIds(List<Integer> articleIds) {
+        LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.select(Article::getId,Article::getTitle, Article::getUrl);
+        queryWrapper.in(Article::getId, articleIds);
+        List<Article> articles = articleMapper.selectList(queryWrapper);
+
+        Map<Integer, Article> articleMap = new HashMap<>(articleIds.size());
+        for (Article article : articles) {
+            articleMap.put(article.getId(), article);
+        }
+        return articleMap;
     }
 
 }

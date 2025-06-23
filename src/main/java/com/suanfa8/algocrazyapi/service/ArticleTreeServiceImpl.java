@@ -27,7 +27,7 @@ public class ArticleTreeServiceImpl  implements IArticleTreeService {
         // 1. 一次性查询所有结点（不包含 content 大字段）
         List<Article> allArticles = articleMapper.selectAllWithoutContent();
         // 2. 构建 ID 到结点的映射
-        Map<Long, BookTreeNode> nodeMap = new HashMap<>();
+        Map<Integer, BookTreeNode> nodeMap = new HashMap<>();
         allArticles.forEach(article -> {
             BookTreeNode node = new BookTreeNode();
             BeanUtils.copyProperties(article, node);
@@ -41,7 +41,7 @@ public class ArticleTreeServiceImpl  implements IArticleTreeService {
             if (Objects.isNull(article.getParentId())) {
                 continue;
             }
-            if (article.getParentId() == 0L) {
+            if (article.getParentId() == 0) {
                 roots.add(node);
             } else {
                 BookTreeNode parent = nodeMap.get(article.getParentId());
@@ -61,7 +61,7 @@ public class ArticleTreeServiceImpl  implements IArticleTreeService {
         // 1. 一次性查询所有结点（不包含 content 大字段）
         List<Article> allArticles = articleMapper.selectAllWithoutContent();
         // 2. 构建 ID 到结点的映射
-        Map<Long, ArticleTreeNode> nodeMap = new HashMap<>();
+        Map<Integer, ArticleTreeNode> nodeMap = new HashMap<>();
         allArticles.forEach(article -> {
             ArticleTreeNode node = new ArticleTreeNode();
             BeanUtils.copyProperties(article, node);
@@ -90,14 +90,14 @@ public class ArticleTreeServiceImpl  implements IArticleTreeService {
 
     // 移动结点
     @Transactional
-    public void moveNode(Long id, Long newParentId) {
+    public void moveNode(Integer id, Integer newParentId) {
         Article article = articleMapper.selectById(id);
         if (article == null) {
             throw new RuntimeException("Article not found");
         }
 
         Article newParent = articleMapper.selectById(newParentId);
-        if (newParent == null && newParentId != 0L) { // 0表示根节点
+        if (newParent == null && newParentId != 0) { // 0表示根节点
             throw new RuntimeException("New parent not found");
         }
 
@@ -107,7 +107,7 @@ public class ArticleTreeServiceImpl  implements IArticleTreeService {
         }
 
         String oldPath = article.getPath();
-        String newPath = newParentId == 0L ? String.valueOf(id) : newParent.getPath() + "," + id;
+        String newPath = newParentId == 0 ? String.valueOf(id) : newParent.getPath() + "," + id;
 
         // 更新当前节点
         article.setParentId(newParentId);
@@ -122,7 +122,7 @@ public class ArticleTreeServiceImpl  implements IArticleTreeService {
 
     // 调整顺序
     @Transactional
-    public void reorderNode(Long id, Integer newOrder) {
+    public void reorderNode(Integer id, Integer newOrder) {
         Article article = articleMapper.selectById(id);
         if (article == null) {
             throw new RuntimeException("Article not found");

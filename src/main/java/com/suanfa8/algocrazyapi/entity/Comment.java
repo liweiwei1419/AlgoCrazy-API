@@ -28,6 +28,11 @@ public class Comment {
     @TableField("article_id")
     private Integer articleId;
 
+    @TableField(exist = false)
+    private String articleTitle;
+    @TableField(exist = false)
+    private String articleUrl;
+
     // 解决返回给前端精度丢失的问题
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     @TableField("user_id")

@@ -11,8 +11,8 @@ public interface IArticleTreeService {
 
     List<BookTreeNode> getBookTree();
 
-    void moveNode(Long id, Long newParentId);
+    void moveNode(Integer id, Integer newParentId);
 
-    void reorderNode(Long id, Integer newOrder);
+    void reorderNode(Integer id, Integer newOrder);
 
 }

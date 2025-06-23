@@ -65,7 +65,7 @@ public class ArticleTreeController {
     // 移动结点
     @PostMapping("/{id}/move")
     @CacheEvict(value = {"articleFullTree", "bookFullTree"}, key = "'article:fullTree', 'book:fullTree'")
-    public Result<Void> moveArticle(@PathVariable Long id, @RequestParam Long newParentId) {
+    public Result<Void> moveArticle(@PathVariable Integer id, @RequestParam Integer newParentId) {
         articleTreeService.moveNode(id, newParentId);
         return Result.success();
     }
@@ -74,7 +74,7 @@ public class ArticleTreeController {
     // 调整顺序
     @CacheEvict(value = {"articleFullTree", "bookFullTree"}, key = "'article:fullTree', 'book:fullTree'")
     @PostMapping("/{id}/reorder")
-    public Result<Void> reorderArticle(@PathVariable Long id, @RequestParam Integer newOrder) {
+    public Result<Void> reorderArticle(@PathVariable Integer id, @RequestParam Integer newOrder) {
         articleTreeService.reorderNode(id, newOrder);
         return Result.success();
     }

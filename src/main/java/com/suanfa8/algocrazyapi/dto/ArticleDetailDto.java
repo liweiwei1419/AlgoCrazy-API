@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class ArticleDetailDto {
 
-    private Long id;
+    private Integer id;
 
     private String author;
 
