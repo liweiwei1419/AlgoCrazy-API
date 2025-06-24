@@ -116,12 +116,11 @@ public class CommentController {
         return Result.success(commentIPage);
     }
 
-    // 管理端：添加根据 id 删除评论的接口
-    // @PreAuthorize("hasAnyRole('ADMIN')")
-    // @DeleteMapping("/delete/{id}")
-//    public Result<Boolean> deleteCommentById(@PathVariable Integer id) {
-//        boolean result = commentService.deleteComment(id);
-//        return Result.success(result);
-//    }
+     // 管理端：添加根据 id 删除评论的接口
+     @PreAuthorize("hasAnyRole('ADMIN')")
+     @DeleteMapping("/delete/{id}")
+    public Result<Boolean> deleteCommentById(@PathVariable Integer id) {
+        return Result.success(commentService.removeById(id));
+    }
 
 }
