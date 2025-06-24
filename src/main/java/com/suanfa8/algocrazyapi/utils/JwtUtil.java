@@ -52,7 +52,7 @@ public class JwtUtil {
         User user = (User) userDetails;
         Map<String, Object> claims = new HashMap<>();
         // 添加头像、用户名、邮箱和角色 ID 到 claims 中
-        claims.put("user_id", user.getId());
+        claims.put("user_id", user.getId().toString());
         claims.put("avatar", user.getAvatar());
         claims.put("nickname", user.getNickname());
         claims.put("email", user.getEmail());

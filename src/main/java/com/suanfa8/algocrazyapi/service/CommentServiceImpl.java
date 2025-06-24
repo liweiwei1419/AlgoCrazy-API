@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.suanfa8.algocrazyapi.dto.comment.CommentDeleteDto;
+import com.suanfa8.algocrazyapi.dto.comment.CommentUpdateDto;
 import com.suanfa8.algocrazyapi.entity.Article;
 import com.suanfa8.algocrazyapi.entity.Comment;
 import com.suanfa8.algocrazyapi.entity.User;
@@ -13,6 +15,7 @@ import com.suanfa8.algocrazyapi.utils.DingTalkGroupNotificationUtil;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -124,18 +127,32 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     }
 
     @Override
-    public boolean deleteComment(Integer id) {
-        Comment comment = getById(id);
-        if (comment != null && comment.getParentCommentId() != null) {
-            // 如果是回复评论，减少父评论的回复数量
-            updateReplyCount(comment.getParentCommentId(), -1);
+    public boolean deleteComment(CommentDeleteDto commentDeleteDto) {
+        // 情况 1：它的下面有回复
+        // 查询谁的 parentCommentId 是它
+        LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Comment::getParentCommentId, commentDeleteDto.getCommentId());
+        List<Comment> comments = commentsMapper.selectList(queryWrapper);
+        // 批量删除
+        if (comments!= null &&!comments.isEmpty()) {
+            List<Integer> commentIds = comments.stream().map(Comment::getId).collect(Collectors.toList());
+            commentsMapper.deleteBatchIds(commentIds);
         }
-        return removeById(id);
+        // 情况 2：它只是回复，需要把父评论的回复数 - 1
+        if (commentDeleteDto.getParentCommentId() != null) {
+            updateReplyCount(commentDeleteDto.getParentCommentId(), -1);
+        }
+        return removeById(commentDeleteDto.getCommentId());
     }
 
     @Override
-    public boolean updateComment(Comment comment) {
-        return updateById(comment);
+    public boolean updateComment(CommentUpdateDto commentUpdateDto) {
+        LambdaUpdateWrapper<Comment> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(Comment::getId, commentUpdateDto.getCommentId());
+        updateWrapper.set(Comment::getContent, commentUpdateDto.getContent());
+        updateWrapper.set(true, Comment::getUpdatedAt, LocalDateTime.now());
+        // 调用带 entity 参数的 update 方法
+        return this.update(updateWrapper);
     }
 
     @Override
@@ -151,6 +168,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     public boolean updateReplyCount(Integer commentId, int increment) {
         LambdaUpdateWrapper<Comment> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(Comment::getId, commentId).setSql("reply_count = reply_count + " + increment);
+        updateWrapper.set(true, Comment::getUpdatedAt, LocalDateTime.now());
         return update(updateWrapper);
     }
 

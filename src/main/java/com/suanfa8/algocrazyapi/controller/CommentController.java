@@ -3,6 +3,8 @@ package com.suanfa8.algocrazyapi.controller;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.suanfa8.algocrazyapi.common.Result;
 import com.suanfa8.algocrazyapi.dto.comment.CommentAddDto;
+import com.suanfa8.algocrazyapi.dto.comment.CommentDeleteDto;
+import com.suanfa8.algocrazyapi.dto.comment.CommentUpdateDto;
 import com.suanfa8.algocrazyapi.entity.Comment;
 import com.suanfa8.algocrazyapi.entity.User;
 import com.suanfa8.algocrazyapi.service.ICommentService;
@@ -18,6 +20,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -45,6 +48,7 @@ public class CommentController {
         return Result.success(commentService.getCommentsByArticleId(Integer.parseInt(articleId)));
     }
 
+    // 评论和回复共用
     @Operation(summary = "添加评论")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @PostMapping("/add")
@@ -87,17 +91,19 @@ public class CommentController {
     }
 
     @Operation(summary = "逻辑删除评论")
-    @Parameter(name = "id", required = true, description = "评论 ID")
-    @DeleteMapping("/{id}")
-    public Result<Boolean> deleteComment(@PathVariable Integer id) {
-        boolean result = commentService.deleteComment(id);
+    @DeleteMapping("/delete")
+    public Result<Boolean> deleteComment(@RequestParam("comment_id") Integer commentId, @RequestParam(value = "parent_comment_id", required = false) Integer parentCommentId) {
+        CommentDeleteDto commentDeleteDto = new CommentDeleteDto();
+        commentDeleteDto.setCommentId(commentId);
+        commentDeleteDto.setParentCommentId(parentCommentId);
+        boolean result = commentService.deleteComment(commentDeleteDto);
         return Result.success(result);
     }
 
     @Operation(summary = "修改评论")
     @PutMapping("/update")
-    public Result<Boolean> updateComment(@RequestBody Comment comment) {
-        boolean result = commentService.updateComment(comment);
+    public Result<Boolean> updateComment(@RequestBody CommentUpdateDto commentUpdateDto) {
+        boolean result = commentService.updateComment(commentUpdateDto);
         return Result.success(result);
     }
 
@@ -110,12 +116,12 @@ public class CommentController {
         return Result.success(commentIPage);
     }
 
-    // 添加根据 id 删除评论的接口
-    @PreAuthorize("hasAnyRole('ADMIN')")
-    @DeleteMapping("/delete/{id}")
-    public Result<Boolean> deleteCommentById(@PathVariable Integer id) {
-        boolean result = commentService.deleteComment(id);
-        return Result.success(result);
-    }
+    // 管理端：添加根据 id 删除评论的接口
+    // @PreAuthorize("hasAnyRole('ADMIN')")
+    // @DeleteMapping("/delete/{id}")
+//    public Result<Boolean> deleteCommentById(@PathVariable Integer id) {
+//        boolean result = commentService.deleteComment(id);
+//        return Result.success(result);
+//    }
 
 }

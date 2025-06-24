@@ -2,6 +2,8 @@ package com.suanfa8.algocrazyapi.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.suanfa8.algocrazyapi.dto.comment.CommentDeleteDto;
+import com.suanfa8.algocrazyapi.dto.comment.CommentUpdateDto;
 import com.suanfa8.algocrazyapi.entity.Comment;
 
 import java.util.List;
@@ -14,9 +16,9 @@ public interface ICommentService extends IService<Comment> {
 
     boolean incrementLikeCount(Integer id);
 
-    boolean deleteComment(Integer id);
+    boolean deleteComment(CommentDeleteDto commentDeleteDto);
 
-    boolean updateComment(Comment comment);
+    boolean updateComment(CommentUpdateDto commentUpdateDto);
 
     /**
      * 获取指定评论的回复列表
