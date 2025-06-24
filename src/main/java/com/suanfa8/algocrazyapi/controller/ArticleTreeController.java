@@ -42,6 +42,7 @@ public class ArticleTreeController {
         return Result.success(result);
     }
 
+
     // 用于书本目录
     @GetMapping("/book")
     @Cacheable(value = "bookFullTree", key = "'book:fullTree'", unless = "#result == null")

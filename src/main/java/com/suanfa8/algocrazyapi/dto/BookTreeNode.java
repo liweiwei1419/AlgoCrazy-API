@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.Data;
 import lombok.ToString;
 
+import java.io.Serializable;
 import java.util.List;
 
 // 树结点 DTO
@@ -12,7 +13,7 @@ import java.util.List;
 // 驼峰转下划线
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @ToString
-public class BookTreeNode  {
+public class BookTreeNode implements Serializable {
 
     private String index;
 

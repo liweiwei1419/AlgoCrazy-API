@@ -18,7 +18,7 @@ import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
-public class ArticleTreeServiceImpl  implements IArticleTreeService {
+public class ArticleTreeServiceImpl implements IArticleTreeService {
 
     private final ArticleMapper articleMapper;
 
