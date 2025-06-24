@@ -7,15 +7,15 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.suanfa8.algocrazyapi.common.Result;
 import com.suanfa8.algocrazyapi.common.ResultCode;
-import com.suanfa8.algocrazyapi.dto.ArticleAddDto;
-import com.suanfa8.algocrazyapi.dto.ArticleDetailDto;
-import com.suanfa8.algocrazyapi.dto.ArticleUpdateDto;
 import com.suanfa8.algocrazyapi.dto.OneSentenceSolutionUpdateDto;
 import com.suanfa8.algocrazyapi.dto.SuggestionUpdateDto;
 import com.suanfa8.algocrazyapi.dto.TitleAndIdSelectDto;
+import com.suanfa8.algocrazyapi.dto.article.ArticleAddDto;
+import com.suanfa8.algocrazyapi.dto.article.ArticleDetailDto;
+import com.suanfa8.algocrazyapi.dto.article.ArticleLikeDto;
+import com.suanfa8.algocrazyapi.dto.article.ArticleUpdateDto;
 import com.suanfa8.algocrazyapi.entity.Article;
 import com.suanfa8.algocrazyapi.entity.User;
-import com.suanfa8.algocrazyapi.service.IArticleLikeRecordService;
 import com.suanfa8.algocrazyapi.service.IArticleService;
 import com.suanfa8.algocrazyapi.utils.UploadUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -25,13 +25,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.io.InputStreamResource;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -45,12 +41,10 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Tag(name = "文章")
-@CrossOrigin
 @RequestMapping("/article")
 @RestController
 @Slf4j
@@ -62,11 +56,11 @@ public class ArticleController {
     @Resource
     private UploadUtils uploadUtils;
 
-    @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
-
-    @Autowired
-    private IArticleLikeRecordService articleLikeRecordService;
+//    @Autowired
+//    private RedisTemplate<String, Object> redisTemplate;
+//
+//    @Autowired
+//    private IArticleLikeRecordService articleLikeRecordService;
 
     @Operation(summary = "创建文章")
     @Parameter(name = "article", description = "文章对象", required = true)
@@ -111,7 +105,7 @@ public class ArticleController {
     @Operation(summary = "根据 ID 查询单个文章")
     @Parameter(name = "id", required = true, description = "文章 ID", in = ParameterIn.PATH)
     @GetMapping("/{id}")
-    public Result<Article> getArticleById(@PathVariable Long id) {
+    public Result<Article> getArticleById(@PathVariable Integer id) {
         log.info("查询文章 => {}", id);
         // 先增加阅读量
         articleService.lambdaUpdate().eq(Article::getId, id).setSql("view_count = view_count + 1").update();
@@ -195,13 +189,15 @@ public class ArticleController {
 
 
     @Operation(summary = "文章点赞")
-    @Parameter(name = "id", required = true, description = "文章 ID", in = ParameterIn.PATH)
-    @PostMapping("/{id}/like")
-    public Result<Boolean> incrementLikeCount(@PathVariable Long id) {
-        log.info("文章点赞 => {}", id);
-        boolean result = articleService.incrementLikeCount(id);
-        return Result.success(result);
+    @PostMapping("/incrementLikeCount")
+    public Result<Boolean> incrementLikeCount(@RequestBody ArticleLikeDto articleLikeDto) {
+        Integer articleId = articleLikeDto.getArticleId();
+        log.info("文章点赞 => {}", articleId);
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Long userId = user.getId();
+        return Result.success(articleService.likeArticle(userId, articleId));
     }
+
 
     @GetMapping("/{id}/download")
     public ResponseEntity<InputStreamResource> downloadArticleAsMarkdown(@PathVariable Long id) {
@@ -313,12 +309,4 @@ public class ArticleController {
     }
 
 
-
-
-    @PostMapping("/{articleId}/like")
-    public boolean likeArticle(@PathVariable Long articleId) {
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Long userId = user.getId();
-        return articleLikeRecordService.likeArticle(userId, articleId);
-    }
 }

@@ -1,4 +1,4 @@
-package com.suanfa8.algocrazyapi.dto;
+package com.suanfa8.algocrazyapi.dto.article;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;

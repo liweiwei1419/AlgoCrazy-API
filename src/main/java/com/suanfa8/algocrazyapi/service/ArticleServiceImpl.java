@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.suanfa8.algocrazyapi.entity.Article;
+import com.suanfa8.algocrazyapi.entity.ArticleLikeRecord;
 import com.suanfa8.algocrazyapi.mapper.ArticleMapper;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
@@ -13,6 +14,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -28,6 +30,9 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     @Resource
     private ArticleMapper articleMapper;
+
+    @Resource
+    private IArticleLikeRecordService articleLikeRecordService;
 
     @Override
     public int articleCreate(Article article) {
@@ -45,14 +50,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     @Override
     public Article queryByUrl(String url) {
         return articleMapper.selectOne(new LambdaQueryWrapper<Article>().eq(Article::getUrl, url));
-    }
-
-    @Override
-    public boolean incrementLikeCount(Long id) {
-        // 使用 MyBatis-Plus 的 LambdaUpdateWrapper
-        LambdaUpdateWrapper<Article> updateWrapper = new LambdaUpdateWrapper<>();
-        updateWrapper.eq(Article::getId, id).setSql("like_count = like_count + 1");
-        return this.update(updateWrapper);
     }
 
 
@@ -168,6 +165,26 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             articleMap.put(article.getId(), article);
         }
         return articleMap;
+    }
+
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public boolean likeArticle(Long userId, Integer articleId) {
+        if (articleLikeRecordService.hasUserLikedArticle(userId, articleId)) {
+            return false;
+        }
+        LambdaUpdateWrapper<Article> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(Article::getId, articleId).setSql("like_count = like_count + 1");
+        boolean result = this.update(updateWrapper);
+        if (result) {
+            // 点赞成功，记录用户点赞信息
+            ArticleLikeRecord record = new ArticleLikeRecord();
+            record.setUserId(userId);
+            record.setArticleId(articleId);
+            articleLikeRecordService.save(record);
+        }
+        return result;
     }
 
 }

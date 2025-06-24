@@ -22,8 +22,14 @@ public class ArticleLikeRecord {
     private Long userId;
 
     @TableField("article_id")
-    private Long articleId;
+    private Integer articleId;
 
     @TableField("created_at")
     private LocalDateTime createdAt;
+
+    @TableField("updated_at")
+    private LocalDateTime updatedAt;
+
+    @TableField("is_deleted")
+    private Boolean isDeleted;
 }

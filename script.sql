@@ -85,6 +85,13 @@ CREATE TABLE article_like_records
     created_at TIMESTAMP DEFAULT NOW(),
     UNIQUE (user_id, article_id)                             -- 确保一个用户对一篇文章只能有一条点赞记录
 );
+-- 向 article_like_records 表添加 updated_at 字段，类型为 timestamp with time zone，默认值为当前时间
+ALTER TABLE public.article_like_records
+    ADD COLUMN updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP;
+
+-- 向 article_like_records 表添加 isDelete 字段，类型为 boolean，默认值为 false
+ALTER TABLE public.article_like_records
+    ADD COLUMN is_deleted boolean DEFAULT false;
 
 -- 在 comments 表中添加 reply_count 字段，用于记录回复数量，默认值为 0
 ALTER TABLE comments

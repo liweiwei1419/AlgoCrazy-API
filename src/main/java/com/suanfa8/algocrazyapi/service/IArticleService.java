@@ -21,11 +21,17 @@ public interface IArticleService extends IService<Article> {
 
     Article queryByUrl(String url);
 
-    boolean incrementLikeCount(Long id);
-
     ResponseEntity<InputStreamResource> downloadArticleAsMarkdown(Article article);
 
     Map<Integer, Article> getArticleMapByIds(List<Integer> articleIds);
+
+    /**
+     * 用户对文章点赞
+     * @param userId 用户 ID
+     * @param articleId 文章 ID
+     * @return 点赞成功返回 true，已点赞返回 false
+     */
+    boolean likeArticle(Long userId, Integer articleId);
 
 }
 
