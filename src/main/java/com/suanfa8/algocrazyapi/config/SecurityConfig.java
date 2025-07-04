@@ -45,6 +45,7 @@ public class SecurityConfig {
 
             "/user/register", "/user/send-verification-code", "/user/reset-password",
             "/hello/world",
+            "/hello/days-until-2025-10-30",
             "/hello/greet",
             "/tree/**",
             "/article/**",

@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.Map;
 
 @Tag(name = "项目测试")
@@ -50,6 +52,14 @@ public class HelloWorldController {
     public String world(@RequestBody Map<String, String> request) {
         String name = request.get("name");
         return "hello " + name;
+    }
+
+    @Operation(summary = "计算距离 2025 年 10 月 30 日的天数")
+    @GetMapping("/days-until-2025-10-30")
+    public long daysUntil20251030() {
+        LocalDate targetDate = LocalDate.of(2025, 10, 30);
+        LocalDate currentDate = LocalDate.now();
+        return ChronoUnit.DAYS.between(currentDate, targetDate);
     }
 
 }
