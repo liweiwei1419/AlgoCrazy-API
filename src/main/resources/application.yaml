@@ -103,3 +103,7 @@ dingtalk:
   user-id: 13671597056
   secret: SECf8723bce4b996782f7ea585fd2823bd5a713bc273820b3d6f2a80bb4152ae652
 
+yuque:
+  auth:
+    token: W4VTVSDdHAxefbHKvY3G43fKIT2ZWj9R9lmI4JD9
+

@@ -34,7 +34,6 @@ public class SecurityConfig {
     @Resource
     private JwtRequestFilter jwtRequestFilter;
 
-
     private static final String[] URL_WHITELIST = {
             // 放行的 URL 路径
             "/auth/authenticate",
