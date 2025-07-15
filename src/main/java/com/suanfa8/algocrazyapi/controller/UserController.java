@@ -1,5 +1,7 @@
 package com.suanfa8.algocrazyapi.controller;
 
+import com.suanfa8.algocrazyapi.common.Result;
+import com.suanfa8.algocrazyapi.common.ResultCode;
 import com.suanfa8.algocrazyapi.dto.UserRegisterDTO;
 import com.suanfa8.algocrazyapi.entity.User;
 import com.suanfa8.algocrazyapi.service.IUserService;
@@ -7,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -69,6 +73,20 @@ public class UserController {
         String newPassword = body.get("newPassword");
         userService.resetPassword(token, newPassword);
         return ResponseEntity.ok().build();
+    }
+
+    /**
+     * 根据用户名查询用户信息，不返回密码，用于展示用户主页
+     * @param username 用户名
+     * @return 用户信息
+     */
+    @GetMapping("/homepage/{username}")
+    public Result<User> getUserByUsername(@PathVariable String username) {
+        User user = userService.getUserByUsernameWithoutPassword(username);
+        if (user == null) {
+            return Result.fail(ResultCode.USER_NOT_FOUND);
+        }
+        return Result.success(user);
     }
 
 }

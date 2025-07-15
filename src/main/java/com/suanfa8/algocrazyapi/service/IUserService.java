@@ -21,4 +21,6 @@ public interface IUserService {
     // 新增方法，根据 userId 查询用户名
     String getNicknameById(Long userId);
 
+    User getUserByUsernameWithoutPassword(String username);
+
 }

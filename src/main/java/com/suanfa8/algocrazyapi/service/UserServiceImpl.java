@@ -3,9 +3,7 @@ package com.suanfa8.algocrazyapi.service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.suanfa8.algocrazyapi.config.CustomMd5PasswordEncoder;
-import com.suanfa8.algocrazyapi.dto.UserLoginDTO;
 import com.suanfa8.algocrazyapi.dto.UserRegisterDTO;
-import com.suanfa8.algocrazyapi.dto.UserResetPasswordDTO;
 import com.suanfa8.algocrazyapi.entity.User;
 import com.suanfa8.algocrazyapi.mapper.UserMapper;
 import jakarta.annotation.Resource;
@@ -13,12 +11,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -154,6 +146,14 @@ public class UserServiceImpl implements IUserService {
         queryWrapper.select(User::getNickname).eq(User::getId, userId);
         User user = userMapper.selectOne(queryWrapper);
         return user != null ? user.getNickname() : null;
+    }
+
+    @Override
+    public User getUserByUsernameWithoutPassword(String username) {
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        // 排除密码字段
+        queryWrapper.select(User.class, info -> !"password".equals(info.getColumn())).eq(User::getUsername, username);
+        return userMapper.selectOne(queryWrapper);
     }
 
 }
