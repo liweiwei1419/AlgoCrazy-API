@@ -50,13 +50,16 @@ spring:
     host: smtp.163.com
     username: liwei1419@163.com
     password: KYRWESQJIWXQAOWF
-    port: 25
+    port: 465
     properties:
       mail:
         smtp:
           auth: true
-          starttls:
-            enable: true
+          ssl:
+            enable: true  # 启用 SSL 加密
+          socketFactory:
+            class: javax.net.ssl.SSLSocketFactory  # 指定 SSL 套接字工厂
+          port: 465  # 指定 SSL 端口
 
 
 mybatis-plus:
