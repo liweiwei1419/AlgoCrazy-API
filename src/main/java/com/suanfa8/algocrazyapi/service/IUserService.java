@@ -1,8 +1,6 @@
 package com.suanfa8.algocrazyapi.service;
 
-import com.suanfa8.algocrazyapi.dto.UserLoginDTO;
 import com.suanfa8.algocrazyapi.dto.UserRegisterDTO;
-import com.suanfa8.algocrazyapi.dto.UserResetPasswordDTO;
 import com.suanfa8.algocrazyapi.entity.User;
 
 import java.util.List;
@@ -12,11 +10,11 @@ public interface IUserService {
 
     User register(UserRegisterDTO userRegisterDTO);
 
-    String login(UserLoginDTO userLoginDTO);
+    void changePassword(String username, String oldPassword, String newPassword);
 
-    void resetPassword(UserResetPasswordDTO userResetPasswordDTO);
+    void sendResetPasswordEmail(String usernameOrEmail);
 
-    void sendVerificationCode(String username);
+    void resetPassword(String token, String newPassword);
 
     Map<Long, User> getUserMapByIds(List<Long> userIds);
 

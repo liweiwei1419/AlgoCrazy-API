@@ -19,8 +19,8 @@ public class PasswordTest {
     @Test
     public void testPasswordEncode() {
         CustomMd5PasswordEncoder customMd5PasswordEncoder = new CustomMd5PasswordEncoder(1024);
-        String saltStr = "liweiwei1419";
-        String password = "lw18705046954";
+        String saltStr = "zhouguang";
+        String password = "zhouguang666";
         // String encodedPassword = "00b55404d50be3bbede8d4194058e540";
         String encoded = customMd5PasswordEncoder.passwordEncrypt(password, saltStr);
         System.out.println(encoded);

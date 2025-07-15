@@ -46,6 +46,17 @@ spring:
     secret-key: ACxa2JrShmH8qwGqdC8KRqz9sy5oTtmK8F0NDApE
     url: https://minio.dance8.fun
     bucket-name: algo-crazy
+  mail:
+    host: smtp.163.com
+    username: liwei1419@163.com
+    password: KYRWESQJIWXQAOWF
+    port: 25
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
 
 
 mybatis-plus:
@@ -107,3 +118,5 @@ yuque:
   auth:
     token: W4VTVSDdHAxefbHKvY3G43fKIT2ZWj9R9lmI4JD9
 
+frontend:
+  url: http://localhost:5173

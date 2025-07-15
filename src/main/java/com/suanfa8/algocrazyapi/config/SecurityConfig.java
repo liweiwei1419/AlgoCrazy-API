@@ -42,7 +42,10 @@ public class SecurityConfig {
             "/comment/add",
             "/comment/*/replies",
 
-            "/user/register", "/user/send-verification-code", "/user/reset-password",
+            "/user/register",
+            "/user/forgot-password",
+            "/user/reset-password",
+
             "/hello/world",
             "/hello/days-until-2025-10-30",
             "/hello/greet",

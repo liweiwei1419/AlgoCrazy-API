@@ -42,21 +42,36 @@ public class AuthController {
 
     @RequestMapping(value = "/authenticate", method = RequestMethod.POST)
     public ResponseEntity<?> createAuthenticationToken(@RequestBody AuthenticationRequest authenticationRequest) throws Exception {
-        String username = authenticationRequest.getUsername();
+        String identifier = authenticationRequest.getUsernameOrEmail();
+        String password = authenticationRequest.getPassword();
+        log.info("identifier: {}, password: {}", identifier, password);
+
+        UserDetails userDetails = null;
         try {
-            String password = authenticationRequest.getPassword();
-            log.info("username: {}, password: {}", username, password);
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, username + "@@@@@@" + password));
-        } catch (BadCredentialsException e) {
-            throw new Exception("Incorrect username or password", e);
+            // 先尝试按用户名查找
+            userDetails = userDetailsService.loadUserByUsername(identifier);
+        } catch (Exception e) {
+            try {
+                // 若按用户名查找失败，尝试按邮箱查找
+                userDetails = userDetailsService.loadUserByEmail(identifier);
+            } catch (Exception ignored) {
+                // 若都未找到，抛出异常
+                throw new Exception("Incorrect username, email or password", e);
+            }
         }
-        final UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
+        try {
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userDetails.getUsername(), userDetails.getUsername() + "@@@@@@" + password));
+        } catch (BadCredentialsException e) {
+            throw new Exception("Incorrect username, email or password", e);
+        }
+
         final String jwt = jwtUtil.generateToken(userDetails);
         jwtRedisService.saveJwt(userDetails.getUsername(), jwt);
         return ResponseEntity.ok(new AuthenticationResponse(jwt));
     }
 
-    // @RequestBody LogoutRequest logoutRequest
+
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletRequest request) {
