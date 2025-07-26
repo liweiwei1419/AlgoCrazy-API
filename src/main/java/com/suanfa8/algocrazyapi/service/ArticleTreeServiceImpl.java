@@ -24,14 +24,19 @@ public class ArticleTreeServiceImpl implements IArticleTreeService {
 
     @Override
     public List<BookTreeNode> getBookTree() {
-        // 1. 一次性查询所有结点（不包含 content 大字段）
         List<Article> allArticles = articleMapper.selectAllWithoutContent();
-        // 2. 构建 ID 到结点的映射
         Map<Integer, BookTreeNode> nodeMap = new HashMap<>();
+
         allArticles.forEach(article -> {
             BookTreeNode node = new BookTreeNode();
             BeanUtils.copyProperties(article, node);
             node.setIndex(article.getId().toString());
+
+            // 设置完整URL
+            if (!article.getIsFolder()) {
+                node.setUrl(buildFullUrl(article, allArticles));
+            }
+
             nodeMap.put(article.getId(), node);
         });
         // 3. 构建树结构
@@ -58,13 +63,23 @@ public class ArticleTreeServiceImpl implements IArticleTreeService {
     // 获取完整树形结构
     @Override
     public List<ArticleTreeNode> getFullTree() {
-        // 1. 一次性查询所有结点（不包含 content 大字段）
+        // 1. 一次性查询所有结点
         List<Article> allArticles = articleMapper.selectAllWithoutContent();
+
         // 2. 构建 ID 到结点的映射
         Map<Integer, ArticleTreeNode> nodeMap = new HashMap<>();
         allArticles.forEach(article -> {
             ArticleTreeNode node = new ArticleTreeNode();
             BeanUtils.copyProperties(article, node);
+
+            // 如果是文件夹，URL设置为空或特定标识
+            if (article.getIsFolder()) {
+                node.setUrl(null);
+            } else {
+                // 非文件夹文章，拼接完整URL路径
+                node.setUrl(buildFullUrl(article, allArticles));
+            }
+
             nodeMap.put(article.getId(), node);
         });
         // 3. 构建树结构
@@ -146,6 +161,37 @@ public class ArticleTreeServiceImpl implements IArticleTreeService {
             sibling.setDisplayOrder(currentOrder);
             articleMapper.updateById(sibling);
             currentOrder++;
+        }
+    }
+
+    private String buildFullUrl(Article article, List<Article> allArticles) {
+        if (article.getParentId() == null || article.getParentId() == 0) {
+            return article.getUrl();
+        }
+
+        // 递归查找父节点URL
+        StringBuilder fullUrl = new StringBuilder();
+        buildParentUrl(article, allArticles, fullUrl);
+        fullUrl.append(article.getUrl());
+
+        return fullUrl.toString();
+    }
+
+    private void buildParentUrl(Article article, List<Article> allArticles, StringBuilder urlBuilder) {
+        if (article.getParentId() == null || article.getParentId() == 0) {
+            return;
+        }
+
+        // 查找父节点
+        Article parent = allArticles.stream()
+            .filter(a -> a.getId().equals(article.getParentId()))
+            .findFirst()
+            .orElse(null);
+
+        if (parent != null) {
+            // 递归处理父节点
+            buildParentUrl(parent, allArticles, urlBuilder);
+            urlBuilder.append(parent.getUrl()).append("/");
         }
     }
 

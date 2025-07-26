@@ -6,12 +6,13 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.HttpEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
+
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,7 +27,6 @@ public class YuqueDocumentController {
     @Value("${yuque.auth.token}")
     private String yuqueAuthToken;
 
-
     @Operation(summary = "根据知识库 ID 获取知识库目录")
     @Parameter(name = "repo_id", required = true, description = "知识库 ID", in = ParameterIn.PATH)
     @RequestMapping("/getTree/{repo_id}")
@@ -38,7 +38,7 @@ public class YuqueDocumentController {
             // 执行请求
             try (CloseableHttpResponse response = httpClient.execute(httpGet)) {
                 // 获取响应状态码
-                int statusCode = response.getStatusLine().getStatusCode();
+                int statusCode = response.getCode();
                 log.info("Status code: {}", statusCode);
                 // 获取响应内容
                 HttpEntity entity = response.getEntity();
@@ -70,7 +70,7 @@ public class YuqueDocumentController {
             // 执行请求
             try (CloseableHttpResponse response = httpClient.execute(httpGet)) {
                 // 获取响应状态码
-                int statusCode = response.getStatusLine().getStatusCode();
+                int statusCode = response.getCode();
                 log.info("Status code: {}", statusCode);
 
                 // 获取响应内容
