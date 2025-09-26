@@ -1,16 +1,17 @@
 package com.suanfa8.algocrazyapi.common;
 
 public class Result<T> {
-    private int code;       // 状态码
-    private String msg;     // 消息
-    private T data;         // 返回数据
 
-    // 成功结果（无数据）
+    private int code;
+
+    private String msg;
+
+    private T data;
+
     public static <T> Result<T> success() {
         return success(null);
     }
 
-    // 成功结果（有数据）
     public static <T> Result<T> success(T data) {
         Result<T> result = new Result<>();
         result.setCode(ResultCode.SUCCESS.getCode());
@@ -19,7 +20,6 @@ public class Result<T> {
         return result;
     }
 
-    // 失败结果
     public static <T> Result<T> fail(int code, String msg) {
         Result<T> result = new Result<>();
         result.setCode(code);
@@ -27,12 +27,10 @@ public class Result<T> {
         return result;
     }
 
-    // 失败结果（使用预定义错误码）
     public static <T> Result<T> fail(ResultCode resultCode) {
         return fail(resultCode.getCode(), resultCode.getMessage());
     }
 
-    // getter 和 setter 方法
     public int getCode() {
         return code;
     }

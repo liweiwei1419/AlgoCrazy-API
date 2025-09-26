@@ -1,8 +1,5 @@
 package com.suanfa8.algocrazyapi.config;
 
-/**
- * @Description http请求状态
- */
 public class HttpStatus {
 
     /**

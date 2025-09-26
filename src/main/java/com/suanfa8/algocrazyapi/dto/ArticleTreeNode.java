@@ -12,5 +12,5 @@ import java.util.List;
 public class ArticleTreeNode extends Article {
     
     private List<ArticleTreeNode> children;
-    
+
 }

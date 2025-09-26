@@ -53,31 +53,6 @@ public class SecurityConfig {
             "/tree/**",
             "/article/**",
             "/file/**"
-//            "/article/liwei", "/user/register", "/ok", "/user/login", "/messages/**", "/logout", "/captcha", "/favicon.ico",
-//            // 下面是 swagger-ui 放行的页面
-//            "/doc.html","/swagger-ui/**", "/webjars/**", "/v2/**", "/swagger-resources/**",
-//            "/v3/**",  // knife4j 相关放行
-//            // 下面是算法吧的相关放行
-//            "/article/**",
-//            "/content/**",
-//            "/essay/**",
-//            "/essay/**",
-//            "/catalogue/**",
-//            "/redis/catalogue",
-//            "/redis/category/",
-//            "/category",
-//            "/categories",
-//            "/tags/**",
-//            "/comment/**",
-//            "/increaseLikeNum/**",
-//            "/increaseDislikeNum/**",
-//            "/message/**",
-//            "/user/**",
-//            "/danmu/**",
-//            "/video/**",
-//            "/common-problem/**",
-//            "/update-history/**",
-//            "/website-introduction/**",
     };
 
     /**
