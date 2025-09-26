@@ -13,7 +13,9 @@ public class CorsConfig {
     public CorsFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
         // 允许所有域名进行跨域调用
-        config.addAllowedOriginPattern("*");
+        // config.addAllowedOriginPattern("*");
+        // 允许的域名，不要用"*"，用具体域名
+        config.addAllowedOrigin("https://crazy.suanfa8.com");
         // 允许任何请求头
         config.addAllowedHeader("*");
         // 允许任何方法（POST、GET 等）
