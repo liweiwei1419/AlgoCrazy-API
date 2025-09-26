@@ -5,7 +5,7 @@
 # 使用方法：./deploy_algocrazy.sh
 
 # 设置变量
-PROJECT_DIR="/Users/liwei/Downloads/ws/algo-crazy/AlgoCrazy-API"  # 项目根目录
+PROJECT_DIR="/Users/liwei/Downloads/ws-suanfa8/algo-crazy/AlgoCrazy-API"  # 项目根目录
 JAR_NAME="algo-crazy-api-0.0.1-SNAPSHOT.jar"
 LOCAL_TARGET_DIR="$PROJECT_DIR/target"
 REMOTE_SERVER="dance8.fun"
