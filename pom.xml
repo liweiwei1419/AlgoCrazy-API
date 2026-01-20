@@ -144,6 +144,13 @@
             <artifactId>httpclient5</artifactId>
             <version>5.5</version>
         </dependency>
+
+        <!-- 在<dependencies>标签内添加OpenCSV依赖 -->
+        <dependency>
+            <groupId>com.opencsv</groupId>
+            <artifactId>opencsv</artifactId>
+            <version>5.7.1</version>
+        </dependency>
     </dependencies>
 
     <dependencyManagement>

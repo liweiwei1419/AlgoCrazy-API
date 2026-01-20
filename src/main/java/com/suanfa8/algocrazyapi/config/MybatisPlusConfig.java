@@ -1,6 +1,8 @@
 package com.suanfa8.algocrazyapi.config;
 
 import com.baomidou.mybatisplus.annotation.DbType;
+import com.baomidou.mybatisplus.autoconfigure.ConfigurationCustomizer;
+import com.baomidou.mybatisplus.core.handlers.MybatisEnumTypeHandler;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.BlockAttackInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
@@ -23,5 +25,16 @@ public class MybatisPlusConfig {
         interceptor.addInnerInterceptor(new BlockAttackInnerInterceptor());
         interceptor.addInnerInterceptor(new PaginationInnerInterceptor(DbType.POSTGRE_SQL)); // 如果配置多个插件, 切记分页最后添加
         return interceptor;
+    }
+
+
+    /**
+     * 配置枚举类型处理器
+     */
+    @Bean
+    public ConfigurationCustomizer configurationCustomizer() {
+        return configuration -> {
+            configuration.setDefaultEnumTypeHandler(MybatisEnumTypeHandler.class);
+        };
     }
 }

@@ -105,3 +105,37 @@ ALTER TABLE comments ADD COLUMN reply_to_user_id BIGINT REFERENCES suanfa8_user(
 -- 为 comments 表添加 reply_to_comment_id 字段，用于记录回复的评论 ID
 ALTER TABLE comments
     ADD COLUMN reply_to_comment_id INTEGER REFERENCES comments (id);
+
+-- 创建LeetCode题目表
+CREATE TABLE IF NOT EXISTS leetcode_problems (
+                                                 id INTEGER PRIMARY KEY,
+                                                 title VARCHAR(255) NOT NULL,
+                                                 title_slug VARCHAR(255) NOT NULL,
+                                                 difficulty VARCHAR(20) NOT NULL,
+                                                 paid_only VARCHAR(10) NOT NULL,
+                                                 url VARCHAR(255) NOT NULL,
+                                                 created_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                                 updated_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 创建唯一索引
+CREATE UNIQUE INDEX IF NOT EXISTS idx_leetcode_problems_id ON leetcode_problems(id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_leetcode_problems_title_slug ON leetcode_problems(title_slug);
+
+
+-- 修改难度字段类型为VARCHAR(20)，用于存储枚举值
+ALTER TABLE leetcode_problems
+    ALTER COLUMN difficulty TYPE VARCHAR(20)
+        USING (
+        CASE difficulty
+            WHEN '简单' THEN 'easy'
+            WHEN '中等' THEN 'medium'
+            WHEN '困难' THEN 'hard'
+            ELSE difficulty
+            END
+        );
+
+-- 修改是否会员题字段类型为BOOLEAN
+ALTER TABLE leetcode_problems
+    ALTER COLUMN paid_only TYPE BOOLEAN
+        USING (paid_only = '是');
