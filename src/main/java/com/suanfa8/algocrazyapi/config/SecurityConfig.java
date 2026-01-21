@@ -52,7 +52,9 @@ public class SecurityConfig {
             "/hello/greet",
             "/tree/**",
             "/article/**",
-            "/file/**"
+            "/file/**",
+
+            "/leetcode/problems/**"
     };
 
     /**

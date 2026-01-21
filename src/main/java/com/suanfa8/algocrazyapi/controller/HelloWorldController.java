@@ -30,7 +30,7 @@ public class HelloWorldController {
     @Operation(summary = "测试 hello world")
     @GetMapping("/world")
     public String world() {
-        return "Hello from SpringBoot!";
+        return "Hello suanfa8!";
     }
 
 
