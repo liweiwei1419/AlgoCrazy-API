@@ -50,6 +50,9 @@ public class AuthController {
         try {
             // 先尝试按用户名查找
             userDetails = userDetailsService.loadUserByUsername(identifier);
+
+            System.out.println("按用户名查找成功: " + userDetails);
+
         } catch (Exception e) {
             try {
                 // 若按用户名查找失败，尝试按邮箱查找
@@ -68,6 +71,9 @@ public class AuthController {
 
         final String jwt = jwtUtil.generateToken(userDetails);
         jwtRedisService.saveJwt(userDetails.getUsername(), jwt);
+
+        System.out.println("jwt: " + jwt);
+
         return ResponseEntity.ok(new AuthenticationResponse(jwt));
     }
 

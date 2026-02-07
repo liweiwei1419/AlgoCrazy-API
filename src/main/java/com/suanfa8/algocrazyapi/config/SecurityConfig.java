@@ -54,7 +54,21 @@ public class SecurityConfig {
             "/article/**",
             "/file/**",
 
-            "/leetcode/problems/**"
+            "/leetcode/problems/**",
+
+            "/message/**",
+
+            // 文档相关的 URL 路径
+            "/doc.html",
+
+            "/swagger-ui/**",
+            "/swagger-ui.html",
+            "/v3/api-docs/**",
+            "/webjars/**",
+            "/swagger-resources/**",
+            "/favicon.ico",
+            // Knife4j文档访问路径
+            "/knife4j/**"
     };
 
     /**

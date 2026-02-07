@@ -1,3 +1,35 @@
+-- 创建数据库
+CREATE DATABASE algo_crazy_db;
+
+CREATE TABLE articles (
+                          id SERIAL PRIMARY KEY,
+                          author VARCHAR(255) NOT NULL,                     -- 作者名称
+                          title VARCHAR(255) NOT NULL,                      -- 文章标题
+                          content TEXT NOT NULL,                            -- 文章内容
+                          category VARCHAR(50),                             -- 文章分类
+                          tags VARCHAR(50)[],                               -- 文章标签数组
+                          url VARCHAR(255),                                 -- 新增：文章URL
+                          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  -- 创建时间
+                          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  -- 更新时间
+                          like_count INTEGER DEFAULT 0,                     -- 点赞数
+                          view_count INTEGER DEFAULT 0,                     -- 阅读数
+                          is_deleted BOOLEAN DEFAULT FALSE,                 -- 逻辑删除标志
+                          deleted_at TIMESTAMP               -- 删除时间(可选)
+);
+
+-- 为URL字段添加唯一约束（可选）
+CREATE UNIQUE INDEX idx_articles_url ON articles(url) WHERE url IS NOT NULL;
+
+-- 为URL字段添加索引（可选）
+CREATE INDEX idx_articles_url ON articles(url);
+
+
+ALTER TABLE articles ADD COLUMN parent_id INTEGER REFERENCES articles(id); -- 父级文章ID
+ALTER TABLE articles ADD COLUMN display_order INTEGER DEFAULT 0; -- 同级显示顺序
+ALTER TABLE articles ADD COLUMN path VARCHAR(255) DEFAULT ''; -- 路径(如"1,5,12"表示1→5→12)
+ALTER TABLE articles ADD COLUMN is_folder BOOLEAN DEFAULT FALSE; -- 是否为文件夹
+
+
 -- 创建算法分类常量表
 CREATE TABLE algorithm_categories
 (
@@ -139,3 +171,59 @@ ALTER TABLE leetcode_problems
 ALTER TABLE leetcode_problems
     ALTER COLUMN paid_only TYPE BOOLEAN
         USING (paid_only = '是');
+
+
+
+-- 创建表
+CREATE TABLE IF NOT EXISTS message_board (
+                                             id BIGSERIAL PRIMARY KEY,
+                                             nickname VARCHAR(100) NOT NULL,
+                                             email VARCHAR(100) NOT NULL,
+                                             avatar VARCHAR(255) DEFAULT '',
+                                             content TEXT NOT NULL,
+                                             status INTEGER DEFAULT 0 NOT NULL,
+                                             reply_content TEXT DEFAULT '',
+                                             reply_time TIMESTAMP WITH TIME ZONE DEFAULT NULL,
+                                             created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                                             updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                                             is_deleted BOOLEAN DEFAULT FALSE NOT NULL
+);
+
+-- 添加表注释
+COMMENT ON TABLE message_board IS '留言板表';
+
+-- 添加列注释
+COMMENT ON COLUMN message_board.id IS '主键ID';
+COMMENT ON COLUMN message_board.nickname IS '昵称';
+COMMENT ON COLUMN message_board.email IS '邮箱';
+COMMENT ON COLUMN message_board.avatar IS '头像';
+COMMENT ON COLUMN message_board.content IS '留言内容';
+COMMENT ON COLUMN message_board.status IS '状态：0-待回复，1-已回复';
+COMMENT ON COLUMN message_board.reply_content IS '回复内容';
+COMMENT ON COLUMN message_board.reply_time IS '回复时间';
+COMMENT ON COLUMN message_board.created_at IS '创建时间';
+COMMENT ON COLUMN message_board.updated_at IS '更新时间';
+COMMENT ON COLUMN message_board.is_deleted IS '是否删除';
+
+-- 创建索引
+CREATE INDEX IF NOT EXISTS idx_message_board_created_at ON message_board(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_message_board_status ON message_board(status);
+CREATE INDEX IF NOT EXISTS idx_message_board_is_deleted ON message_board(is_deleted);
+
+-- 修改message_board表的时间类型（从带时区改为不带时区）
+-- 修改reply_time列
+ALTER TABLE message_board
+    ALTER COLUMN reply_time TYPE TIMESTAMP
+        USING reply_time AT TIME ZONE 'UTC';
+
+-- 修改created_at列（带默认值）
+ALTER TABLE message_board
+    ALTER COLUMN created_at TYPE TIMESTAMP
+        USING created_at AT TIME ZONE 'UTC',
+    ALTER COLUMN created_at SET DEFAULT CURRENT_TIMESTAMP;
+
+-- 修改updated_at列（带默认值）
+ALTER TABLE message_board
+    ALTER COLUMN updated_at TYPE TIMESTAMP
+        USING updated_at AT TIME ZONE 'UTC',
+    ALTER COLUMN updated_at SET DEFAULT CURRENT_TIMESTAMP;
