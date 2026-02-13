@@ -43,4 +43,5 @@ public class CosConfig {
     public COSClient cosClient(COSCredentials cosCredentials, ClientConfig clientConfig) {
         return new COSClient(cosCredentials, clientConfig);
     }
+
 }

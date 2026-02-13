@@ -1,10 +1,10 @@
-package com.suanfa8.algocrazyapi.service;
+package com.suanfa8.algocrazyapi.service.impl;
 
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.suanfa8.algocrazyapi.dto.ArticleTreeNode;
 import com.suanfa8.algocrazyapi.dto.BookTreeNode;
 import com.suanfa8.algocrazyapi.entity.Article;
 import com.suanfa8.algocrazyapi.mapper.ArticleMapper;
+import com.suanfa8.algocrazyapi.service.IArticleTreeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;

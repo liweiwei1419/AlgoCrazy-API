@@ -1,7 +1,7 @@
 package com.suanfa8.algocrazyapi.utils;
 
 import com.suanfa8.algocrazyapi.entity.User;
-import com.suanfa8.algocrazyapi.service.JwtRedisService;
+import com.suanfa8.algocrazyapi.service.impl.JwtRedisService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;

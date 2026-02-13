@@ -45,6 +45,12 @@ public class Article {
     @TableField("tags")
     private List<String> tags;
 
+    /**
+     * 文章关联的标签列表（非数据库字段）
+     */
+    @TableField(exist = false)
+    private List<Label> tagList;
+
     @TableField("url")
     private String url;
 

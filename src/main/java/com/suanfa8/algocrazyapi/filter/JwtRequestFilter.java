@@ -1,10 +1,10 @@
 package com.suanfa8.algocrazyapi.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.suanfa8.algocrazyapi.exception.JwtExpiredException;
-import com.suanfa8.algocrazyapi.service.UserDetailsServiceImpl;
+import com.suanfa8.algocrazyapi.service.impl.UserDetailsServiceImpl;
 import com.suanfa8.algocrazyapi.utils.JwtUtil;
 import io.jsonwebtoken.ExpiredJwtException;
+import jakarta.annotation.Resource;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -34,7 +34,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     @Autowired
     private JwtUtil jwtUtil;
 
-    @Autowired
+    @Resource
     private ObjectMapper objectMapper;
 
     @Override

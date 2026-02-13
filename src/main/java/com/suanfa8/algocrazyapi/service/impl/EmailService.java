@@ -1,4 +1,4 @@
-package com.suanfa8.algocrazyapi.service;
+package com.suanfa8.algocrazyapi.service.impl;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;

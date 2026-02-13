@@ -1,7 +1,7 @@
 package com.suanfa8.algocrazyapi.config;
 
 import com.suanfa8.algocrazyapi.filter.JwtRequestFilter;
-import com.suanfa8.algocrazyapi.service.UserDetailsServiceImpl;
+import com.suanfa8.algocrazyapi.service.impl.UserDetailsServiceImpl;
 import jakarta.annotation.Resource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -38,41 +38,20 @@ public class SecurityConfig {
             // 放行的 URL 路径
             "/auth/authenticate",
             // 添加退出登录接口路径
-            "/comment/comments",
-            "/comment/add",
-            "/comment/*/replies",
+            "/comment/comments", "/comment/add", "/comment/*/replies", "/user/register", "/user/forgot-password", "/user/reset-password", "/user/homepage/**", "/hello/world", "/hello/days-until-2025-10-30", "/hello/greet", "/tree/**", "/article/**", "/file/**", "/leetcode/problems/**", "/message/**", "/algorithm-category/**",
+            // Knife4j 文档访问路径
+            "/v3/api-docs", "/v3/api-docs/**",    // API 描述文档的 JSON 数据
+            "/swagger-ui/**",     // Swagger UI 的所有资源（HTML, JS, CSS）
+            "/swagger-ui.html",    // Swagger UI 主页面,
+            "/webjars/**",           // Swagger 可能需要的静态资源
+            "/swagger-resources/**",    // Swagger 资源
+            "/doc.html"     // Knife4j 主页
 
-            "/user/register",
-            "/user/forgot-password",
-            "/user/reset-password",
-            "/user/homepage/**",
-
-            "/hello/world",
-            "/hello/days-until-2025-10-30",
-            "/hello/greet",
-            "/tree/**",
-            "/article/**",
-            "/file/**",
-
-            "/leetcode/problems/**",
-
-            "/message/**",
-
-            // 文档相关的 URL 路径
-            "/doc.html",
-
-            "/swagger-ui/**",
-            "/swagger-ui.html",
-            "/v3/api-docs/**",
-            "/webjars/**",
-            "/swagger-resources/**",
-            "/favicon.ico",
-            // Knife4j文档访问路径
-            "/knife4j/**"
     };
 
     /**
      * 配置密码编码器
+     *
      * @return BCryptPasswordEncoder 实例
      */
     @Bean
@@ -82,6 +61,7 @@ public class SecurityConfig {
 
     /**
      * 配置认证提供者
+     *
      * @return DaoAuthenticationProvider 实例
      */
     @Bean
@@ -94,6 +74,7 @@ public class SecurityConfig {
 
     /**
      * 配置认证管理器
+     *
      * @param config 认证配置
      * @return AuthenticationManager 实例
      * @throws Exception 异常
@@ -105,22 +86,14 @@ public class SecurityConfig {
 
     /**
      * 配置安全过滤器链
+     *
      * @param http HttpSecurity 对象
      * @return SecurityFilterChain 实例
      * @throws Exception 异常
      */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(URL_WHITELIST).permitAll()
-                        .anyRequest().authenticated()
-                )
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
+        http.cors(cors -> cors.configurationSource(corsConfigurationSource())).csrf(csrf -> csrf.disable()).authorizeHttpRequests(auth -> auth.requestMatchers(URL_WHITELIST).permitAll().anyRequest().authenticated()).sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 // .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 

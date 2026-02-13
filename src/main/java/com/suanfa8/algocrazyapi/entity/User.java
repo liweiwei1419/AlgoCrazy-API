@@ -46,7 +46,7 @@ public class User implements UserDetails {
 
     @TableField("is_deleted")
     @TableLogic
-    private Boolean isDeleted = false;
+    private Boolean deleted = false;
 
 
     @JsonSerialize(using = LocalDateTimeSerializer.class)
@@ -93,7 +93,7 @@ public class User implements UserDetails {
     @Override
     public boolean isEnabled() {
         // 假设 deleted 为 0 表示用户启用
-        return !isDeleted;
+        return !deleted;
     }
 
 }

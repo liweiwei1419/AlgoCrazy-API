@@ -1,5 +1,6 @@
-package com.suanfa8.algocrazyapi.service;
+package com.suanfa8.algocrazyapi.service.impl;
 
+import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;

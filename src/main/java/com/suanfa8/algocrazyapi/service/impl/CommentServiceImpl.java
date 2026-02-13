@@ -1,4 +1,4 @@
-package com.suanfa8.algocrazyapi.service;
+package com.suanfa8.algocrazyapi.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -11,8 +11,12 @@ import com.suanfa8.algocrazyapi.entity.Article;
 import com.suanfa8.algocrazyapi.entity.Comment;
 import com.suanfa8.algocrazyapi.entity.User;
 import com.suanfa8.algocrazyapi.mapper.CommentMapper;
+import com.suanfa8.algocrazyapi.service.IArticleService;
+import com.suanfa8.algocrazyapi.service.ICommentService;
+import com.suanfa8.algocrazyapi.service.IUserService;
 import com.suanfa8.algocrazyapi.utils.DingTalkGroupNotificationUtil;
 import jakarta.annotation.Resource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -27,16 +31,16 @@ import java.util.stream.Collectors;
 @Service
 public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> implements ICommentService {
 
-    @Resource
+    @Autowired
     private CommentMapper commentsMapper;
 
-    @Resource
+    @Autowired
     private DingTalkGroupNotificationUtil dingTalkGroupNotificationUtil;
 
     /**
      * 注入用户服务
      */
-    @Resource
+    @Autowired
     private IUserService userService;
 
     /**

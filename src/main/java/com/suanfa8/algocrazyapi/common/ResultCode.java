@@ -23,4 +23,5 @@ public enum ResultCode {
     public String getMessage() {
         return message;
     }
+
 }

@@ -1,4 +1,4 @@
-package com.suanfa8.algocrazyapi.service;
+package com.suanfa8.algocrazyapi.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -6,6 +6,7 @@ import com.suanfa8.algocrazyapi.config.CustomMd5PasswordEncoder;
 import com.suanfa8.algocrazyapi.dto.UserRegisterDTO;
 import com.suanfa8.algocrazyapi.entity.User;
 import com.suanfa8.algocrazyapi.mapper.UserMapper;
+import com.suanfa8.algocrazyapi.service.IUserService;
 import jakarta.annotation.Resource;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,13 +25,13 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class UserServiceImpl implements IUserService {
 
-    @Resource
+    @Autowired
     private UserMapper userMapper;
 
-    @Resource
+    @Autowired
     private CustomMd5PasswordEncoder passwordEncoder;
 
-    @Resource
+    @Autowired
     private EmailService emailService;
 
     @Value("${frontend.url}") // 你的前端地址

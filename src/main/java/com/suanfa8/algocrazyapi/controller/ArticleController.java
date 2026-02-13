@@ -56,25 +56,32 @@ public class ArticleController {
     @Resource
     private UploadUtils uploadUtils;
 
-//    @Autowired
-//    private RedisTemplate<String, Object> redisTemplate;
-//
-//    @Autowired
-//    private IArticleLikeRecordService articleLikeRecordService;
 
     @Operation(summary = "创建文章")
     @Parameter(name = "article", description = "文章对象", required = true)
     @PostMapping("/create")
     public Boolean articleCreate(@RequestBody ArticleAddDto articleAddDto) {
+        System.out.println("22222222");
         log.info("创建文章 => {}", articleAddDto);
         Article article = new Article();
         article.setAuthor(articleAddDto.getAuthor());
         article.setTitle(articleAddDto.getTitle());
         article.setCategory(articleAddDto.getCategory());
         article.setContent(articleAddDto.getContent());
-        article.setParentId(Integer.parseInt(articleAddDto.getParentId()));
+
+        // 处理 parentId，为空时设置为 null
+        if (StringUtils.isEmpty(articleAddDto.getParentId())) {
+            article.setParentId(null);
+        } else {
+            article.setParentId(Integer.parseInt(articleAddDto.getParentId()));
+        }
+
         article.setSourceUrl(articleAddDto.getSourceUrl());
         article.setSolutionUrl(articleAddDto.getSolutionUrl());
+
+        System.out.println("111111111");
+        System.out.println(article);
+
         return articleService.articleCreate(article) == 1;
     }
 

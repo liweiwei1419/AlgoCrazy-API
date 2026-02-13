@@ -1,17 +1,17 @@
 package com.suanfa8.algocrazyapi.config;
 
 import com.baomidou.mybatisplus.annotation.DbType;
-import com.baomidou.mybatisplus.autoconfigure.ConfigurationCustomizer;
-import com.baomidou.mybatisplus.core.handlers.MybatisEnumTypeHandler;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.BlockAttackInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
+import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @EnableTransactionManagement
 @Configuration
+@MapperScan("com.suanfa8.algocrazyapi.mapper")
 public class MybatisPlusConfig {
 
     /**
@@ -27,14 +27,4 @@ public class MybatisPlusConfig {
         return interceptor;
     }
 
-
-    /**
-     * 配置枚举类型处理器
-     */
-    @Bean
-    public ConfigurationCustomizer configurationCustomizer() {
-        return configuration -> {
-            configuration.setDefaultEnumTypeHandler(MybatisEnumTypeHandler.class);
-        };
-    }
 }

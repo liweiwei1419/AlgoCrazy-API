@@ -2,9 +2,8 @@ package com.suanfa8.algocrazyapi.controller;
 
 import com.suanfa8.algocrazyapi.auth.AuthenticationRequest;
 import com.suanfa8.algocrazyapi.auth.AuthenticationResponse;
-import com.suanfa8.algocrazyapi.dto.LogoutRequest;
-import com.suanfa8.algocrazyapi.service.JwtRedisService;
-import com.suanfa8.algocrazyapi.service.UserDetailsServiceImpl;
+import com.suanfa8.algocrazyapi.service.impl.JwtRedisService;
+import com.suanfa8.algocrazyapi.service.impl.UserDetailsServiceImpl;
 import com.suanfa8.algocrazyapi.utils.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;

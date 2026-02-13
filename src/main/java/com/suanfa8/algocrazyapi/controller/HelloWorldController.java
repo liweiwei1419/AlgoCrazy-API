@@ -33,32 +33,4 @@ public class HelloWorldController {
         return "Hello suanfa8!";
     }
 
-
-    @Operation(summary = "测试资源受限方法")
-    @GetMapping("/download")
-    @PreAuthorize("hasRole('USER')")
-    public String download() {
-        SecurityContext securityContext = SecurityContextHolder.getContext();
-        if (securityContext.getAuthentication() != null) {
-            User user = (User) securityContext.getAuthentication().getPrincipal();
-            return "Hello " + user.getUsername() + "!";
-        }
-        return "Hello Download!";
-    }
-
-
-    @PostMapping ("/greet")
-    public String world(@RequestBody Map<String, String> request) {
-        String name = request.get("name");
-        return "hello " + name;
-    }
-
-    @Operation(summary = "计算距离 2025 年 10 月 30 日的天数")
-    @GetMapping("/days-until-2025-10-30")
-    public long daysUntil20251030() {
-        LocalDate targetDate = LocalDate.of(2025, 10, 30);
-        LocalDate currentDate = LocalDate.now();
-        return ChronoUnit.DAYS.between(currentDate, targetDate);
-    }
-
 }

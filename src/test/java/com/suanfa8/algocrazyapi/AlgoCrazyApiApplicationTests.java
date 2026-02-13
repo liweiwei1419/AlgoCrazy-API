@@ -1,16 +1,21 @@
 package com.suanfa8.algocrazyapi;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.suanfa8.algocrazyapi.dto.ArticleTreeNode;
 import com.suanfa8.algocrazyapi.entity.Article;
 import com.suanfa8.algocrazyapi.entity.User;
 import com.suanfa8.algocrazyapi.mapper.ArticleMapper;
 import com.suanfa8.algocrazyapi.mapper.UserMapper;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
 
+@ActiveProfiles("local")
 @SpringBootTest
 public class AlgoCrazyApiApplicationTests {
 
@@ -20,6 +25,13 @@ public class AlgoCrazyApiApplicationTests {
     @Resource
     private ArticleMapper articleMapper;
 
+    private String CACHE_KEY = "article:fullTree";
+
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
+
+
+    // 测试数据库
     @Test
     void contextLoads() {
         String username = "liweiwei1419";
@@ -28,7 +40,7 @@ public class AlgoCrazyApiApplicationTests {
     }
 
     @Test
-    public void test(){
+    public void test() {
         // 构建查询条件，查询 content 字段包含 ::open 的记录
         QueryWrapper<Article> queryWrapper = new QueryWrapper<>();
         queryWrapper.like("content", "::open");
@@ -47,6 +59,13 @@ public class AlgoCrazyApiApplicationTests {
         }
     }
 
+
+    // 测试 redis
+    @Test
+    public void testRedis() {
+        List<ArticleTreeNode> fullTree = (List<ArticleTreeNode>) redisTemplate.opsForValue().get(CACHE_KEY);
+        System.out.println(fullTree.size());
+    }
 
 
 }

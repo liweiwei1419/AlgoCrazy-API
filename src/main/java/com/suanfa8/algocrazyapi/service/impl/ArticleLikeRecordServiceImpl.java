@@ -1,17 +1,16 @@
-package com.suanfa8.algocrazyapi.service;
+package com.suanfa8.algocrazyapi.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.suanfa8.algocrazyapi.dto.article.ArticleLikeInfoDto;
 import com.suanfa8.algocrazyapi.entity.Article;
 import com.suanfa8.algocrazyapi.entity.ArticleLikeRecord;
 import com.suanfa8.algocrazyapi.mapper.ArticleLikeRecordMapper;
 import com.suanfa8.algocrazyapi.mapper.ArticleMapper;
+import com.suanfa8.algocrazyapi.service.IArticleLikeRecordService;
 import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,8 +18,7 @@ import java.util.stream.Collectors;
 @Service
 public class ArticleLikeRecordServiceImpl extends ServiceImpl<ArticleLikeRecordMapper, ArticleLikeRecord> implements IArticleLikeRecordService {
 
-
-    @Resource
+    @Autowired
     private ArticleMapper articleMapper;
 
     @Override

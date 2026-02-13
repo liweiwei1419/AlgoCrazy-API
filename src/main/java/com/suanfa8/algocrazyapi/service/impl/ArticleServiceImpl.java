@@ -1,4 +1,4 @@
-package com.suanfa8.algocrazyapi.service;
+package com.suanfa8.algocrazyapi.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -7,8 +7,11 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.suanfa8.algocrazyapi.entity.Article;
 import com.suanfa8.algocrazyapi.entity.ArticleLikeRecord;
 import com.suanfa8.algocrazyapi.mapper.ArticleMapper;
+import com.suanfa8.algocrazyapi.service.IArticleLikeRecordService;
+import com.suanfa8.algocrazyapi.service.IArticleService;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -28,10 +31,10 @@ import java.util.regex.Pattern;
 @Service
 public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> implements IArticleService {
 
-    @Resource
+    @Autowired
     private ArticleMapper articleMapper;
 
-    @Resource
+    @Autowired
     private IArticleLikeRecordService articleLikeRecordService;
 
     @Override

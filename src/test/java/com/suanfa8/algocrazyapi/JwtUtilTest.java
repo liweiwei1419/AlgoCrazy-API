@@ -13,9 +13,10 @@ public class JwtUtilTest {
     @Resource
     private JwtUtil jwtUtil;
 
+    // 过期的 jwt 不能通过测试
     @Test
-    public void test01(){
-        String token = "eyJhbGciOiJIUzUxMiJ9.eyJyb2xlIjpbeyJhdXRob3JpdHkiOiJST0xFX1VTRVIifV0sInVzZXJfaWQiOjE5MzYxMDQ5MDgwNjE0OTUyOTcsInJvbGVfaWQiOjAsIm5pY2tuYW1lIjoiZ3VhbmciLCJlbWFpbCI6Inpob3VndWFuZ0AxNjMuY29tIiwic3ViIjoiemhvdWd1YW5nIiwiaWF0IjoxNzUwNDk4NzU4LCJleHAiOjE3NTA1MDIzNTh9.XMw4uWcWzxdxPsRUEI3gL5KOfHpDf3Z-GqtWgX150_q5wbnf832mxjLGkEFDvm6U4D18v335dc4Yz2sEnMEj-w";
+    public void testExtractClaims(){
+        String token = "eyJhbGciOiJIUzUxMiJ9.eyJyb2xlIjpbeyJhdXRob3JpdHkiOiJST0xFX0FETUlOIn1dLCJ1c2VyX2lkIjoiMTU3NTQwNjk0OTc5ODAyNzI2NSIsInJvbGVfaWQiOjEsIm5pY2tuYW1lIjoi5p2O5aiB5aiB5ZCM5a2mIiwiYXZhdGFyIjoiaHR0cHM6Ly9jcmF6eS1zdGF0aWMuc3VhbmZhOC5jb20vYWxnby1jcmF6eS9hdmF0YXJzL2xpd2VpLmpwZWciLCJlbWFpbCI6IjEyMTA4ODgyNUBxcS5jb20iLCJ1c2VybmFtZSI6Imxpd2Vpd2VpMTQxOSIsInN1YiI6Imxpd2Vpd2VpMTQxOSIsImlhdCI6MTc3MDYyMjYyNywiZXhwIjoxNzcwNjI2MjI3fQ.hBa9gHO5FT8UvtJhyzTgaaiLXl7T89Ej9lasF5gRKVx3zgdMjsQtCOYIftcAjLhLpDeltQGdGNKg1W_1OHdZSw";
         Claims claims = jwtUtil.extractClaims(token);
         System.out.println(claims);
     }
