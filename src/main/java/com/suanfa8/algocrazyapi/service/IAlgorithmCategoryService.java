@@ -70,4 +70,5 @@ public interface IAlgorithmCategoryService extends IService<AlgorithmCategory> {
      * @return 删除结果
      */
     boolean deleteCategories(List<Integer> ids);
+
 }

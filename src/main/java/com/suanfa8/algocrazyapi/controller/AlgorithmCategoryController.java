@@ -8,12 +8,12 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@CrossOrigin
 @Tag(name = "算法分类管理")
 @RestController
 @RequestMapping("/algorithm-category")
@@ -25,6 +25,7 @@ public class AlgorithmCategoryController {
 
     @Operation(summary = "获取所有算法分类列表")
     @GetMapping("/all")
+    @Cacheable(value = "algorithmCategories", key = "'all'", unless = "#result == null || #result.data.size() == 0")
     public Result<List<AlgorithmCategory>> getAllCategories() {
         return Result.success(algorithmCategoryService.getAllCategories());
     }
@@ -33,27 +34,25 @@ public class AlgorithmCategoryController {
     @Parameter(name = "pageNum", description = "页码")
     @Parameter(name = "pageSize", description = "每页数量")
     @GetMapping("/list")
-    public Result<IPage<AlgorithmCategory>> listCategories(
-            @RequestParam(required = false) Integer pageNum,
-            @RequestParam(required = false) Integer pageSize) {
+    public Result<IPage<AlgorithmCategory>> listCategories(@RequestParam(required = false) Integer pageNum, @RequestParam(required = false) Integer pageSize) {
         return Result.success(algorithmCategoryService.listCategories(pageNum, pageSize));
     }
 
-    @Operation(summary = "根据ID获取算法分类")
+    @Operation(summary = "根据 ID 获取算法分类")
     @Parameter(name = "id", required = true, description = "分类ID")
     @GetMapping("/{id}")
     public Result<AlgorithmCategory> getCategoryById(@PathVariable Integer id) {
         return Result.success(algorithmCategoryService.getCategoryById(id));
     }
 
-    @Operation(summary = "根据value获取算法分类")
+    @Operation(summary = "根据 value 获取算法分类")
     @Parameter(name = "value", required = true, description = "分类值")
     @GetMapping("/value/{value}")
     public Result<AlgorithmCategory> getCategoryByValue(@PathVariable Integer value) {
         return Result.success(algorithmCategoryService.getCategoryByValue(value));
     }
 
-    @Operation(summary = "根据label获取算法分类")
+    @Operation(summary = "根据 label 获取算法分类")
     @Parameter(name = "label", required = true, description = "分类标签")
     @GetMapping("/label/{label}")
     public Result<AlgorithmCategory> getCategoryByLabel(@PathVariable String label) {
@@ -87,4 +86,5 @@ public class AlgorithmCategoryController {
     public Result<Boolean> deleteCategories(@RequestBody List<Integer> ids) {
         return Result.success(algorithmCategoryService.deleteCategories(ids));
     }
+
 }

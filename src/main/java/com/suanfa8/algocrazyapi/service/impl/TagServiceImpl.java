@@ -11,7 +11,6 @@ import com.suanfa8.algocrazyapi.mapper.ArticleTagMapper;
 import com.suanfa8.algocrazyapi.mapper.TagMapper;
 import com.suanfa8.algocrazyapi.service.ITagService;
 import jakarta.annotation.Resource;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,17 +21,16 @@ import java.util.stream.Collectors;
 @Service
 public class TagServiceImpl extends ServiceImpl<TagMapper, Label> implements ITagService {
 
-    @Autowired
+    @Resource
     private TagMapper tagMapper;
 
-    @Autowired
+    @Resource
     private ArticleTagMapper articleTagMapper;
 
     @Override
     public List<Label> getAllTags() {
         LambdaQueryWrapper<Label> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Label::getIsDeleted, false)
-                .orderByDesc(Label::getCreatedAt);
+        queryWrapper.eq(Label::getIsDeleted, false).orderByDesc(Label::getCreatedAt);
         return tagMapper.selectList(queryWrapper);
     }
 
@@ -47,25 +45,21 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Label> implements ITa
 
         Page<Label> page = new Page<>(pageNum, pageSize);
         LambdaQueryWrapper<Label> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Label::getIsDeleted, false)
-                .orderByDesc(Label::getCreatedAt);
-
+        queryWrapper.eq(Label::getIsDeleted, false).orderByDesc(Label::getCreatedAt);
         return tagMapper.selectPage(page, queryWrapper);
     }
 
     @Override
     public Label getTagById(Integer id) {
         LambdaQueryWrapper<Label> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Label::getId, id)
-                .eq(Label::getIsDeleted, false);
+        queryWrapper.eq(Label::getId, id).eq(Label::getIsDeleted, false);
         return tagMapper.selectOne(queryWrapper);
     }
 
     @Override
     public Label getTagByName(String name) {
         LambdaQueryWrapper<Label> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Label::getName, name)
-                .eq(Label::getIsDeleted, false);
+        queryWrapper.eq(Label::getName, name).eq(Label::getIsDeleted, false);
         return tagMapper.selectOne(queryWrapper);
     }
 
@@ -89,11 +83,7 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Label> implements ITa
     @Transactional(rollbackFor = Exception.class)
     public Label updateTag(Label tag) {
         LambdaUpdateWrapper<Label> updateWrapper = new LambdaUpdateWrapper<>();
-        updateWrapper.eq(Label::getId, tag.getId())
-                .eq(Label::getIsDeleted, false)
-                .set(Label::getName, tag.getName())
-                .set(Label::getDescription, tag.getDescription())
-                .set(Label::getUpdatedAt, LocalDateTime.now());
+        updateWrapper.eq(Label::getId, tag.getId()).eq(Label::getIsDeleted, false).set(Label::getName, tag.getName()).set(Label::getDescription, tag.getDescription()).set(Label::getUpdatedAt, LocalDateTime.now());
         tagMapper.update(null, updateWrapper);
         return getTagById(tag.getId());
     }
@@ -102,9 +92,7 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Label> implements ITa
     @Transactional(rollbackFor = Exception.class)
     public boolean deleteTag(Integer id) {
         LambdaUpdateWrapper<Label> updateWrapper = new LambdaUpdateWrapper<>();
-        updateWrapper.eq(Label::getId, id)
-                .set(Label::getIsDeleted, true)
-                .set(Label::getUpdatedAt, LocalDateTime.now());
+        updateWrapper.eq(Label::getId, id).set(Label::getIsDeleted, true).set(Label::getUpdatedAt, LocalDateTime.now());
         return tagMapper.update(null, updateWrapper) > 0;
     }
 
@@ -112,9 +100,7 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Label> implements ITa
     @Transactional(rollbackFor = Exception.class)
     public boolean deleteTags(List<Integer> ids) {
         LambdaUpdateWrapper<Label> updateWrapper = new LambdaUpdateWrapper<>();
-        updateWrapper.in(Label::getId, ids)
-                .set(Label::getIsDeleted, true)
-                .set(Label::getUpdatedAt, LocalDateTime.now());
+        updateWrapper.in(Label::getId, ids).set(Label::getIsDeleted, true).set(Label::getUpdatedAt, LocalDateTime.now());
         return tagMapper.update(null, updateWrapper) > 0;
     }
 
@@ -123,25 +109,20 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Label> implements ITa
     public boolean addTagsToArticle(Integer articleId, List<Integer> tagIds) {
         // 过滤掉已存在的标签关联
         List<Integer> existingTagIds = articleTagMapper.selectTagIdsByArticleId(articleId);
-        List<Integer> newTagIds = tagIds.stream()
-                .filter(tagId -> !existingTagIds.contains(tagId))
-                .collect(Collectors.toList());
+        List<Integer> newTagIds = tagIds.stream().filter(tagId -> !existingTagIds.contains(tagId)).collect(Collectors.toList());
 
         if (newTagIds.isEmpty()) {
             return true;
         }
 
         // 批量插入新的标签关联
-        List<ArticleTag> articleTags = newTagIds.stream()
-                .map(tagId -> {
-                    ArticleTag articleTag = new ArticleTag();
-                    articleTag.setArticleId(articleId);
-                    articleTag.setTagId(tagId);
-                    articleTag.setCreatedAt(LocalDateTime.now());
-                    return articleTag;
-                })
-                .collect(Collectors.toList());
-
+        List<ArticleTag> articleTags = newTagIds.stream().map(tagId -> {
+            ArticleTag articleTag = new ArticleTag();
+            articleTag.setArticleId(articleId);
+            articleTag.setTagId(tagId);
+            articleTag.setCreatedAt(LocalDateTime.now());
+            return articleTag;
+        }).collect(Collectors.toList());
         return articleTags.stream().allMatch(articleTag -> articleTagMapper.insert(articleTag) > 0);
     }
 
@@ -157,16 +138,13 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Label> implements ITa
         }
 
         // 批量插入新的标签关联
-        List<ArticleTag> articleTags = tagIds.stream()
-                .map(tagId -> {
-                    ArticleTag articleTag = new ArticleTag();
-                    articleTag.setArticleId(articleId);
-                    articleTag.setTagId(tagId);
-                    articleTag.setCreatedAt(LocalDateTime.now());
-                    return articleTag;
-                })
-                .collect(Collectors.toList());
-
+        List<ArticleTag> articleTags = tagIds.stream().map(tagId -> {
+            ArticleTag articleTag = new ArticleTag();
+            articleTag.setArticleId(articleId);
+            articleTag.setTagId(tagId);
+            articleTag.setCreatedAt(LocalDateTime.now());
+            return articleTag;
+        }).collect(Collectors.toList());
         return articleTags.stream().allMatch(articleTag -> articleTagMapper.insert(articleTag) > 0);
     }
 
@@ -174,8 +152,7 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Label> implements ITa
     @Transactional(rollbackFor = Exception.class)
     public boolean removeTagFromArticle(Integer articleId, Integer tagId) {
         LambdaUpdateWrapper<ArticleTag> updateWrapper = new LambdaUpdateWrapper<>();
-        updateWrapper.eq(ArticleTag::getArticleId, articleId)
-                .eq(ArticleTag::getTagId, tagId);
+        updateWrapper.eq(ArticleTag::getArticleId, articleId).eq(ArticleTag::getTagId, tagId);
         return articleTagMapper.delete(updateWrapper) > 0;
     }
 
@@ -185,11 +162,8 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Label> implements ITa
         if (tagIds.isEmpty()) {
             return List.of();
         }
-
         LambdaQueryWrapper<Label> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.in(Label::getId, tagIds)
-                .eq(Label::getIsDeleted, false)
-                .orderByDesc(Label::getCreatedAt);
+        queryWrapper.in(Label::getId, tagIds).eq(Label::getIsDeleted, false).orderByDesc(Label::getCreatedAt);
         return tagMapper.selectList(queryWrapper);
     }
 
@@ -197,4 +171,5 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Label> implements ITa
     public List<Integer> getArticleIdsByTagId(Integer tagId) {
         return articleTagMapper.selectArticleIdsByTagId(tagId);
     }
+
 }

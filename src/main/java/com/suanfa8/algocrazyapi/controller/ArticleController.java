@@ -44,10 +44,10 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@Slf4j
 @Tag(name = "文章")
 @RequestMapping("/article")
 @RestController
-@Slf4j
 public class ArticleController {
 
     @Resource
@@ -56,12 +56,10 @@ public class ArticleController {
     @Resource
     private UploadUtils uploadUtils;
 
-
     @Operation(summary = "创建文章")
     @Parameter(name = "article", description = "文章对象", required = true)
     @PostMapping("/create")
     public Boolean articleCreate(@RequestBody ArticleAddDto articleAddDto) {
-        System.out.println("22222222");
         log.info("创建文章 => {}", articleAddDto);
         Article article = new Article();
         article.setAuthor(articleAddDto.getAuthor());
@@ -78,13 +76,8 @@ public class ArticleController {
 
         article.setSourceUrl(articleAddDto.getSourceUrl());
         article.setSolutionUrl(articleAddDto.getSolutionUrl());
-
-        System.out.println("111111111");
-        System.out.println(article);
-
         return articleService.articleCreate(article) == 1;
     }
-
 
     @Operation(summary = "分页查询文章列表")
     @Parameter(name = "current", description = "当前页")
@@ -108,7 +101,6 @@ public class ArticleController {
         return Result.success(articlePage);
     }
 
-
     @Operation(summary = "根据 ID 查询单个文章")
     @Parameter(name = "id", required = true, description = "文章 ID", in = ParameterIn.PATH)
     @GetMapping("/{id}")
@@ -123,7 +115,6 @@ public class ArticleController {
         }
         return Result.success(article);
     }
-
 
     @Operation(summary = "更新文章")
     @Parameter(name = "article", description = "文章对象", required = true)
@@ -150,7 +141,6 @@ public class ArticleController {
         return Result.success(articleService.update(lambdaUpdateWrapper));
     }
 
-
     @Operation(summary = "删除文章")
     @Parameter(name = "id", required = true, description = "文章 ID", in = ParameterIn.PATH)
     @DeleteMapping("/{id}")
@@ -159,7 +149,6 @@ public class ArticleController {
         boolean result = articleService.removeById(id);
         return Result.success(result);
     }
-
 
     @Operation(summary = "供单选框使用，获得所有文章的标题和 id")
     @GetMapping("/articles")
@@ -174,7 +163,6 @@ public class ArticleController {
         }
         return Result.success(titleAndIdSelectDtos);
     }
-
 
     @GetMapping("/book/{url}")
     public Result<ArticleDetailDto> queryByUrl(@PathVariable String url) {
@@ -194,7 +182,6 @@ public class ArticleController {
         return Result.success(articleDetailDto);
     }
 
-
     @Operation(summary = "文章点赞")
     @PostMapping("/incrementLikeCount")
     public Result<Boolean> incrementLikeCount(@RequestBody ArticleLikeDto articleLikeDto) {
@@ -205,13 +192,11 @@ public class ArticleController {
         return Result.success(articleService.likeArticle(userId, articleId));
     }
 
-
     @GetMapping("/{id}/download")
     public ResponseEntity<InputStreamResource> downloadArticleAsMarkdown(@PathVariable Long id) {
         Article article = articleService.getOptById(id).orElseThrow(() -> new RuntimeException("Article not found with id: " + id));
         return articleService.downloadArticleAsMarkdown(article);
     }
-
 
     @Operation(summary = "获得所有二级目录，在「审核进度」页面")
     @GetMapping("/chapters")
@@ -235,7 +220,6 @@ public class ArticleController {
         return Result.success(articleList);
     }
 
-
     @GetMapping("/toggleBookCheck/{id}")
     public Result<Boolean> toggleBookCheck(@PathVariable("id") Long id) {
         // 先获取当前文章的 book_check 状态
@@ -255,14 +239,12 @@ public class ArticleController {
         return isUpdated ? Result.success(isUpdated) : Result.fail(ResultCode.FAILED);
     }
 
-
     @PostMapping("/oneSentenceSolution/")
     public Result<Boolean> updateOneSentenceSolution(@RequestBody OneSentenceSolutionUpdateDto oneSentenceSolutionUpdateDto) {
         // 标准 update 方法，只修改一个字段
         boolean isUpdated = articleService.lambdaUpdate().eq(Article::getId, oneSentenceSolutionUpdateDto.getId()).set(Article::getOneSentenceSolution, oneSentenceSolutionUpdateDto.getOneSentenceSolution()).update();
         return isUpdated ? Result.success(isUpdated) : Result.fail(ResultCode.FAILED);
     }
-
 
     @GetMapping("/uploadLeetcodeImageToCOS/{id}")
     public Result<Boolean> uploadLeetcodeImageToCOS(@PathVariable Long id) {
@@ -314,6 +296,5 @@ public class ArticleController {
         boolean isUpdated = articleService.updateById(article);
         return isUpdated ? Result.success(true) : Result.fail(500, "文章内容更新失败");
     }
-
 
 }

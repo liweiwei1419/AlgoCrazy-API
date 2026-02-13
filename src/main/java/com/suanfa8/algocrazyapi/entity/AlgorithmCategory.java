@@ -21,7 +21,6 @@ import java.time.LocalDateTime;
 @Data
 @Accessors(chain = true)
 @TableName("algorithm_categories")
-// 驼峰转下划线
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class AlgorithmCategory {
 
@@ -32,7 +31,7 @@ public class AlgorithmCategory {
     private Integer value;
 
     @TableField("label")
-    private String label;
+    private String name;
 
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
@@ -49,4 +48,5 @@ public class AlgorithmCategory {
     @TableField("is_deleted")
     @TableLogic
     private Boolean isDeleted = false;
+
 }

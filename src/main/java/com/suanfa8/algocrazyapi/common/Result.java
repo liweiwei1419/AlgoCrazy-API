@@ -1,5 +1,10 @@
 package com.suanfa8.algocrazyapi.common;
 
+/**
+ * 操作结果封装类
+ *
+ * @author liweiwei1419
+ */
 public class Result<T> {
 
     private int code;
@@ -54,4 +59,5 @@ public class Result<T> {
     public void setData(T data) {
         this.data = data;
     }
+
 }
