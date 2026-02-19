@@ -101,4 +101,5 @@ public interface ITagService extends IService<Label> {
      * @return 文章ID列表
      */
     List<Integer> getArticleIdsByTagId(Integer tagId);
+
 }

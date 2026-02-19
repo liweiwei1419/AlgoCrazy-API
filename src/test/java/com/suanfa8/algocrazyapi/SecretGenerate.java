@@ -5,9 +5,6 @@ import io.jsonwebtoken.io.Encoders;
 import io.jsonwebtoken.security.Keys;
 
 import javax.crypto.SecretKey;
-import io.jsonwebtoken.security.Keys;
-import io.jsonwebtoken.SignatureAlgorithm;
-import javax.crypto.SecretKey;
 
 public class SecretGenerate {
 

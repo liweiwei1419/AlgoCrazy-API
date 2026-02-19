@@ -25,17 +25,14 @@ public class ReplaceTest {
     void contextLoads() {
         List<Article> articles = articleMapper.selectList(null);
         System.out.println(articles);
-
         int updatedCount = 0;
-
         for (Article article : articles) {
             String content = article.getContent();
             if (content != null && content.contains("https://minio.dance8.fun")) {
                 String newContent = content.replace("https://minio.dance8.fun", "https://crazy-static.suanfa8.com");
-
                 // 创建更新包装器，明确指定更新条件
                 LambdaUpdateWrapper<Article> updateWrapper = new LambdaUpdateWrapper<>();
-                updateWrapper.eq(Article::getId, article.getId()) // 必须添加ID条件
+                updateWrapper.eq(Article::getId, article.getId()) // 必须添加 ID 条件
                         .set(Article::getContent, newContent);
 
                 // 执行更新
@@ -47,7 +44,7 @@ public class ReplaceTest {
                 }
             }
         }
-
         System.out.println("成功更新 " + updatedCount + " 篇文章");
     }
+    
 }

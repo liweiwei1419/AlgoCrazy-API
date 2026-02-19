@@ -31,10 +31,10 @@ import java.util.regex.Pattern;
 @Service
 public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> implements IArticleService {
 
-    @Autowired
+    @Resource
     private ArticleMapper articleMapper;
 
-    @Autowired
+    @Resource
     private IArticleLikeRecordService articleLikeRecordService;
 
     @Override
@@ -42,7 +42,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         generateAndSetArticleUrl(article);
         return articleMapper.insert(article);
     }
-
 
     @Override
     public int update(Article article) {
@@ -54,7 +53,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     public Article queryByUrl(String url) {
         return articleMapper.selectOne(new LambdaQueryWrapper<Article>().eq(Article::getUrl, url));
     }
-
 
     /**
      * 如果 article 有 sourceUrl，自动生成并设置 url
@@ -69,7 +67,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             }
         }
     }
-
 
     private String generateUrlFromSource(String sourceUrl, String title) {
         try {
@@ -169,7 +166,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         }
         return articleMap;
     }
-
 
     @Transactional(rollbackFor = Exception.class)
     @Override

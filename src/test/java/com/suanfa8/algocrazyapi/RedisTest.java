@@ -18,12 +18,12 @@ public class RedisTest {
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
 
-    private String CACHE_KEY = "article:fullTree";
-    private long CACHE_EXPIRE_HOURS = 1;
+    private final String CACHE_KEY = "article:fullTree";
+
+    private final long CACHE_EXPIRE_HOURS = 1;
 
     @Resource
     private IArticleTreeService articleTreeService;
-
 
     @Test
     public void testSet() {
@@ -36,6 +36,5 @@ public class RedisTest {
         List<ArticleTreeNode> fullTree = (List<ArticleTreeNode>) redisTemplate.opsForValue().get(CACHE_KEY);
         System.out.println(fullTree.size());
     }
-
 
 }

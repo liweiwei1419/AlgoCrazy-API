@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 @Service
 public class ArticleLikeRecordServiceImpl extends ServiceImpl<ArticleLikeRecordMapper, ArticleLikeRecord> implements IArticleLikeRecordService {
 
-    @Autowired
+    @Resource
     private ArticleMapper articleMapper;
 
     @Override

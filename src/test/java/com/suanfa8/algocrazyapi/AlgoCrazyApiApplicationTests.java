@@ -25,11 +25,10 @@ public class AlgoCrazyApiApplicationTests {
     @Resource
     private ArticleMapper articleMapper;
 
-    private String CACHE_KEY = "article:fullTree";
+    private final String CACHE_KEY = "article:fullTree";
 
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
-
 
     // 测试数据库
     @Test
@@ -59,13 +58,11 @@ public class AlgoCrazyApiApplicationTests {
         }
     }
 
-
     // 测试 redis
     @Test
     public void testRedis() {
         List<ArticleTreeNode> fullTree = (List<ArticleTreeNode>) redisTemplate.opsForValue().get(CACHE_KEY);
         System.out.println(fullTree.size());
     }
-
 
 }
