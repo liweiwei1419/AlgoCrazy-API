@@ -28,10 +28,10 @@ import java.util.Map;
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter {
 
-    @Autowired
+    @Resource
     private UserDetailsServiceImpl userDetailsService;
 
-    @Autowired
+    @Resource
     private JwtUtil jwtUtil;
 
     @Resource
@@ -67,6 +67,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     private void handleJwtExpiredException(HttpServletResponse response) throws IOException {
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setCharacterEncoding("UTF-8");
+        response.setHeader("Content-Type", "application/json;charset=UTF-8");
 
         Map<String, String> errorResponse = new HashMap<>();
         // errorResponse.put("message", "JWT token has expired");
