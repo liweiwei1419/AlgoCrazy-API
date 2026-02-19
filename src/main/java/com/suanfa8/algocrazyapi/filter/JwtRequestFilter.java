@@ -69,7 +69,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
         Map<String, String> errorResponse = new HashMap<>();
-        errorResponse.put("message", "JWT token has expired");
+        // errorResponse.put("message", "JWT token has expired");
+        errorResponse.put("message", "会话超时，请重新登录！");
 
         // 将错误信息转换为 JSON 格式写入响应
         objectMapper.writeValue(response.getWriter(), errorResponse);

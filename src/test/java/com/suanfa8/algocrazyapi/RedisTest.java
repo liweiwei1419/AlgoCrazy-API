@@ -37,4 +37,10 @@ public class RedisTest {
         System.out.println(fullTree.size());
     }
 
+    // 删除首页左侧目录缓存
+    @Test
+    public void testDelete() {
+        redisTemplate.delete("bookFullTree::book:fullTree");
+    }
+
 }
