@@ -20,14 +20,13 @@ public class RedisTest {
 
     private final String CACHE_KEY = "article:fullTree";
 
-    private final long CACHE_EXPIRE_HOURS = 1;
-
     @Resource
     private IArticleTreeService articleTreeService;
 
     @Test
     public void testSet() {
         List<ArticleTreeNode> fullTree = articleTreeService.getFullTree();
+        long CACHE_EXPIRE_HOURS = 1;
         redisTemplate.opsForValue().set(CACHE_KEY, fullTree, CACHE_EXPIRE_HOURS, TimeUnit.HOURS);
     }
 

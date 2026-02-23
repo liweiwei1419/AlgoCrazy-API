@@ -1,5 +1,6 @@
 package com.suanfa8.algocrazyapi;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.suanfa8.algocrazyapi.dto.ArticleTreeNode;
 import com.suanfa8.algocrazyapi.entity.Article;
@@ -13,6 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.io.File;
 import java.util.List;
 
 @ActiveProfiles("local")
@@ -63,6 +65,35 @@ public class AlgoCrazyApiApplicationTests {
     public void testRedis() {
         List<ArticleTreeNode> fullTree = (List<ArticleTreeNode>) redisTemplate.opsForValue().get(CACHE_KEY);
         System.out.println(fullTree.size());
+    }
+
+
+    // 测试数据库
+    @Test
+    void testCreateMarkdownFile() {
+        // 根据 parentId 查询文章列表
+        int parentId = 232;
+        LambdaQueryWrapper<Article> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(Article::getParentId, parentId);
+        List<Article> articles = articleMapper.selectList(lambdaQueryWrapper);
+        for (Article article :articles) {
+            String title = article.getTitle();
+            String fileName = title + ".md";
+            System.out.println(fileName);
+            
+            // 创建空文件
+            File file = new File(fileName);
+            try {
+                if (file.createNewFile()) {
+                    System.out.println("File created: " + fileName);
+                } else {
+                    System.out.println("File already exists: " + fileName);
+                }
+            } catch (java.io.IOException e) {
+                System.err.println("Error creating file: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
     }
 
 }
