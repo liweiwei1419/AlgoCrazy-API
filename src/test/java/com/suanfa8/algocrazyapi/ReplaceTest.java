@@ -1,19 +1,14 @@
 package com.suanfa8.algocrazyapi;
 
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.suanfa8.algocrazyapi.entity.Article;
-import com.suanfa8.algocrazyapi.entity.User;
 import com.suanfa8.algocrazyapi.mapper.ArticleMapper;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @SpringBootTest
 public class ReplaceTest {
@@ -28,8 +23,8 @@ public class ReplaceTest {
         int updatedCount = 0;
         for (Article article : articles) {
             String content = article.getContent();
-            if (content != null && content.contains("https://minio.dance8.fun")) {
-                String newContent = content.replace("https://minio.dance8.fun", "https://crazy-static.suanfa8.com");
+            if (content != null && content.contains("https://crazy-static.suanfa8.com")) {
+                String newContent = content.replace("https://crazy-static.suanfa8.com", "https://static.suanfa8.com");
                 // 创建更新包装器，明确指定更新条件
                 LambdaUpdateWrapper<Article> updateWrapper = new LambdaUpdateWrapper<>();
                 updateWrapper.eq(Article::getId, article.getId()) // 必须添加 ID 条件
