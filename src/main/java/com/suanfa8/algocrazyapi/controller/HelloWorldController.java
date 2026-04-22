@@ -1,24 +1,18 @@
 package com.suanfa8.algocrazyapi.controller;
 
-import com.suanfa8.algocrazyapi.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
-import java.util.Map;
+import java.time.LocalDateTime;
 
 @Tag(name = "项目测试")
 @RequestMapping("/hello")
 @RestController
+@Slf4j
 public class HelloWorldController {
 
     // http://localhost:8890/api/v1/hello/world
@@ -33,6 +27,8 @@ public class HelloWorldController {
     @Operation(summary = "测试 hello world")
     @GetMapping("/world")
     public String world() {
+        // 打印出当前时间
+        log.info("测试，当前时间：" + LocalDateTime.now());
         return "Hello suanfa8!";
     }
 
