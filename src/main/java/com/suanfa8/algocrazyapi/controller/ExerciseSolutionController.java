@@ -37,7 +37,7 @@ public class ExerciseSolutionController {
 
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @GetMapping("/{id}")
-    @Operation(summary = "根据ID获取习题解答", description = "根据ID获取习题解答详情")
+    @Operation(summary = "根据 ID 获取习题解答", description = "根据 ID 获取习题解答详情")
     public Result<ExerciseSolution> getById(@PathVariable Integer id) {
         ExerciseSolution exerciseSolution = exerciseSolutionService.getById(id);
         if (exerciseSolution == null || exerciseSolution.getIsDeleted()) {

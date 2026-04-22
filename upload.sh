@@ -8,8 +8,8 @@
 PROJECT_DIR="/Users/liwei/Downloads/ws/suanfa8/algo-crazy/AlgoCrazy-API"  # 项目根目录
 JAR_NAME="algo-crazy-api-0.0.1-SNAPSHOT.jar"
 LOCAL_TARGET_DIR="$PROJECT_DIR/target"
-REMOTE_SERVER="dance8.fun"
-REMOTE_DIR="/root/springboot-projects/algocrazy"
+REMOTE_SERVER="suanfa8.com"
+REMOTE_DIR="/root/springboot-projects/suanfa8"
 SSH_USER="root"  # 根据实际情况修改用户名
 RUN_SCRIPT="run.sh"  # 远程服务器上的启动脚本
 
