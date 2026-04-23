@@ -66,6 +66,12 @@ public class ExerciseSolution {
     @TableField("document_reference")
     private String documentReference;
 
+    @TableField("remark")
+    private String remark = "";
+
+    @TableField("is_published")
+    private Boolean isPublished = false;
+
     @TableField("created_by")
     private String createdBy;
 

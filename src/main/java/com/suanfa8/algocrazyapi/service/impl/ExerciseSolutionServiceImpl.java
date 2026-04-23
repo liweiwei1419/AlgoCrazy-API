@@ -64,7 +64,7 @@ public class ExerciseSolutionServiceImpl extends ServiceImpl<ExerciseSolutionMap
     }
 
     @Override
-    public IPage<ExerciseSolution> getPageList(Integer page, Integer size, String keyword, String difficulty, String category, String chapterNumber) {
+    public IPage<ExerciseSolution> getPageList(Integer page, Integer size, String keyword, String difficulty, String category, String chapterNumber, Boolean isPublished) {
         Page<ExerciseSolution> pageParam = new Page<>(page, size);
         LambdaQueryWrapper<ExerciseSolution> queryWrapper = new LambdaQueryWrapper<>();
         
@@ -86,11 +86,36 @@ public class ExerciseSolutionServiceImpl extends ServiceImpl<ExerciseSolutionMap
             queryWrapper.eq(ExerciseSolution::getChapterNumber, chapterNumber);
         }
         
+        if (isPublished != null) {
+            queryWrapper.eq(ExerciseSolution::getIsPublished, isPublished);
+        }
+        
         queryWrapper.eq(ExerciseSolution::getIsDeleted, false)
                    .orderByAsc(ExerciseSolution::getSortOrder)
-                   .orderByDesc(ExerciseSolution::getCreatedAt);
+                   .orderByDesc(ExerciseSolution::getUpdatedAt);
         
         return exerciseSolutionMapper.selectPage(pageParam, queryWrapper);
+    }
+
+    @Override
+    public List<ExerciseSolution> getByPublishStatus(Boolean isPublished) {
+        LambdaQueryWrapper<ExerciseSolution> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(ExerciseSolution::getIsPublished, isPublished)
+                   .eq(ExerciseSolution::getIsDeleted, false)
+                   .orderByAsc(ExerciseSolution::getSortOrder)
+                   .orderByDesc(ExerciseSolution::getUpdatedAt);
+        return exerciseSolutionMapper.selectList(queryWrapper);
+    }
+
+    @Override
+    public boolean batchUpdatePublishStatus(List<Integer> ids, Boolean isPublished) {
+        ExerciseSolution updateEntity = new ExerciseSolution();
+        updateEntity.setIsPublished(isPublished);
+        
+        LambdaQueryWrapper<ExerciseSolution> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.in(ExerciseSolution::getId, ids);
+        
+        return exerciseSolutionMapper.update(updateEntity, queryWrapper) > 0;
     }
 
     @Override

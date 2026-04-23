@@ -1,18 +1,32 @@
 package com.suanfa8.algocrazyapi.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.suanfa8.algocrazyapi.common.Result;
 import com.suanfa8.algocrazyapi.common.ResultCode;
+import com.suanfa8.algocrazyapi.dto.ChapterInfo;
+import com.suanfa8.algocrazyapi.entity.Article;
 import com.suanfa8.algocrazyapi.entity.ExerciseSolution;
+import com.suanfa8.algocrazyapi.service.IArticleService;
 import com.suanfa8.algocrazyapi.service.IExerciseSolutionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/exercise-solutions")
@@ -22,6 +36,100 @@ public class ExerciseSolutionController {
     @Resource
     private IExerciseSolutionService exerciseSolutionService;
 
+    @Resource
+    private IArticleService articleService;
+
+    @GetMapping("/chapters")
+    @Operation(summary = "获取章节列表", description = "获取指定父节点下的章节列表")
+    public Result<List<ChapterInfo>> chapters(){
+        // 查询 parent_id 在 (204,203,206,205) 的文章
+        List<Integer> parentIds = List.of(204, 203, 206, 205);
+        
+        // 使用 MyBatis-Plus 查询条件：parent_id 在指定列表中
+        LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.in(Article::getParentId, parentIds)
+                   .eq(Article::getIsDeleted, false)
+                   .orderByAsc(Article::getDisplayOrder);
+        
+        List<Article> articles = articleService.list(queryWrapper);
+        
+        // 提取章节信息并按 ID 排序
+        List<ChapterInfo> chapterInfos = articles.stream()
+                .map(article -> {
+                    String title = article.getTitle();
+                    // 从标题中提取数字作为ID，并提取章节名称
+                    Integer chapterId = extractChapterId(title);
+                    String chapterName = extractChapterName(title);
+                    return new ChapterInfo(chapterId, chapterName);
+                })
+                .sorted(Comparator.comparingInt(ChapterInfo::getId)) // 按照 ID 升序排序
+                .toList();
+        
+        return Result.success(chapterInfos);
+    }
+
+    /**
+     * 从标题中提取章节ID（数字）
+     * 格式如："第1章：数组" -> 1
+     * "第2章：链表" -> 2
+     */
+    private Integer extractChapterId(String title) {
+        if (title == null || title.trim().isEmpty()) {
+            return 0;
+        }
+        
+        // 使用正则表达式提取数字
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("\\d+");
+        java.util.regex.Matcher matcher = pattern.matcher(title);
+        
+        if (matcher.find()) {
+            try {
+                return Integer.parseInt(matcher.group());
+            } catch (NumberFormatException e) {
+                return 0;
+            }
+        }
+        
+        return 0;
+    }
+
+    /**
+     * 从标题中提取核心章节名称
+     * 提取"章"之后、"："之前的内容
+     * 格式如："第 13 章 动态规划：其实就是表格法" -> "动态规划"
+     * "第1章：数组" -> "数组"
+     */
+    private String extractChapterName(String title) {
+        if (title == null || title.trim().isEmpty()) {
+            return "未知章节";
+        }
+        
+        // 查找"章"的位置
+        int chapterIndex = title.indexOf("章");
+        if (chapterIndex != -1) {
+            // 查找"："的位置
+            int colonIndex = title.indexOf("：");
+            if (colonIndex != -1 && colonIndex > chapterIndex) {
+                // 提取"章"之后、"："之前的文本
+                return title.substring(chapterIndex + 1, colonIndex).trim();
+            } else {
+                // 如果没有"："，提取"章"之后的所有文本
+                return title.substring(chapterIndex + 1).trim();
+            }
+        }
+        
+        // 如果没有"章"，查找"："的位置
+        int colonIndex = title.indexOf("：");
+        if (colonIndex != -1) {
+            // 提取"："之前的文本
+            return title.substring(0, colonIndex).trim();
+        }
+        
+        // 如果都没有，返回原标题
+        return title;
+    }
+
+
     @GetMapping
     @Operation(summary = "获取习题解答列表", description = "分页获取习题解答列表")
     public Result<IPage<ExerciseSolution>> getList(
@@ -30,8 +138,9 @@ public class ExerciseSolutionController {
             @Parameter(description = "搜索关键词") @RequestParam(required = false) String keyword,
             @Parameter(description = "难度级别") @RequestParam(required = false) String difficulty,
             @Parameter(description = "分类") @RequestParam(required = false) String category,
-            @Parameter(description = "章节序号") @RequestParam(required = false) String chapterNumber) {
-        IPage<ExerciseSolution> pageList = exerciseSolutionService.getPageList(page, size, keyword, difficulty, category, chapterNumber);
+            @Parameter(description = "章节序号") @RequestParam(required = false) String chapterNumber,
+            @Parameter(description = "发布状态") @RequestParam(required = false) Boolean isPublished) {
+        IPage<ExerciseSolution> pageList = exerciseSolutionService.getPageList(page, size, keyword, difficulty, category, chapterNumber, isPublished);
         return Result.success(pageList);
     }
 
@@ -134,5 +243,31 @@ public class ExerciseSolutionController {
         List<ExerciseSolution> children = exerciseSolutionService.getAllChildren(parentId);
         return Result.success(children);
     }
+
+    @GetMapping("/published/{isPublished}")
+    @Operation(summary = "根据发布状态获取习题列表", description = "获取指定发布状态的习题列表")
+    public Result<List<ExerciseSolution>> getByPublishStatus(@PathVariable Boolean isPublished) {
+        List<ExerciseSolution> list = exerciseSolutionService.getByPublishStatus(isPublished);
+        return Result.success(list);
+    }
+
+    @PutMapping("/publish/batch")
+    @Operation(summary = "批量更新发布状态", description = "批量更新习题的发布状态")
+    public Result<Void> batchUpdatePublishStatus(@RequestBody Map<String, Object> request) {
+        List<Integer> ids = (List<Integer>) request.get("ids");
+        Boolean isPublished = (Boolean) request.get("isPublished");
+        
+        if (ids == null || ids.isEmpty()) {
+            return Result.fail(ResultCode.PARAM_ERROR);
+        }
+        
+        boolean success = exerciseSolutionService.batchUpdatePublishStatus(ids, isPublished);
+        if (success) {
+            return Result.success();
+        }
+        return Result.fail(ResultCode.UPDATE_FAILED);
+    }
+
+
 
 }

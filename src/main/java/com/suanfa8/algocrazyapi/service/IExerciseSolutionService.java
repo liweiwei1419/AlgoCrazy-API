@@ -36,7 +36,17 @@ public interface IExerciseSolutionService extends IService<ExerciseSolution> {
     /**
      * 分页查询习题列表
      */
-    IPage<ExerciseSolution> getPageList(Integer page, Integer size, String keyword, String difficulty, String category, String chapterNumber);
+    IPage<ExerciseSolution> getPageList(Integer page, Integer size, String keyword, String difficulty, String category, String chapterNumber, Boolean isPublished);
+
+    /**
+     * 根据发布状态获取习题列表
+     */
+    List<ExerciseSolution> getByPublishStatus(Boolean isPublished);
+
+    /**
+     * 批量更新发布状态
+     */
+    boolean batchUpdatePublishStatus(List<Integer> ids, Boolean isPublished);
 
     /**
      * 获取树形结构的习题列表

@@ -56,7 +56,9 @@ public enum ResultCode {
     /**
      * 删除失败
      */
-    DELETE_FAILED(500, "习题解答删除失败");
+    DELETE_FAILED(500, "习题解答删除失败"),
+
+    PARAM_ERROR(500, "参数错误");
 
 
     /**
