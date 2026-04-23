@@ -223,10 +223,33 @@ public class MinioUtils {
      * @throws  内部异常
      */
     public String upload(File file, String objectName) {
+        return upload(file, objectName, configuration.getBucketName());
+    }
+
+    /**
+     * 上传 File 类型的文件到指定存储桶
+     * @param file 待上传的 File 文件
+     * @param objectName 对象名称
+     * @param bucketName 存储桶名称
+     * @return 文件在 MinIO 中的访问 URL
+     * @throws  输入输出异常
+     * @throws  服务端异常
+     * @throws  数据不足异常
+     * @throws  错误响应异常
+     * @throws  无此算法异常
+     * @throws  无效密钥异常
+     * @throws  无效响应异常
+     * @throws XML 解析异常
+     * @throws  内部异常
+     */
+    public String upload(File file, String objectName, String bucketName) {
         try (InputStream inputStream = new FileInputStream(file)) {
+            // 确保存储桶存在
+            existBucket(bucketName);
+            
             // 构建上传参数
             PutObjectArgs putObjectArgs = PutObjectArgs.builder()
-                    .bucket(configuration.getBucketName())
+                    .bucket(bucketName)
                     .object(objectName)
                     .stream(inputStream, file.length(), -1)
                     .contentType("application/octet-stream")
@@ -236,7 +259,7 @@ public class MinioUtils {
             minioClient.putObject(putObjectArgs);
 
             // 返回文件访问URL
-            return configuration.getUrl() + "/" + configuration.getBucketName() + "/" + objectName;
+            return configuration.getUrl() + "/" + bucketName + "/" + objectName;
 
         } catch (FileNotFoundException e) {
             throw new RuntimeException("文件不存在: " + file.getAbsolutePath(), e);
