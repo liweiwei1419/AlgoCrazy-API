@@ -13,6 +13,6 @@
 * https://github.com/liweiwei1419/AlgoCrazy-API
 
 ## 后端文档地址
-* https://crazy-api.suanfa8.com/api/v1/doc.html
-* https://crazy-api.suanfa8.com/api/v1/swagger-ui.html
+* https://api.suanfa8.com/api/v1/doc.html
+* https://api.suanfa8.com/api/v1/swagger-ui.html
 

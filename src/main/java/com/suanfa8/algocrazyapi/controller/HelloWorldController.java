@@ -18,11 +18,8 @@ public class HelloWorldController {
     // http://localhost:8890/api/v1/hello/world
     // http://106.14.3.104:8890/api/v1/hello/world
     // https://api.suanfa8.com/api/v1/hello/world
-
-
-    // 文档页面：http://localhost:8888/api/v1/doc.html
-    // https://crazy-
-    // https://algocrazy-api.dance8.fun/api/v1/doc.html#/home
+    // 文档页面：http://localhost:8890/api/v1/doc.html
+    // https://api.suanfa8.com/api/v1/doc.html
 
     @Operation(summary = "测试 hello world")
     @GetMapping("/world")
