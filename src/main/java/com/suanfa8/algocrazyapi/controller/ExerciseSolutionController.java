@@ -10,6 +10,7 @@ import com.suanfa8.algocrazyapi.entity.ExerciseSolution;
 import com.suanfa8.algocrazyapi.service.IArticleService;
 import com.suanfa8.algocrazyapi.service.IExerciseSolutionService;
 import com.suanfa8.algocrazyapi.utils.MinioUtils;
+import com.suanfa8.algocrazyapi.utils.TextFormatter;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -285,6 +286,15 @@ public class ExerciseSolutionController {
             return Result.fail(ResultCode.GET_OLD_ART_FAILED);
         }
     }
+
+    @PostMapping("/format-text")
+    @Operation(summary = "格式化文本", description = "根据指定规则格式化文本内容")
+    public Result<String> formatText(@Parameter(description = "待格式化的文本") @RequestBody String text) {
+        String formattedText = TextFormatter.formatText(text);
+        return Result.success(formattedText);
+    }
+
+
 
     @GetMapping("/tree")
     @Operation(summary = "获取树形结构的习题列表", description = "获取完整的树形结构习题列表")
