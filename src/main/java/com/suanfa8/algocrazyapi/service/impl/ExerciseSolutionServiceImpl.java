@@ -64,30 +64,58 @@ public class ExerciseSolutionServiceImpl extends ServiceImpl<ExerciseSolutionMap
     }
 
     @Override
-    public IPage<ExerciseSolution> getPageList(Integer page, Integer size, String keyword, String difficulty, String category, String chapterNumber, Boolean isPublished) {
+    public IPage<ExerciseSolution> getPageList(Integer page, Integer size, String keyword, String difficulty, String category, String chapterNumber, String leetcodeNumber, Boolean isPublished) {
         Page<ExerciseSolution> pageParam = new Page<>(page, size);
         LambdaQueryWrapper<ExerciseSolution> queryWrapper = new LambdaQueryWrapper<>();
+        
+        // 构建 OR 关系的查询条件
+        boolean hasCondition = false;
         
         if (keyword != null && !keyword.trim().isEmpty()) {
             queryWrapper.like(ExerciseSolution::getTitle, keyword)
                        .or()
                        .like(ExerciseSolution::getDescription, keyword);
+            hasCondition = true;
         }
         
         if (difficulty != null && !difficulty.trim().isEmpty()) {
+            if (hasCondition) {
+                queryWrapper.or();
+            }
             queryWrapper.eq(ExerciseSolution::getDifficultyLevel, difficulty);
+            hasCondition = true;
         }
         
         if (category != null && !category.trim().isEmpty()) {
+            if (hasCondition) {
+                queryWrapper.or();
+            }
             queryWrapper.eq(ExerciseSolution::getCategory, category);
+            hasCondition = true;
         }
         
         if (chapterNumber != null && !chapterNumber.trim().isEmpty()) {
+            if (hasCondition) {
+                queryWrapper.or();
+            }
             queryWrapper.eq(ExerciseSolution::getChapterNumber, chapterNumber);
+            hasCondition = true;
+        }
+        
+        if (leetcodeNumber != null && !leetcodeNumber.trim().isEmpty()) {
+            if (hasCondition) {
+                queryWrapper.or();
+            }
+            queryWrapper.eq(ExerciseSolution::getLeetcodeNumber, leetcodeNumber);
+            hasCondition = true;
         }
         
         if (isPublished != null) {
+            if (hasCondition) {
+                queryWrapper.or();
+            }
             queryWrapper.eq(ExerciseSolution::getIsPublished, isPublished);
+            hasCondition = true;
         }
         
         queryWrapper.eq(ExerciseSolution::getIsDeleted, false)

@@ -36,7 +36,7 @@ public interface IExerciseSolutionService extends IService<ExerciseSolution> {
     /**
      * 分页查询习题列表
      */
-    IPage<ExerciseSolution> getPageList(Integer page, Integer size, String keyword, String difficulty, String category, String chapterNumber, Boolean isPublished);
+    IPage<ExerciseSolution> getPageList(Integer page, Integer size, String keyword, String difficulty, String category, String chapterNumber, String leetcodeNumber, Boolean isPublished);
 
     /**
      * 根据发布状态获取习题列表

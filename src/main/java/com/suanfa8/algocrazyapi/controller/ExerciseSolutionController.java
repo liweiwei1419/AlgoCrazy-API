@@ -150,8 +150,9 @@ public class ExerciseSolutionController {
             @Parameter(description = "难度级别") @RequestParam(required = false) String difficulty,
             @Parameter(description = "分类") @RequestParam(required = false) String category,
             @Parameter(description = "章节序号") @RequestParam(required = false) String chapterNumber,
+            @Parameter(description = "LeetCode题号") @RequestParam(required = false) String leetcodeNumber,
             @Parameter(description = "发布状态") @RequestParam(required = false) Boolean isPublished) {
-        IPage<ExerciseSolution> pageList = exerciseSolutionService.getPageList(page, size, keyword, difficulty, category, chapterNumber, isPublished);
+        IPage<ExerciseSolution> pageList = exerciseSolutionService.getPageList(page, size, keyword, difficulty, category, chapterNumber, leetcodeNumber, isPublished);
         return Result.success(pageList);
     }
 
