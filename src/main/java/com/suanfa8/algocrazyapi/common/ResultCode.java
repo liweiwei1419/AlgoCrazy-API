@@ -58,7 +58,13 @@ public enum ResultCode {
      */
     DELETE_FAILED(500, "习题解答删除失败"),
 
-    PARAM_ERROR(500, "参数错误");
+    PARAM_ERROR(500, "参数错误"),
+
+    /**
+     * 获取旧文章失败
+     */
+    GET_OLD_ART_FAILED(500, "获取旧文章失败")
+    ;
 
 
     /**

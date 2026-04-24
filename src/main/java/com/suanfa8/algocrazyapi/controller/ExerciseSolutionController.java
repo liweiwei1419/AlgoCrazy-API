@@ -14,6 +14,12 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.ParseException;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -240,6 +246,44 @@ public class ExerciseSolutionController {
             return Result.fail(ResultCode.EXERCISE_SOLUTION_NOT_FOUND);
         }
         return Result.success(exerciseSolution);
+    }
+
+    @GetMapping("/old-content/leetcode/{leetcodeNumber}")
+    @Operation(summary = "获取旧文章", description = "根据力扣题号获取旧文章内容")
+    public Result<Object> getOldArticle(@PathVariable String leetcodeNumber) {
+        try {
+            String url = "https://old-suanfa8-api.dance8.fun/api/v2/article/content/leetcode/" + leetcodeNumber;
+            
+            // 使用 Apache HttpClient 5 发送 HTTP 请求
+            try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+                HttpGet httpGet = new HttpGet(url);
+                try (CloseableHttpResponse response = httpClient.execute(httpGet)) {
+                    String responseBody = EntityUtils.toString(response.getEntity());
+                    // 解析 JSON 响应
+                    com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                    // 先解析为 Map
+                    java.util.Map<?, ?> responseMap = mapper.readValue(responseBody, java.util.Map.class);
+                    // 提取 data 部分
+                    Object data = responseMap.get("data");
+                    if (data instanceof java.util.Map) {
+                        // 提取 content 字段
+                        java.util.Map<?, ?> dataMap = (java.util.Map<?, ?>) data;
+                        Object content = dataMap.get("content");
+                        if (content != null) {
+                            return Result.success(content);
+                        }
+                    }
+                    // 如果没有 content 字段，返回空
+                    return Result.success("");
+                }
+            } catch (ParseException e) {
+                e.printStackTrace();
+                return Result.fail(ResultCode.GET_OLD_ART_FAILED);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.fail(ResultCode.GET_OLD_ART_FAILED);
+        }
     }
 
     @GetMapping("/tree")

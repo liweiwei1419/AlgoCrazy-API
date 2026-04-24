@@ -36,6 +36,9 @@ public class SecurityConfig {
 
     private static final String[] URL_WHITELIST = {
             // 放行的 URL 路径
+            "/exercise-solutions/**",
+
+
             "/auth/authenticate",
             // 添加退出登录接口路径
             "/comment/comments", "/comment/add", "/comment/*/replies", "/user/register", "/user/forgot-password", "/user/reset-password", "/user/homepage/**", "/hello/world", "/hello/days-until-2025-10-30", "/hello/greet", "/tree/**", "/article/**", "/file/**", "/leetcode/problems/**", "/message/**", "/algorithm-category/**",

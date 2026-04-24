@@ -37,8 +37,8 @@ public class FormatText {
                     isExampleSection = line.contains("提示");
                 }
                 
-                // 功能4：为「示例」后面以「+」开头的行添加末尾句号
-                if (isExampleSection && line.trim().startsWith("+")) {
+                // 功能4：为「示例」后面以「+」或「-」开头的行添加末尾句号
+                if (isExampleSection && (line.trim().startsWith("+") || line.trim().startsWith("-"))) {
                     processedLine = addEndingPeriod(processedLine);
                 }
                 
@@ -87,7 +87,8 @@ public class FormatText {
      * 功能3：去掉章节行中的冒号
      */
     private static String removeColonFromSectionLine(String line) {
-        return line.replaceAll("：$", "");
+        // 去掉冒号，无论它在行尾还是在 "**" 之前
+        return line.replaceAll("：(?=\\*\\*$|$)", "");
     }
     
     /**
