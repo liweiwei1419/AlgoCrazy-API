@@ -13,6 +13,7 @@ import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -58,5 +59,25 @@ public class LeetCodeProblemsController {
         IPage<LeetCodeProblems> problemsPage = leetCodeProblemsService.page(page, queryWrapper);
         
         return Result.success(problemsPage);
+    }
+
+    @Operation(summary = "根据LeetCode题号获取题目URL")
+    @Parameter(name = "leetcodeNumber", description = "LeetCode题号")
+    @GetMapping("/url/{leetcodeNumber}")
+    public Result<String> getUrlByLeetCodeNumber(@PathVariable Integer leetcodeNumber) {
+        log.info("根据LeetCode题号获取题目URL，题号：{}", leetcodeNumber);
+        
+        // 创建查询条件
+        QueryWrapper<LeetCodeProblems> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("leetcode_number", leetcodeNumber);
+        
+        // 执行查询
+        LeetCodeProblems problem = leetCodeProblemsService.getOne(queryWrapper);
+        
+        if (problem == null) {
+            return Result.fail(404, "未找到对应题号的题目");
+        }
+        
+        return Result.success(problem.getUrl());
     }
 }

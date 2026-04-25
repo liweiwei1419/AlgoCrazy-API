@@ -20,6 +20,7 @@ public class LeetCodeProblems {
     private DifficultyEnum difficulty;
     private Boolean paidOnly;
     private String url;
+    private Integer leetcodeNumber;
 
     @TableField("created_time")
     private LocalDateTime createdTime;
