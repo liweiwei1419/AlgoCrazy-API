@@ -24,7 +24,6 @@ public class HelloWorldController {
     @Operation(summary = "测试 hello world")
     @GetMapping("/world")
     public String world() {
-        // 打印出当前时间
         log.info("测试，当前时间：" + LocalDateTime.now());
         return "Hello suanfa8!";
     }
