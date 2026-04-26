@@ -64,7 +64,8 @@ public class TextFormatter {
      * 检查是否是目标行（输入、输出、解释开头）
      */
     private static boolean isTargetLine(String line) {
-        return line.startsWith("输入：") || line.startsWith("输出：") || line.startsWith("解释：");
+        return line.startsWith("输入：") || line.startsWith("输出：") || line.startsWith("解释：") ||
+               line.startsWith("输入:") || line.startsWith("输出:") || line.startsWith("解释:");
     }
     
     /**
@@ -78,8 +79,8 @@ public class TextFormatter {
      * 功能3：去掉章节行中的冒号
      */
     private static String removeColonFromSectionLine(String line) {
-        // 去掉冒号，无论它在行尾还是在 "**" 之前
-        return line.replaceAll("：(?=\\*\\*$|$)", "");
+        // 去掉冒号，无论它在行尾还是在 "**" 之前，同时支持中文冒号和英文冒号
+        return line.replaceAll("[：:](?=\\*\\*$|$)", "");
     }
     
     /**

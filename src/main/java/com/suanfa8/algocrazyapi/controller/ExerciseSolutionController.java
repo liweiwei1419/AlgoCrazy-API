@@ -58,7 +58,7 @@ public class ExerciseSolutionController {
     private MinioUtils minioUtils;
 
     @GetMapping("/chapters")
-    @Operation(summary = "获取章节列表", description = "获取指定父节点下的章节列表")
+    @Operation(summary = "获取章节列表", description = "获取指定父结点下的章节列表")
     public Result<List<ChapterInfo>> chapters(){
         // 查询 parent_id 在 (204,203,206,205) 的文章
         List<Integer> parentIds = List.of(204, 203, 206, 205);
@@ -212,7 +212,7 @@ public class ExerciseSolutionController {
     }
 
     @GetMapping("/parent/{parentId}")
-    @Operation(summary = "根据父ID获取子习题列表", description = "获取指定父节点下的所有子习题")
+    @Operation(summary = "根据父 ID 获取子习题列表", description = "获取指定父结点下的所有子习题")
     public Result<List<ExerciseSolution>> getChildrenByParentId(@PathVariable Integer parentId) {
         List<ExerciseSolution> children = exerciseSolutionService.getChildrenByParentId(parentId);
         return Result.success(children);
@@ -304,7 +304,7 @@ public class ExerciseSolutionController {
     }
 
     @GetMapping("/children/{parentId}")
-    @Operation(summary = "获取所有子节点", description = "获取指定节点的所有子节点（包括孙子节点）")
+    @Operation(summary = "获取所有子结点", description = "获取指定结点的所有子结点（包括孙子结点）")
     public Result<List<ExerciseSolution>> getAllChildren(@PathVariable Integer parentId) {
         List<ExerciseSolution> children = exerciseSolutionService.getAllChildren(parentId);
         return Result.success(children);
@@ -352,7 +352,8 @@ public class ExerciseSolutionController {
             // 3. 提取 Markdown 中的图片
             String solution = exercise.getSolution();
             if (solution == null || solution.isEmpty()) {
-                return Result.success(); // 没有内容，无需处理
+                // 没有内容，无需处理
+                return Result.success();
             }
             
             // 4. 处理图片
