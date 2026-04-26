@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
@@ -87,6 +88,22 @@ public class UserController {
             return Result.fail(ResultCode.USER_NOT_FOUND);
         }
         return Result.success(user);
+    }
+
+    /**
+     * 分页查询用户列表
+     * @param page 当前页码
+     * @param size 每页大小
+     * @param keyword 搜索关键词（可选）
+     * @return 分页结果
+     */
+    @GetMapping("/list")
+    public Result<com.baomidou.mybatisplus.core.metadata.IPage<User>> getUserList(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String keyword) {
+        com.baomidou.mybatisplus.core.metadata.IPage<User> userPage = userService.getUserList(page, size, keyword);
+        return Result.success(userPage);
     }
 
 }

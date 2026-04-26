@@ -70,9 +70,6 @@ public class AuthController {
 
         final String jwt = jwtUtil.generateToken(userDetails);
         jwtRedisService.saveJwt(userDetails.getUsername(), jwt);
-
-        System.out.println("jwt: " + jwt);
-
         return ResponseEntity.ok(new AuthenticationResponse(jwt));
     }
 

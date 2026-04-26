@@ -23,4 +23,13 @@ public interface IUserService {
 
     User getUserByUsernameWithoutPassword(String username);
 
+    /**
+     * 分页查询用户列表
+     * @param page 当前页码
+     * @param size 每页大小
+     * @param keyword 搜索关键词（可选）
+     * @return 分页结果
+     */
+    com.baomidou.mybatisplus.core.metadata.IPage<User> getUserList(int page, int size, String keyword);
+
 }

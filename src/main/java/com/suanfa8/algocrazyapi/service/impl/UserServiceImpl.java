@@ -157,4 +157,28 @@ public class UserServiceImpl implements IUserService {
         return userMapper.selectOne(queryWrapper);
     }
 
+    @Override
+    public com.baomidou.mybatisplus.core.metadata.IPage<User> getUserList(int page, int size, String keyword) {
+        // 创建分页对象
+        com.baomidou.mybatisplus.extension.plugins.pagination.Page<User> pagination = new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>(page, size);
+        
+        // 构建查询条件
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        // 排除密码字段
+        queryWrapper.select(User.class, info -> !"password".equals(info.getColumn()));
+        
+        // 如果有关键词，添加搜索条件
+        if (keyword != null && !keyword.isEmpty()) {
+            queryWrapper.like(User::getUsername, keyword)
+                       .or().like(User::getNickname, keyword)
+                       .or().like(User::getEmail, keyword);
+        }
+        
+        // 按创建时间倒序排序
+        queryWrapper.orderByDesc(User::getCreatedAt);
+        
+        // 执行分页查询
+        return userMapper.selectPage(pagination, queryWrapper);
+    }
+
 }
