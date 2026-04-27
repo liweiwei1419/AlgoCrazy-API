@@ -64,6 +64,14 @@ public class ExerciseSolutionServiceImpl extends ServiceImpl<ExerciseSolutionMap
     }
 
     @Override
+    public ExerciseSolution getByUrl(String url) {
+        LambdaQueryWrapper<ExerciseSolution> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(ExerciseSolution::getUrl, url)
+                   .eq(ExerciseSolution::getIsDeleted, false);
+        return exerciseSolutionMapper.selectOne(queryWrapper);
+    }
+
+    @Override
     public IPage<ExerciseSolution> getPageList(Integer page, Integer size, String keyword, String difficulty, String category, String chapterNumber, String leetcodeNumber, Boolean isPublished) {
         Page<ExerciseSolution> pageParam = new Page<>(page, size);
         LambdaQueryWrapper<ExerciseSolution> queryWrapper = new LambdaQueryWrapper<>();

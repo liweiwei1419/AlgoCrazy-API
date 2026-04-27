@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
@@ -180,6 +181,21 @@ public class ExerciseSolutionController {
     public Result<ExerciseSolution> getById(@PathVariable Integer id) {
         ExerciseSolution exerciseSolution = exerciseSolutionService.getById(id);
         if (exerciseSolution == null || exerciseSolution.getIsDeleted()) {
+            return Result.fail(ResultCode.EXERCISE_SOLUTION_NOT_FOUND);
+        }
+        return Result.success(exerciseSolution);
+    }
+
+
+    @GetMapping("/url/**")
+    @Operation(summary = "根据 URL 获取习题解答", description = "根据 URL 获取习题解答详情，URL 格式如 chapter02/leetcode/0493-reverse-pairs")
+    public Result<ExerciseSolution> getByUrl(HttpServletRequest request) {
+        // 提取 URL 路径（取 /exercise-solutions/url/ 后面的字符串）
+        String requestUri = request.getRequestURI();
+        String prefix = "/exercise-solutions/url/";
+        String url = requestUri.substring(requestUri.indexOf(prefix) + prefix.length());
+        ExerciseSolution exerciseSolution = exerciseSolutionService.getByUrl(url);
+        if (exerciseSolution == null) {
             return Result.fail(ResultCode.EXERCISE_SOLUTION_NOT_FOUND);
         }
         return Result.success(exerciseSolution);

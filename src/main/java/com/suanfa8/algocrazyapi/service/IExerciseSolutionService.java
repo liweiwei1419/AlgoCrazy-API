@@ -34,6 +34,11 @@ public interface IExerciseSolutionService extends IService<ExerciseSolution> {
     ExerciseSolution getByLeetcodeNumber(String leetcodeNumber);
 
     /**
+     * 根据 URL 获取习题解答
+     */
+    ExerciseSolution getByUrl(String url);
+
+    /**
      * 分页查询习题列表
      */
     IPage<ExerciseSolution> getPageList(Integer page, Integer size, String keyword, String difficulty, String category, String chapterNumber, String leetcodeNumber, Boolean isPublished);

@@ -35,6 +35,9 @@ public class SecurityConfig {
     private JwtRequestFilter jwtRequestFilter;
 
     private static final String[] URL_WHITELIST = {
+            // 习题解答按 URL 查询接口，公开访问
+            "/exercise-solutions/url/**",
+
             // 放行的 URL 路径
             "/auth/authenticate",
             // 添加退出登录接口路径
