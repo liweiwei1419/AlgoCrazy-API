@@ -39,8 +39,8 @@ public class ExerciseSolution {
     @TableField("solution")
     private String solution;
 
-    @TableField("solution_type")
-    private String solutionType = "text";
+    @TableField("source")
+    private String source = "text";
 
     @TableField("sort_order")
     private Integer sortOrder = 0;

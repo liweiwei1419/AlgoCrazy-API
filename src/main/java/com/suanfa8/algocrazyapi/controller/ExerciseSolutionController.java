@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
@@ -29,6 +30,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -46,6 +49,8 @@ import java.util.regex.Pattern;
 @RestController
 @RequestMapping("/exercise-solutions")
 @Tag(name = "习题解答管理", description = "习题解答相关接口")
+@CacheConfig(cacheNames = "exercise-solutions")
+@Slf4j
 public class ExerciseSolutionController {
 
     @Resource
@@ -59,6 +64,7 @@ public class ExerciseSolutionController {
 
     @GetMapping("/chapters")
     @Operation(summary = "获取章节列表", description = "获取指定父结点下的章节列表")
+    @Cacheable(key = "'chapters'")
     public Result<List<ChapterInfo>> chapters(){
         // 查询 parent_id 在 (204,203,206,205) 的文章
         List<Integer> parentIds = List.of(204, 203, 206, 205);
@@ -159,6 +165,11 @@ public class ExerciseSolutionController {
             @Parameter(description = "章节序号") @RequestParam(required = false) String chapterNumber,
             @Parameter(description = "LeetCode题号") @RequestParam(required = false) String leetcodeNumber,
             @Parameter(description = "发布状态") @RequestParam(required = false) Boolean isPublished) {
+
+        log.info("获取习题解答列表，参数：{}",
+                new Object[]{page, size, keyword, difficulty, category, chapterNumber, leetcodeNumber, isPublished});
+
+
         IPage<ExerciseSolution> pageList = exerciseSolutionService.getPageList(page, size, keyword, difficulty, category, chapterNumber, leetcodeNumber, isPublished);
         return Result.success(pageList);
     }
