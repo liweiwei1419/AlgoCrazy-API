@@ -87,6 +87,9 @@ public class ExerciseSolution {
     @TableField(value = "updated_at", fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updatedAt;
 
+    @TableField("url")
+    private String url;
+
     @TableField("is_deleted")
     @TableLogic
     private Boolean isDeleted = false;
