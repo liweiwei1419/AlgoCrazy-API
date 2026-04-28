@@ -74,7 +74,7 @@ public class AuthController {
     }
 
 
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    // @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletRequest request) {
         // 从请求头中获得 token
