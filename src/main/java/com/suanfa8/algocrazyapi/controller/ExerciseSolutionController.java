@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.suanfa8.algocrazyapi.common.Result;
 import com.suanfa8.algocrazyapi.common.ResultCode;
 import com.suanfa8.algocrazyapi.dto.ChapterInfo;
+import com.suanfa8.algocrazyapi.dto.exercise.ExerciseSolutionListDTO;
 import com.suanfa8.algocrazyapi.entity.Article;
 import com.suanfa8.algocrazyapi.entity.ExerciseSolution;
 import com.suanfa8.algocrazyapi.service.IArticleService;
@@ -39,6 +40,8 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @RestController
 @RequestMapping("/exercise-solutions")
@@ -60,11 +63,13 @@ public class ExerciseSolutionController {
         // 查询 parent_id 在 (204,203,206,205) 的文章
         List<Integer> parentIds = List.of(204, 203, 206, 205);
         
-        // 使用 MyBatis-Plus 查询条件：parent_id 在指定列表中
+        // 使用 MyBatis-Plus 查询条件：parent_id 在指定列表中，只查询需要的字段
         LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.in(Article::getParentId, parentIds)
                    .eq(Article::getIsDeleted, false)
-                   .orderByAsc(Article::getDisplayOrder);
+                   .orderByAsc(Article::getDisplayOrder)
+                   // 只查询需要的字段，避免查询大字段
+                   .select(Article::getId, Article::getTitle, Article::getDisplayOrder);
         
         List<Article> articles = articleService.list(queryWrapper);
         
@@ -94,8 +99,8 @@ public class ExerciseSolutionController {
         }
         
         // 使用正则表达式提取数字
-        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("\\d+");
-        java.util.regex.Matcher matcher = pattern.matcher(title);
+        Pattern pattern = Pattern.compile("\\d+");
+        Matcher matcher = pattern.matcher(title);
         
         if (matcher.find()) {
             try {
@@ -146,8 +151,8 @@ public class ExerciseSolutionController {
 
 
     @GetMapping
-    @Operation(summary = "获取习题解答列表", description = "分页获取习题解答列表")
-    public Result<IPage<ExerciseSolution>> getList(
+    @Operation(summary = "获取习题解答列表", description = "分页获取习题解答列表，只返回部分字段")
+    public Result<IPage<ExerciseSolutionListDTO>> getList(
             @Parameter(description = "页码") @RequestParam(defaultValue = "1") Integer page,
             @Parameter(description = "每页大小") @RequestParam(defaultValue = "10") Integer size,
             @Parameter(description = "搜索关键词") @RequestParam(required = false) String keyword,
@@ -160,8 +165,7 @@ public class ExerciseSolutionController {
         log.info("获取习题解答列表，参数：{}",
                 new Object[]{page, size, keyword, difficulty, category, chapterNumber, leetcodeNumber, isPublished});
 
-
-        IPage<ExerciseSolution> pageList = exerciseSolutionService.getPageList(page, size, keyword, difficulty, category, chapterNumber, leetcodeNumber, isPublished);
+        IPage<ExerciseSolutionListDTO> pageList = exerciseSolutionService.getPageListWithPartialFields(page, size, keyword, difficulty, category, chapterNumber, leetcodeNumber, isPublished);
         return Result.success(pageList);
     }
 

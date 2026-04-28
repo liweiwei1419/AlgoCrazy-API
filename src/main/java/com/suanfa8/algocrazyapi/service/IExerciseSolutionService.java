@@ -2,6 +2,7 @@ package com.suanfa8.algocrazyapi.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.suanfa8.algocrazyapi.dto.exercise.ExerciseSolutionListDTO;
 import com.suanfa8.algocrazyapi.entity.ExerciseSolution;
 
 import java.util.List;
@@ -39,9 +40,14 @@ public interface IExerciseSolutionService extends IService<ExerciseSolution> {
     ExerciseSolution getByUrl(String url);
 
     /**
-     * 分页查询习题列表
+     * 分页查询习题列表（返回完整实体）
      */
     IPage<ExerciseSolution> getPageList(Integer page, Integer size, String keyword, String difficulty, String category, String chapterNumber, String leetcodeNumber, Boolean isPublished);
+
+    /**
+     * 分页查询习题列表（返回部分字段）
+     */
+    IPage<ExerciseSolutionListDTO> getPageListWithPartialFields(Integer page, Integer size, String keyword, String difficulty, String category, String chapterNumber, String leetcodeNumber, Boolean isPublished);
 
     /**
      * 根据发布状态获取习题列表

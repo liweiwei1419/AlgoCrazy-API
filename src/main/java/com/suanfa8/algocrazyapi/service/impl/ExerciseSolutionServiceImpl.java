@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.suanfa8.algocrazyapi.dto.exercise.ExerciseSolutionListDTO;
 import com.suanfa8.algocrazyapi.entity.ExerciseSolution;
 import com.suanfa8.algocrazyapi.mapper.ExerciseSolutionMapper;
 import com.suanfa8.algocrazyapi.service.IExerciseSolutionService;
@@ -18,6 +19,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -87,6 +89,47 @@ public class ExerciseSolutionServiceImpl extends ServiceImpl<ExerciseSolutionMap
     @Override
     public IPage<ExerciseSolution> getPageList(Integer page, Integer size, String keyword, String difficulty, String category, String chapterNumber, String leetcodeNumber, Boolean isPublished) {
         Page<ExerciseSolution> pageParam = new Page<>(page, size);
+        LambdaQueryWrapper<ExerciseSolution> queryWrapper = buildQueryWrapper(keyword, difficulty, category, chapterNumber, leetcodeNumber, isPublished);
+        return exerciseSolutionMapper.selectPage(pageParam, queryWrapper);
+    }
+
+    @Override
+    public IPage<ExerciseSolutionListDTO> getPageListWithPartialFields(Integer page, Integer size, String keyword, String difficulty, String category, String chapterNumber, String leetcodeNumber, Boolean isPublished) {
+        Page<ExerciseSolution> pageParam = new Page<>(page, size);
+        LambdaQueryWrapper<ExerciseSolution> queryWrapper = buildQueryWrapper(keyword, difficulty, category, chapterNumber, leetcodeNumber, isPublished);
+        
+        // 指定只查询需要的字段
+        queryWrapper.select(
+            ExerciseSolution::getId,
+            ExerciseSolution::getParentId,
+            ExerciseSolution::getTitle,
+            ExerciseSolution::getSortOrder,
+            ExerciseSolution::getDifficultyLevel,
+            ExerciseSolution::getCategory,
+            ExerciseSolution::getChapterNumber,
+            ExerciseSolution::getLeetcodeNumber,
+            ExerciseSolution::getIsPublished,
+            ExerciseSolution::getCreatedAt,
+            ExerciseSolution::getUpdatedAt,
+            ExerciseSolution::getUrl
+        );
+        
+        // 执行查询
+        IPage<ExerciseSolution> resultPage = exerciseSolutionMapper.selectPage(pageParam, queryWrapper);
+        
+        // 手动转换为 DTO 分页对象
+        IPage<ExerciseSolutionListDTO> dtoPage = new Page<>(resultPage.getCurrent(), resultPage.getSize(), resultPage.getTotal());
+        dtoPage.setRecords(resultPage.getRecords().stream()
+            .map(this::convertToDTO)
+            .collect(Collectors.toList()));
+        
+        return dtoPage;
+    }
+
+    /**
+     * 构建查询条件
+     */
+    private LambdaQueryWrapper<ExerciseSolution> buildQueryWrapper(String keyword, String difficulty, String category, String chapterNumber, String leetcodeNumber, Boolean isPublished) {
         LambdaQueryWrapper<ExerciseSolution> queryWrapper = new LambdaQueryWrapper<>();
         
         // 构建 OR 关系的查询条件
@@ -143,7 +186,26 @@ public class ExerciseSolutionServiceImpl extends ServiceImpl<ExerciseSolutionMap
                    .orderByAsc(ExerciseSolution::getSortOrder)
                    .orderByDesc(ExerciseSolution::getUpdatedAt);
         
-        return exerciseSolutionMapper.selectPage(pageParam, queryWrapper);
+        return queryWrapper;
+    }
+
+    /**
+     * 将实体转换为 DTO
+     */
+    private ExerciseSolutionListDTO convertToDTO(ExerciseSolution entity) {
+        ExerciseSolutionListDTO dto = new ExerciseSolutionListDTO();
+        dto.setId(entity.getId());
+        dto.setTitle(entity.getTitle());
+        dto.setSortOrder(entity.getSortOrder());
+        dto.setDifficultyLevel(entity.getDifficultyLevel());
+        dto.setCategory(entity.getCategory());
+        dto.setChapterNumber(entity.getChapterNumber());
+        dto.setLeetcodeNumber(entity.getLeetcodeNumber());
+        dto.setIsPublished(entity.getIsPublished());
+        dto.setCreatedAt(entity.getCreatedAt());
+        dto.setUpdatedAt(entity.getUpdatedAt());
+        dto.setUrl(entity.getUrl());
+        return dto;
     }
 
     @Override
