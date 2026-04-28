@@ -62,4 +62,11 @@ public interface IExerciseSolutionService extends IService<ExerciseSolution> {
      * 获取某个节点的所有子节点（包括孙子节点）
      */
     List<ExerciseSolution> getAllChildren(Integer parentId);
+
+    /**
+     * 替换 Markdown 中的图片并更新到 MinIO
+     * @param id 习题解答ID
+     * @return 是否成功
+     */
+    boolean replaceImages(Integer id);
 }

@@ -2,6 +2,7 @@ package com.suanfa8.algocrazyapi.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.suanfa8.algocrazyapi.common.Result;
 import com.suanfa8.algocrazyapi.common.ResultCode;
 import com.suanfa8.algocrazyapi.dto.ChapterInfo;
@@ -9,7 +10,6 @@ import com.suanfa8.algocrazyapi.entity.Article;
 import com.suanfa8.algocrazyapi.entity.ExerciseSolution;
 import com.suanfa8.algocrazyapi.service.IArticleService;
 import com.suanfa8.algocrazyapi.service.IExerciseSolutionService;
-import com.suanfa8.algocrazyapi.utils.MinioUtils;
 import com.suanfa8.algocrazyapi.utils.TextFormatter;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -36,16 +36,9 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.net.URL;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @RestController
 @RequestMapping("/exercise-solutions")
@@ -59,9 +52,6 @@ public class ExerciseSolutionController {
 
     @Resource
     private IArticleService articleService;
-
-    @Resource
-    private MinioUtils minioUtils;
 
     @GetMapping("/chapters")
     @Operation(summary = "获取章节列表", description = "获取指定父结点下的章节列表")
@@ -267,7 +257,7 @@ public class ExerciseSolutionController {
     }
 
     @GetMapping("/leetcode/{leetcodeNumber}")
-    @Operation(summary = "根据力扣题号获取习题", description = "根据力扣题号获取习题详情")
+    @Operation(summary = "根据「力扣」题号获取习题", description = "根据「力扣」题号获取习题详情")
     public Result<ExerciseSolution> getByLeetcodeNumber(@PathVariable String leetcodeNumber) {
         ExerciseSolution exerciseSolution = exerciseSolutionService.getByLeetcodeNumber(leetcodeNumber);
         if (exerciseSolution == null) {
@@ -287,10 +277,9 @@ public class ExerciseSolutionController {
                 HttpGet httpGet = new HttpGet(url);
                 try (CloseableHttpResponse response = httpClient.execute(httpGet)) {
                     String responseBody = EntityUtils.toString(response.getEntity());
-                    // 解析 JSON 响应
-                    com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                    ObjectMapper mapper = new ObjectMapper();
                     // 先解析为 Map
-                    java.util.Map<?, ?> responseMap = mapper.readValue(responseBody, java.util.Map.class);
+                    Map<?, ?> responseMap = mapper.readValue(responseBody, Map.class);
                     // 提取 data 部分
                     Object data = responseMap.get("data");
                     if (data instanceof java.util.Map) {
@@ -322,13 +311,13 @@ public class ExerciseSolutionController {
     }
 
 
-
     @GetMapping("/tree")
     @Operation(summary = "获取树形结构的习题列表", description = "获取完整的树形结构习题列表")
     public Result<List<ExerciseSolution>> getTreeList() {
         List<ExerciseSolution> treeList = exerciseSolutionService.getTreeList();
         return Result.success(treeList);
     }
+
 
     @GetMapping("/children/{parentId}")
     @Operation(summary = "获取所有子结点", description = "获取指定结点的所有子结点（包括孙子结点）")
@@ -361,189 +350,20 @@ public class ExerciseSolutionController {
         return Result.fail(ResultCode.UPDATE_FAILED);
     }
 
+
     @PutMapping("/replace-images/{id}")
     @Operation(summary = "替换图片", description = "将 Markdown 中的图片上传到 MinIO 并替换为本站链接")
     public Result<Void> replaceImages(@PathVariable Integer id) {
         try {
-            // 1. 获取练习信息
-            ExerciseSolution exercise = exerciseSolutionService.getById(id);
-            if (exercise == null || exercise.getIsDeleted()) {
-                return Result.fail(ResultCode.EXERCISE_SOLUTION_NOT_FOUND);
-            }
-            
-            // 2. 提取章节序号、力扣题号和问题路径
-            String chapterNumber = getFormattedChapterNumber(exercise.getChapterNumber());
-            String leetcodeNumber = getFormattedLeetcodeNumber(exercise.getLeetcodeNumber());
-            String problemPath = extractProblemPath(exercise.getWebReference());
-            
-            // 3. 提取 Markdown 中的图片
-            String solution = exercise.getSolution();
-            if (solution == null || solution.isEmpty()) {
-                // 没有内容，无需处理
-                return Result.success();
-            }
-            
-            // 4. 处理图片
-            AtomicInteger imageIndex = new AtomicInteger(1);
-            String updatedSolution = replaceMarkdownImages(solution, chapterNumber, leetcodeNumber, problemPath, imageIndex);
-            
-            // 5. 更新练习内容
-            exercise.setSolution(updatedSolution);
-            boolean success = exerciseSolutionService.updateById(exercise);
-            
+            boolean success = exerciseSolutionService.replaceImages(id);
             if (success) {
                 return Result.success();
             }
             return Result.fail(ResultCode.UPDATE_FAILED);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("替换图片失败", e);
             return Result.fail(ResultCode.FAILED);
         }
-    }
-    
-    /**
-     * 格式化章节序号（不足两位补前导 0）
-     */
-    private String getFormattedChapterNumber(String chapterNumber) {
-        if (chapterNumber == null || chapterNumber.isEmpty()) {
-            return "00";
-        }
-        try {
-            int num = Integer.parseInt(chapterNumber);
-            return String.format("%02d", num);
-        } catch (NumberFormatException e) {
-            return "00";
-        }
-    }
-    
-    /**
-     * 格式化力扣题号（不足 4 位补前导0）
-     */
-    private String getFormattedLeetcodeNumber(String leetcodeNumber) {
-        if (leetcodeNumber == null || leetcodeNumber.isEmpty()) {
-            return "0000";
-        }
-        try {
-            int num = Integer.parseInt(leetcodeNumber);
-            return String.format("%04d", num);
-        } catch (NumberFormatException e) {
-            return "0000";
-        }
-    }
-    
-    /**
-     * 从 web_reference 中提取问题路径
-     * 格式：在 problems/ 和 /description 之间的部分
-     */
-    private String extractProblemPath(String webReference) {
-        if (webReference == null || webReference.isEmpty()) {
-            return "unknown";
-        }
-        Pattern pattern = Pattern.compile("problems/([^/]+)/description");
-        Matcher matcher = pattern.matcher(webReference);
-        if (matcher.find()) {
-            return matcher.group(1);
-        }
-        return "unknown";
-    }
-    
-    /**
-     * 替换 Markdown 中的图片
-     */
-    private String replaceMarkdownImages(String content, String chapterNumber, String leetcodeNumber, String problemPath, AtomicInteger imageIndex) throws Exception {
-        // 匹配 Markdown 图片格式：![]() 单独占一行
-        Pattern pattern = Pattern.compile("^\\s*!\\[.*?\\]\\((.*?)\\)\\s*$", Pattern.MULTILINE);
-        Matcher matcher = pattern.matcher(content);
-        
-        StringBuffer sb = new StringBuffer();
-        while (matcher.find()) {
-            String imageUrl = matcher.group(1);
-            String newImageUrl = processImage(imageUrl, chapterNumber, leetcodeNumber, problemPath, imageIndex.getAndIncrement());
-            // 在图片前后各添加一个空行，符合 Markdown 规范
-            String replacement = "\n![]()\n".replace("()", "(" + newImageUrl + ")");
-            matcher.appendReplacement(sb, replacement);
-        }
-        matcher.appendTail(sb);
-        
-        return sb.toString();
-    }
-    
-    /**
-     * 处理单个图片：下载、上传到 MinIO、返回新的 URL
-     */
-    private String processImage(String imageUrl, String chapterNumber, String leetcodeNumber, String problemPath, int imageIndex) throws Exception {
-        // 1. 下载图片到永久临时文件夹
-        File tempFile = downloadImage(imageUrl);
-        
-        try {
-            // 2. 构建 MinIO 路径（去掉 crazy 前缀，因为存储桶名称已经是 crazy）
-            String extension = getFileExtension(imageUrl);
-            String objectName = String.format("exercises/chapter%s/%s-%s/%02d.%s", 
-                chapterNumber, leetcodeNumber, problemPath, imageIndex, extension);
-            
-            // 3. 上传到 MinIO
-            String minioUrl = uploadToMinio(tempFile, objectName);
-            
-            // 4. 构建本站链接，确保包含 crazy 前缀
-            return "https://static.suanfa8.com/crazy/" + objectName;
-        } finally {
-            // 5. 不删除临时文件，保留在永久临时文件夹中
-        }
-    }
-    
-    /**
-     * 下载图片到永久临时文件夹
-     */
-    private File downloadImage(String imageUrl) throws Exception {
-        // 创建永久临时文件夹
-        String tempDirPath = System.getProperty("java.io.tmpdir") + File.separator + "suanfa8_image_cache";
-        File tempDir = new File(tempDirPath);
-        if (!tempDir.exists()) {
-            tempDir.mkdirs();
-        }
-        
-        // 生成唯一的文件名
-        String fileName = System.currentTimeMillis() + "_" + Math.abs(imageUrl.hashCode()) + ".tmp";
-        File tempFile = new File(tempDir, fileName);
-        
-        URL url = new URL(imageUrl);
-        
-        try (InputStream in = url.openStream();
-             FileOutputStream out = new FileOutputStream(tempFile)) {
-            byte[] buffer = new byte[1024];
-            int bytesRead;
-            while ((bytesRead = in.read(buffer)) != -1) {
-                out.write(buffer, 0, bytesRead);
-            }
-        }
-        
-        return tempFile;
-    }
-    
-    /**
-     * 获取文件扩展名
-     */
-    private String getFileExtension(String url) {
-        int lastDotIndex = url.lastIndexOf('.');
-        if (lastDotIndex != -1) {
-            String extension = url.substring(lastDotIndex + 1);
-            // 处理 URL 中的查询参数
-            int queryIndex = extension.indexOf('?');
-            if (queryIndex != -1) {
-                extension = extension.substring(0, queryIndex);
-            }
-            return extension.toLowerCase();
-        }
-        return "png"; // 默认扩展名
-    }
-    
-    /**
-     * 上传文件到 MinIO 的 crazy 存储桶
-     */
-    private String uploadToMinio(File file, String objectName) throws Exception {
-        // 注意：这里需要处理 MinioUtils 的依赖注入
-        // 实际使用时，应该通过 @Autowired 注入 MinioUtils
-        return minioUtils.upload(file, objectName, "crazy");
     }
 
 }
