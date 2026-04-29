@@ -46,6 +46,21 @@ public class CommentController {
         return Result.success(commentService.getCommentsByArticleId(Integer.parseInt(articleId)));
     }
 
+    @Operation(summary = "获取练习评论列表")
+    @Parameter(name = "exerciseId", required = true, description = "练习 ID")
+    @GetMapping("/exercise/comments")
+    public Result<List<Comment>> getCommentsByExerciseId(@RequestParam String exerciseId) {
+        return Result.success(commentService.getCommentsByExerciseId(Integer.parseInt(exerciseId)));
+    }
+
+    @Operation(summary = "根据目标类型获取评论列表")
+    @Parameter(name = "targetType", required = true, description = "目标类型：ARTICLE/EXERCISE")
+    @Parameter(name = "targetId", required = true, description = "目标 ID")
+    @GetMapping("/target/comments")
+    public Result<List<Comment>> getCommentsByTarget(@RequestParam String targetType, @RequestParam String targetId) {
+        return Result.success(commentService.getCommentsByTarget(targetType, Integer.parseInt(targetId)));
+    }
+
     // 评论和回复共用
     @Operation(summary = "添加评论")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
@@ -55,21 +70,17 @@ public class CommentController {
         Long userId = user.getId();
         String userNickname = user.getNickname();
         Comment comment = new Comment();
-        // 复制相同字段（要求 DTO 和 Entity 字段名一致）
         BeanUtils.copyProperties(commentAddDto, comment);
-        // 手动设置 DTO 没有的字段
         comment.setUserId(userId);
         comment.setUserNickname(userNickname);
 
         Comment newComment = commentService.addComment(comment);
-        // 这里创建时间与数据库不一致，避免再查一次
         newComment.setUserId(userId);
         newComment.setUserNickname(userNickname);
         newComment.setUserAvatar(user.getAvatar());
         newComment.setCreatedAt(LocalDateTime.now());
         return Result.success(newComment);
     }
-
 
     @PermitAll
     @Operation(summary = "获取指定评论的回复列表")
@@ -105,8 +116,6 @@ public class CommentController {
         return Result.success(result);
     }
 
-
-
     // 分页显示评论列表
     @PreAuthorize("hasAnyRole('ADMIN')")
     @GetMapping("/list")
@@ -115,9 +124,9 @@ public class CommentController {
         return Result.success(commentIPage);
     }
 
-     // 管理端：添加根据 id 删除评论的接口
-     @PreAuthorize("hasAnyRole('ADMIN')")
-     @DeleteMapping("/delete/{id}")
+    // 管理端：添加根据 id 删除评论的接口
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    @DeleteMapping("/delete/{id}")
     public Result<Boolean> deleteCommentById(@PathVariable Integer id) {
         return Result.success(commentService.removeById(id));
     }

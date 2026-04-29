@@ -20,28 +20,20 @@ public interface ICommentService extends IService<Comment> {
 
     boolean updateComment(CommentUpdateDto commentUpdateDto);
 
-    /**
-     * 获取指定评论的回复列表
-     *
-     * @param commentId
-     * @return
-     */
     List<Comment> getRepliesByCommentId(Integer commentId);
 
-    /**
-     * 更新评论的回复数量
-     * @param commentId
-     * @param increment
-     * @return
-     */
     boolean updateReplyCount(Integer commentId, int increment);
 
-    /**
-     * 分页显示评论列表，按评论创建时间倒序排列
-     * @param pageNum 页码
-     * @param pageSize 每页数量
-     * @return 分页后的评论列表
-     */
     IPage<Comment> listComments(Integer pageNum, Integer pageSize);
+
+    /**
+     * 根据目标类型和目标ID获取评论列表
+     */
+    List<Comment> getCommentsByTarget(String targetType, Integer targetId);
+
+    /**
+     * 获取练习评论列表
+     */
+    List<Comment> getCommentsByExerciseId(Integer exerciseId);
 
 }

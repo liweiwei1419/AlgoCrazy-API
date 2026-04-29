@@ -1,6 +1,5 @@
 package com.suanfa8.algocrazyapi.dto.comment;
 
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.Data;
@@ -13,7 +12,15 @@ import lombok.ToString;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class CommentAddDto {
 
-    private Integer articleId;
+    /**
+     * 目标类型：ARTICLE（文章）、EXERCISE（练习）等
+     */
+    private String targetType;
+
+    /**
+     * 目标ID
+     */
+    private Integer targetId;
 
     private String content;
 

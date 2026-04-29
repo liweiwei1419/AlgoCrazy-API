@@ -49,30 +49,53 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     @Resource
     private IArticleService articleService;
 
+    /**
+     * 目标类型常量
+     */
+    private static final String TARGET_TYPE_ARTICLE = "ARTICLE";
+    private static final String TARGET_TYPE_EXERCISE = "EXERCISE";
+
     @Override
     public List<Comment> getCommentsByArticleId(Integer articleId) {
+        return getCommentsByTarget(TARGET_TYPE_ARTICLE, articleId);
+    }
+
+    /**
+     * 根据目标类型和目标ID获取评论列表
+     */
+    public List<Comment> getCommentsByTarget(String targetType, Integer targetId) {
         LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Comment::getArticleId, articleId).isNull(Comment::getParentCommentId).orderByDesc(Comment::getCreatedAt);
+        queryWrapper.eq(Comment::getTargetType, targetType)
+                   .eq(Comment::getTargetId, targetId)
+                   .isNull(Comment::getParentCommentId)
+                   .orderByDesc(Comment::getCreatedAt);
         List<Comment> comments = commentsMapper.selectList(queryWrapper);
-        // 调用公共方法填充用户信息
         fillUserInfoForComments(comments);
+        fillTargetInfoForComments(comments, targetType);
         return comments;
+    }
+
+    /**
+     * 获取练习评论列表
+     */
+    public List<Comment> getCommentsByExerciseId(Integer exerciseId) {
+        return getCommentsByTarget(TARGET_TYPE_EXERCISE, exerciseId);
     }
 
     @Override
     public Comment addComment(Comment comment) {
         int insert = commentsMapper.insert(comment);
         String userNickname = comment.getUserNickname();
-        Integer articleId = comment.getArticleId();
+        Integer targetId = comment.getTargetId();
         if (insert > 0) {
             if (comment.getParentCommentId() != null) {
                 // 如果是回复评论，更新父评论的回复数量
                 updateReplyCount(comment.getParentCommentId(), 1);
                 // 有新回复，发送通知
-                dingTalkGroupNotificationUtil.sendNewReplyNotification(userNickname, articleId, comment.getContent());
+                dingTalkGroupNotificationUtil.sendNewReplyNotification(userNickname, targetId, comment.getContent());
             } else {
                 // 有新评论，发送通知
-                dingTalkGroupNotificationUtil.sendNewCommentNotification(userNickname, articleId, comment.getContent());
+                dingTalkGroupNotificationUtil.sendNewCommentNotification(userNickname, targetId, comment.getContent());
             }
             Long replyToUserId = comment.getReplyToUserId();
             if (replyToUserId != null) {
@@ -89,11 +112,8 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
 
     /**
      * 为评论列表填充用户昵称、头像和回复用户昵称
-     *
-     * @param comments 评论列表
      */
     private void fillUserInfoForComments(List<Comment> comments) {
-        // 收集所有 userId 和 replyToUserId
         Set<Long> userIds = new HashSet<>();
         for (Comment comment : comments) {
             if (comment.getUserId() != null) {
@@ -104,10 +124,8 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
             }
         }
 
-        // 一次性查询用户信息
         Map<Long, User> userMap = userService.getUserMapByIds(new ArrayList<>(userIds));
 
-        // 设置用户昵称和头像
         for (Comment comment : comments) {
             if (comment.getUserId() != null) {
                 User user = userMap.get(comment.getUserId());
@@ -125,6 +143,33 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         }
     }
 
+    /**
+     * 为评论列表填充目标信息
+     */
+    private void fillTargetInfoForComments(List<Comment> comments, String targetType) {
+        if (comments == null || comments.isEmpty()) {
+            return;
+        }
+
+        Set<Integer> targetIds = comments.stream()
+                .map(Comment::getTargetId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toCollection(HashSet::new));
+
+        if (TARGET_TYPE_ARTICLE.equals(targetType)) {
+            Map<Integer, Article> articleMap = articleService.getArticleMapByIds(new ArrayList<>(targetIds));
+            for (Comment comment : comments) {
+                Article article = articleMap.get(comment.getTargetId());
+                if (article != null) {
+                    comment.setTargetTitle(article.getTitle());
+                    comment.setTargetUrl(article.getUrl());
+                }
+            }
+        } else if (TARGET_TYPE_EXERCISE.equals(targetType)) {
+            // TODO: 当练习模块实现后，添加练习信息填充逻辑
+        }
+    }
+
     @Override
     public boolean incrementLikeCount(Integer id) {
         return baseMapper.incrementLikeCount(id);
@@ -132,17 +177,13 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
 
     @Override
     public boolean deleteComment(CommentDeleteDto commentDeleteDto) {
-        // 情况 1：它的下面有回复
-        // 查询谁的 parentCommentId 是它
         LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Comment::getParentCommentId, commentDeleteDto.getCommentId());
         List<Comment> comments = commentsMapper.selectList(queryWrapper);
-        // 批量删除
-        if (comments!= null &&!comments.isEmpty()) {
+        if (comments != null && !comments.isEmpty()) {
             List<Integer> commentIds = comments.stream().map(Comment::getId).collect(Collectors.toList());
             commentsMapper.deleteBatchIds(commentIds);
         }
-        // 情况 2：它只是回复，需要把父评论的回复数 - 1
         if (commentDeleteDto.getParentCommentId() != null) {
             updateReplyCount(commentDeleteDto.getParentCommentId(), -1);
         }
@@ -155,7 +196,6 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         updateWrapper.eq(Comment::getId, commentUpdateDto.getCommentId());
         updateWrapper.set(Comment::getContent, commentUpdateDto.getContent());
         updateWrapper.set(true, Comment::getUpdatedAt, LocalDateTime.now());
-        // 调用带 entity 参数的 update 方法
         return this.update(updateWrapper);
     }
 
@@ -178,7 +218,6 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
 
     @Override
     public IPage<Comment> listComments(Integer pageNum, Integer pageSize) {
-        // 设置默认页码和每页数量
         if (pageNum == null || pageNum < 1) {
             pageNum = 1;
         }
@@ -186,34 +225,16 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
             pageSize = 10;
         }
 
-        // 创建 Page 对象
         Page<Comment> page = new Page<>(pageNum, pageSize);
         LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
-        // 按评论创建时间倒序排列
         queryWrapper.orderByDesc(Comment::getCreatedAt);
         IPage<Comment> commentPage = this.page(page, queryWrapper);
-        // 调用公共方法填充用户信息
         fillUserInfoForComments(commentPage.getRecords());
-        fillArticleInfoForComments(commentPage.getRecords());
-        return commentPage;
-    }
-
-
-    private void fillArticleInfoForComments(List<Comment> comments) {
-        // 收集所有的 articleId
-        Set<Integer> articleIds = comments.stream().map(Comment::getArticleId).filter(Objects::nonNull).collect(Collectors.toCollection(HashSet::new));
-        // 一次性查询用户信息
-        Map<Integer, Article> articleMap = articleService.getArticleMapByIds(new ArrayList<>(articleIds));
-        // 设置用户昵称和头像
-        for (Comment comment : comments) {
-            Article article = articleMap.get(comment.getArticleId());
-            if (article != null) {
-                comment.setArticleTitle(article.getTitle());
-                comment.setArticleUrl(article.getUrl());
-            }
+        // 填充目标信息（简化处理）
+        for (Comment comment : commentPage.getRecords()) {
+            fillTargetInfoForComments(List.of(comment), comment.getTargetType());
         }
-
-        System.out.println(comments);
+        return commentPage;
     }
 
 }

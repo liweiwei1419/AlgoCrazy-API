@@ -26,14 +26,6 @@ public class Comment {
     @TableId(type = IdType.AUTO)
     private Integer id;
 
-    @TableField("article_id")
-    private Integer articleId;
-
-    @TableField(exist = false)
-    private String articleTitle;
-    @TableField(exist = false)
-    private String articleUrl;
-
     // 解决返回给前端精度丢失的问题
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     @TableField("user_id")
@@ -51,7 +43,6 @@ public class Comment {
     @TableField(value = "created_at", fill = FieldFill.INSERT)
     private LocalDateTime createdAt;
 
-
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
@@ -59,17 +50,16 @@ public class Comment {
     private LocalDateTime updatedAt;
 
     /**
-     * 评论用户信息
+     * 评论用户头像（非数据库字段）
      */
     @TableField(exist = false)
     private String userAvatar;
 
-    // todo 这个字段可以不存
     @TableField("user_nickname")
     private String userNickname;
 
     /**
-     * 二级评论列表
+     * 二级评论列表（非数据库字段）
      */
     @TableField(exist = false)
     private List<Comment> replies;
@@ -95,5 +85,29 @@ public class Comment {
 
     @TableField(exist = false)
     private String replyToUserNickname;
+
+    /**
+     * 目标类型：ARTICLE（文章）、EXERCISE（练习）等
+     */
+    @TableField("target_type")
+    private String targetType;
+
+    /**
+     * 目标ID
+     */
+    @TableField("target_id")
+    private Integer targetId;
+
+    /**
+     * 目标标题（非数据库字段）
+     */
+    @TableField(exist = false)
+    private String targetTitle;
+
+    /**
+     * 目标URL（非数据库字段）
+     */
+    @TableField(exist = false)
+    private String targetUrl;
 
 }
