@@ -9,14 +9,15 @@ import com.suanfa8.algocrazyapi.dto.comment.CommentDeleteDto;
 import com.suanfa8.algocrazyapi.dto.comment.CommentUpdateDto;
 import com.suanfa8.algocrazyapi.entity.Article;
 import com.suanfa8.algocrazyapi.entity.Comment;
+import com.suanfa8.algocrazyapi.entity.ExerciseSolution;
 import com.suanfa8.algocrazyapi.entity.User;
 import com.suanfa8.algocrazyapi.mapper.CommentMapper;
 import com.suanfa8.algocrazyapi.service.IArticleService;
 import com.suanfa8.algocrazyapi.service.ICommentService;
+import com.suanfa8.algocrazyapi.service.IExerciseSolutionService;
 import com.suanfa8.algocrazyapi.service.IUserService;
 import com.suanfa8.algocrazyapi.utils.DingTalkGroupNotificationUtil;
 import jakarta.annotation.Resource;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -31,23 +32,20 @@ import java.util.stream.Collectors;
 @Service
 public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> implements ICommentService {
 
-    @Autowired
+    @Resource
     private CommentMapper commentsMapper;
 
-    @Autowired
+    @Resource
     private DingTalkGroupNotificationUtil dingTalkGroupNotificationUtil;
 
-    /**
-     * 注入用户服务
-     */
-    @Autowired
+    @Resource
     private IUserService userService;
 
-    /**
-     * 注入文章服务
-     */
     @Resource
     private IArticleService articleService;
+
+    @Resource
+    private IExerciseSolutionService exerciseSolutionService;
 
     /**
      * 目标类型常量
@@ -65,10 +63,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
      */
     public List<Comment> getCommentsByTarget(String targetType, Integer targetId) {
         LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Comment::getTargetType, targetType)
-                   .eq(Comment::getTargetId, targetId)
-                   .isNull(Comment::getParentCommentId)
-                   .orderByDesc(Comment::getCreatedAt);
+        queryWrapper.eq(Comment::getTargetType, targetType).eq(Comment::getTargetId, targetId).isNull(Comment::getParentCommentId).orderByDesc(Comment::getCreatedAt);
         List<Comment> comments = commentsMapper.selectList(queryWrapper);
         fillUserInfoForComments(comments);
         fillTargetInfoForComments(comments, targetType);
@@ -151,11 +146,9 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
             return;
         }
 
-        Set<Integer> targetIds = comments.stream()
-                .map(Comment::getTargetId)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toCollection(HashSet::new));
+        Set<Integer> targetIds = comments.stream().map(Comment::getTargetId).filter(Objects::nonNull).collect(Collectors.toCollection(HashSet::new));
 
+        // 填充文章信息
         if (TARGET_TYPE_ARTICLE.equals(targetType)) {
             Map<Integer, Article> articleMap = articleService.getArticleMapByIds(new ArrayList<>(targetIds));
             for (Comment comment : comments) {
@@ -166,7 +159,15 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
                 }
             }
         } else if (TARGET_TYPE_EXERCISE.equals(targetType)) {
-            // TODO: 当练习模块实现后，添加练习信息填充逻辑
+            // 填充练习信息
+            Map<Integer, ExerciseSolution> exerciseSolutionMap = exerciseSolutionService.getExerciseMapByIds(new ArrayList<>(targetIds));
+            for (Comment comment : comments) {
+                ExerciseSolution exerciseSolution = exerciseSolutionMap.get(comment.getTargetId());
+                if (exerciseSolution != null) {
+                    comment.setTargetTitle(exerciseSolution.getTitle());
+                    comment.setTargetUrl(exerciseSolution.getUrl());
+                }
+            }
         }
     }
 
@@ -218,7 +219,6 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
 
     @Override
     public IPage<Comment> listComments(Integer pageNum, Integer pageSize, String targetType) {
-        // 设置默认页码和每页数量
         if (pageNum == null || pageNum < 1) {
             pageNum = 1;
         }
@@ -226,22 +226,17 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
             pageSize = 10;
         }
 
-        // 创建 Page 对象
         Page<Comment> page = new Page<>(pageNum, pageSize);
         LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
 
-        // 如果指定了目标类型，则按目标类型筛选
         if (targetType != null && !targetType.isEmpty()) {
             queryWrapper.eq(Comment::getTargetType, targetType);
         }
 
-        // 按评论创建时间倒序排列
         queryWrapper.orderByDesc(Comment::getCreatedAt);
 
         IPage<Comment> commentPage = this.page(page, queryWrapper);
-        // 调用公共方法填充用户信息
         fillUserInfoForComments(commentPage.getRecords());
-        // 填充目标信息
         for (Comment comment : commentPage.getRecords()) {
             fillTargetInfoForComments(List.of(comment), comment.getTargetType());
         }

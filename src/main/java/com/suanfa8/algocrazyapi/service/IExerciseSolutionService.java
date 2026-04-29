@@ -1,11 +1,15 @@
 package com.suanfa8.algocrazyapi.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.suanfa8.algocrazyapi.dto.exercise.ExerciseSolutionListDTO;
 import com.suanfa8.algocrazyapi.entity.ExerciseSolution;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public interface IExerciseSolutionService extends IService<ExerciseSolution> {
 
@@ -75,4 +79,11 @@ public interface IExerciseSolutionService extends IService<ExerciseSolution> {
      * @return 是否成功
      */
     boolean replaceImages(Integer id);
+
+
+    /**
+     * 根据ID列表批量获取习题
+     */
+    Map<Integer, ExerciseSolution> getExerciseMapByIds(List<Integer> ids);
+
 }

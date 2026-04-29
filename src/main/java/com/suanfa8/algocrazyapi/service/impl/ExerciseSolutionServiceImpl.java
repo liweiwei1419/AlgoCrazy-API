@@ -18,7 +18,10 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
@@ -462,4 +465,16 @@ public class ExerciseSolutionServiceImpl extends ServiceImpl<ExerciseSolutionMap
     private String uploadToMinio(File file, String objectName) throws Exception {
         return minioUtils.upload(file, objectName, "crazy");
     }
+
+    @Override
+    public Map<Integer, ExerciseSolution> getExerciseMapByIds(List<Integer> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        LambdaQueryWrapper<ExerciseSolution> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.in(ExerciseSolution::getId, ids);
+        List<ExerciseSolution> exercises = baseMapper.selectList(queryWrapper);
+        return exercises.stream().collect(Collectors.toMap(ExerciseSolution::getId, Function.identity()));
+    }
+
 }
