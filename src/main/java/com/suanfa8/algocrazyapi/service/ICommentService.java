@@ -24,7 +24,14 @@ public interface ICommentService extends IService<Comment> {
 
     boolean updateReplyCount(Integer commentId, int increment);
 
-    IPage<Comment> listComments(Integer pageNum, Integer pageSize);
+    /**
+     * 分页显示评论列表，按评论创建时间倒序排列
+     * @param pageNum 页码
+     * @param pageSize 每页数量
+     * @param targetType 目标类型（可选）
+     * @return 分页后的评论列表
+     */
+    IPage<Comment> listComments(Integer pageNum, Integer pageSize, String targetType);
 
     /**
      * 根据目标类型和目标ID获取评论列表
