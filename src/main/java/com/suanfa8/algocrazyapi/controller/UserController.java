@@ -5,6 +5,7 @@ import com.suanfa8.algocrazyapi.common.ResultCode;
 import com.suanfa8.algocrazyapi.dto.UserRegisterDTO;
 import com.suanfa8.algocrazyapi.entity.User;
 import com.suanfa8.algocrazyapi.service.IUserService;
+import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -23,15 +24,13 @@ import java.util.Map;
 @RequestMapping("/user")
 public class UserController {
 
-    @Autowired
+    @Resource
     private IUserService userService;
-
 
     @PostMapping("/register")
     public User register(@RequestBody UserRegisterDTO userRegisterDTO) {
         return userService.register(userRegisterDTO);
     }
-
 
     /**
      * 登录后修改密码
@@ -59,14 +58,12 @@ public class UserController {
         }
     }
 
-
     @PostMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> body) {
         String usernameOrEmail = body.get("usernameOrEmail");
         userService.sendResetPasswordEmail(usernameOrEmail);
         return ResponseEntity.ok().build();
     }
-
 
     @PostMapping("/reset-password")
     public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> body) {

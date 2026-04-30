@@ -56,7 +56,6 @@ public class YuqueDocumentController {
         return "Failed to get tree";
     }
 
-
     @Operation(summary = "根据知识库 ID 和文档 ID 获取文档内容")
     @Parameter(name = "repo_id", required = true, description = "知识库 ID", in = ParameterIn.PATH)
     @Parameter(name = "doc_id", required = true, description = "文档 ID", in = ParameterIn.PATH)
@@ -88,4 +87,5 @@ public class YuqueDocumentController {
         }
         return "Failed to get document detail";
     }
+    
 }

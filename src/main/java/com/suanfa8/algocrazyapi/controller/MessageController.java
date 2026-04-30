@@ -44,9 +44,7 @@ public class MessageController {
     @Parameter(name = "pageNum", description = "页码")
     @Parameter(name = "pageSize", description = "每页数量")
     @GetMapping("/list")
-    public Result<IPage<Message>> listMessages(
-            @RequestParam(required = false) Integer pageNum,
-            @RequestParam(required = false) Integer pageSize) {
+    public Result<IPage<Message>> listMessages(@RequestParam(required = false) Integer pageNum, @RequestParam(required = false) Integer pageSize) {
         return Result.success(messageService.listMessages(pageNum, pageSize));
     }
 
@@ -61,9 +59,7 @@ public class MessageController {
     @Operation(summary = "更新留言状态")
     @PreAuthorize("hasAnyRole('ADMIN')")
     @PutMapping("/status/{id}/{status}")
-    public Result<Boolean> updateMessageStatus(
-            @Parameter(name = "id", required = true, description = "留言ID") @PathVariable Long id,
-            @Parameter(name = "status", required = true, description = "状态：0-待回复，1-已回复") @PathVariable Integer status) {
+    public Result<Boolean> updateMessageStatus(@Parameter(name = "id", required = true, description = "留言ID") @PathVariable Long id, @Parameter(name = "status", required = true, description = "状态：0-待回复，1-已回复") @PathVariable Integer status) {
         return Result.success(messageService.updateMessageStatus(id, status));
     }
 
@@ -87,4 +83,5 @@ public class MessageController {
     public Result<List<Message>> getMessagesByStatus(@PathVariable Integer status) {
         return Result.success(messageService.getMessagesByStatus(status));
     }
+
 }

@@ -44,14 +44,37 @@ public class SecurityConfig {
             // 放行的 URL 路径
             "/auth/authenticate",
             // 添加退出登录接口路径
-            "/comment/comments", "/comment/add", "/comment/*/replies", "/user/register", "/user/forgot-password", "/user/reset-password", "/user/homepage/**", "/hello/world", "/hello/days-until-2025-10-30", "/hello/greet", "/tree/**", "/article/**", "/file/**", "/leetcode/problems/**", "/message/**", "/algorithm-category/**",
+            "/comment/comments",
+            "/comment/exercise/comments",
+            "/comment/add",
+            "/comment/*/replies",
+            "/user/register",
+            "/user/forgot-password",
+            "/user/reset-password",
+            "/user/homepage/**",
+            "/hello/world",
+            "/hello/days-until-2025-10-30",
+            "/hello/greet",
+            "/tree/**",
+            "/article/**",
+            "/file/**",
+            "/leetcode/problems/**",
+            "/message/**",
+            "/algorithm-category/**",
             // Knife4j 文档访问路径
-            "/v3/api-docs", "/v3/api-docs/**",    // API 描述文档的 JSON 数据
-            "/swagger-ui/**",     // Swagger UI 的所有资源（HTML, JS, CSS）
-            "/swagger-ui.html",    // Swagger UI 主页面,
-            "/webjars/**",           // Swagger 可能需要的静态资源
-            "/swagger-resources/**",    // Swagger 资源
-            "/doc.html"     // Knife4j 主页
+            // API 描述文档的 JSON 数据
+            "/v3/api-docs",
+            "/v3/api-docs/**",
+            // Swagger UI 的所有资源（HTML, JS, CSS）
+            "/swagger-ui/**",
+            // Swagger UI 主页面,
+            "/swagger-ui.html",
+            // Swagger 可能需要的静态资源
+            "/webjars/**",
+            // Swagger 资源
+            "/swagger-resources/**",
+            // Knife4j 主页
+            "/doc.html"
     };
 
     /**
@@ -105,13 +128,9 @@ public class SecurityConfig {
         return http.build();
     }
 
-
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // 明确指定允许的前端源地址
-        // configuration.addAllowedOriginPattern("http://localhost:5173");
-        // configuration.addAllowedOriginPattern("https://algocrazy.dance8.fun");
         configuration.addAllowedOriginPattern("*");
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
@@ -123,4 +142,5 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
+
 }

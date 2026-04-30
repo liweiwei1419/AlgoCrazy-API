@@ -20,7 +20,6 @@ public class ArticleLikeRecordController {
     @Resource
     private IArticleLikeRecordService articleLikeRecordService;
 
-
     @GetMapping("/hasArticleLike")
     public Result<Boolean> hasArticleLike(Integer articleId) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();

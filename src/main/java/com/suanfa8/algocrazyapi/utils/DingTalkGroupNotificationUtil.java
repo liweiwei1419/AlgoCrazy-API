@@ -19,7 +19,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
 @Component
-public class DingTalkGroupNotificationUtil {
+public class DingTalkGroupNotificationUtil implements NotificationStrategy {
 
     @Value("${dingtalk.custom-robot-token}")
     private String customRobotToken;
@@ -35,6 +35,7 @@ public class DingTalkGroupNotificationUtil {
      *
      * @param message 通知消息内容
      */
+    @Override
     public void sendNotification(String message) {
         try {
             Long timestamp = System.currentTimeMillis();
@@ -76,6 +77,7 @@ public class DingTalkGroupNotificationUtil {
     /**
      * 有新评论时发送通知
      */
+    @Override
     public void sendNewCommentNotification(String userNickname, Integer articleId, String content) {
         String stringBuilder = userNickname + "在文章 " + articleId + " 下发表了新的评论。\n" + "评论内容：\n" + content + "\n";
         sendNotification(stringBuilder);
@@ -84,6 +86,7 @@ public class DingTalkGroupNotificationUtil {
     /**
      * 有新回复时发送通知
      */
+    @Override
     public void sendNewReplyNotification(String userNickname, Integer articleId, String content) {
         sendNotification("有新的回复，请及时查看！");
     }

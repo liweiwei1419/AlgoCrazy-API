@@ -32,9 +32,7 @@ public class TagController {
     @Parameter(name = "pageNum", description = "页码")
     @Parameter(name = "pageSize", description = "每页数量")
     @GetMapping("/list")
-    public Result<IPage<Label>> listTags(
-            @RequestParam(required = false) Integer pageNum,
-            @RequestParam(required = false) Integer pageSize) {
+    public Result<IPage<Label>> listTags(@RequestParam(required = false) Integer pageNum, @RequestParam(required = false) Integer pageSize) {
         return Result.success(tagService.listTags(pageNum, pageSize));
     }
 
@@ -76,27 +74,21 @@ public class TagController {
     @Operation(summary = "为文章添加标签")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @PostMapping("/article/{articleId}/add")
-    public Result<Boolean> addTagsToArticle(
-            @PathVariable Integer articleId,
-            @RequestBody List<Integer> tagIds) {
+    public Result<Boolean> addTagsToArticle(@PathVariable Integer articleId, @RequestBody List<Integer> tagIds) {
         return Result.success(tagService.addTagsToArticle(articleId, tagIds));
     }
 
     @Operation(summary = "更新文章标签")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @PutMapping("/article/{articleId}/update")
-    public Result<Boolean> updateArticleTags(
-            @PathVariable Integer articleId,
-            @RequestBody List<Integer> tagIds) {
+    public Result<Boolean> updateArticleTags(@PathVariable Integer articleId, @RequestBody List<Integer> tagIds) {
         return Result.success(tagService.updateArticleTags(articleId, tagIds));
     }
 
     @Operation(summary = "移除文章标签")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @DeleteMapping("/article/{articleId}/{tagId}")
-    public Result<Boolean> removeTagFromArticle(
-            @PathVariable Integer articleId,
-            @PathVariable Integer tagId) {
+    public Result<Boolean> removeTagFromArticle(@PathVariable Integer articleId, @PathVariable Integer tagId) {
         return Result.success(tagService.removeTagFromArticle(articleId, tagId));
     }
 
@@ -111,4 +103,5 @@ public class TagController {
     public Result<List<Integer>> getArticleIdsByTagId(@PathVariable Integer tagId) {
         return Result.success(tagService.getArticleIdsByTagId(tagId));
     }
+
 }

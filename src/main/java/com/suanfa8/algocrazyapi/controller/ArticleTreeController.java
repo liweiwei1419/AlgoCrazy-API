@@ -28,7 +28,7 @@ public class ArticleTreeController {
     @Resource
     private IArticleTreeService articleTreeService;
 
-    @Autowired
+    @Resource
     private RedisTemplate<String, Object> redisTemplate;
 
     private static final String CACHE_KEY = "article:fullTree";
@@ -42,7 +42,6 @@ public class ArticleTreeController {
         return Result.success(result);
     }
 
-
     // 用于书本目录
     @GetMapping("/book")
     @Cacheable(value = "bookFullTree", key = "'book:fullTree'", unless = "#result == null")
@@ -51,7 +50,6 @@ public class ArticleTreeController {
         List<BookTreeNode> result = tree != null ? tree : Collections.emptyList();
         return Result.success(result);
     }
-
 
     // 当数据更新时清除缓存
     @CacheEvict(value = {"articleFullTree", "bookFullTree"}, key = "'article:fullTree', 'book:fullTree'")
@@ -70,7 +68,6 @@ public class ArticleTreeController {
         articleTreeService.moveNode(id, newParentId);
         return Result.success();
     }
-
 
     // 调整顺序
     @CacheEvict(value = {"articleFullTree", "bookFullTree"}, key = "'article:fullTree', 'book:fullTree'")

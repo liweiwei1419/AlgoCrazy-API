@@ -5,11 +5,10 @@ import com.suanfa8.algocrazyapi.auth.AuthenticationResponse;
 import com.suanfa8.algocrazyapi.service.impl.JwtRedisService;
 import com.suanfa8.algocrazyapi.service.impl.UserDetailsServiceImpl;
 import com.suanfa8.algocrazyapi.utils.JwtUtil;
+import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -27,16 +26,16 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/auth")
 public class AuthController {
 
-    @Autowired
+    @Resource
     private JwtRedisService jwtRedisService;
 
-    @Autowired
+    @Resource
     private AuthenticationManager authenticationManager;
 
-    @Autowired
+    @Resource
     private UserDetailsServiceImpl userDetailsService;
 
-    @Autowired
+    @Resource
     private JwtUtil jwtUtil;
 
     @RequestMapping(value = "/authenticate", method = RequestMethod.POST)
@@ -72,7 +71,6 @@ public class AuthController {
         jwtRedisService.saveJwt(userDetails.getUsername(), jwt);
         return ResponseEntity.ok(new AuthenticationResponse(jwt));
     }
-
 
     // @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @PostMapping("/logout")

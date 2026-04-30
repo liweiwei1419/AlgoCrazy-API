@@ -200,7 +200,6 @@ public class ArticleController {
 
     @Operation(summary = "获得所有二级目录，在「审核进度」页面")
     @GetMapping("/chapters")
-    // @Cacheable(value = "articleChapters", key = "'article:chapters:list'")
     public Result<List<Article>> chapters() {
         log.info("查询数据库，获得所有二级目录，在「审核进度」页面");
         QueryWrapper<Article> queryWrapper = new QueryWrapper<>();

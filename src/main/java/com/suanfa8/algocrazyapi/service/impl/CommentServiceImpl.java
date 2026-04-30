@@ -16,7 +16,8 @@ import com.suanfa8.algocrazyapi.service.IArticleService;
 import com.suanfa8.algocrazyapi.service.ICommentService;
 import com.suanfa8.algocrazyapi.service.IExerciseSolutionService;
 import com.suanfa8.algocrazyapi.service.IUserService;
-import com.suanfa8.algocrazyapi.utils.DingTalkGroupNotificationUtil;
+import com.suanfa8.algocrazyapi.utils.NotificationStrategy;
+import com.suanfa8.algocrazyapi.utils.NotificationStrategyFactory;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 
@@ -36,7 +37,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     private CommentMapper commentsMapper;
 
     @Resource
-    private DingTalkGroupNotificationUtil dingTalkGroupNotificationUtil;
+    private NotificationStrategyFactory notificationStrategyFactory;
 
     @Resource
     private IUserService userService;
@@ -82,15 +83,19 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         int insert = commentsMapper.insert(comment);
         String userNickname = comment.getUserNickname();
         Integer targetId = comment.getTargetId();
+
+        // 获取当前配置的通知策略
+        NotificationStrategy notificationStrategy = notificationStrategyFactory.getNotificationStrategy();
+
         if (insert > 0) {
             if (comment.getParentCommentId() != null) {
                 // 如果是回复评论，更新父评论的回复数量
                 updateReplyCount(comment.getParentCommentId(), 1);
                 // 有新回复，发送通知
-                dingTalkGroupNotificationUtil.sendNewReplyNotification(userNickname, targetId, comment.getContent());
+                notificationStrategy.sendNewReplyNotification(userNickname, targetId, comment.getContent());
             } else {
                 // 有新评论，发送通知
-                dingTalkGroupNotificationUtil.sendNewCommentNotification(userNickname, targetId, comment.getContent());
+                notificationStrategy.sendNewCommentNotification(userNickname, targetId, comment.getContent());
             }
             Long replyToUserId = comment.getReplyToUserId();
             if (replyToUserId != null) {
@@ -242,5 +247,4 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         }
         return commentPage;
     }
-
 }

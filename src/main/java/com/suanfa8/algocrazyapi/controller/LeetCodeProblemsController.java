@@ -27,37 +27,33 @@ public class LeetCodeProblemsController {
     @Resource
     private ILeetCodeProblemsService leetCodeProblemsService;
 
-    @Operation(summary = "分页查询LeetCode题目列表")
+    @Operation(summary = "分页查询 LeetCode 题目列表")
     @Parameter(name = "current", description = "当前页")
     @Parameter(name = "size", description = "每页显示条数")
     @Parameter(name = "title", required = false, description = "题目名称搜索关键字")
     @GetMapping("/page")
-    public Result<IPage<LeetCodeProblems>> getLeetCodeProblemsPage(
-            @RequestParam(defaultValue = "1") Integer current,
-            @RequestParam(defaultValue = "10") Integer size,
-            @RequestParam(required = false) String title) {
-        
+    public Result<IPage<LeetCodeProblems>> getLeetCodeProblemsPage(@RequestParam(defaultValue = "1") Integer current, @RequestParam(defaultValue = "10") Integer size, @RequestParam(required = false) String title) {
         log.info("分页查询LeetCode题目列表，当前页：{}", current);
         log.info("分页查询LeetCode题目列表，每页显示条数：{}", size);
         log.info("分页查询LeetCode题目列表，搜索关键字：{}", title);
-        
+
         // 创建分页对象
         Page<LeetCodeProblems> page = new Page<>(current, size);
-        
+
         // 创建查询条件
         QueryWrapper<LeetCodeProblems> queryWrapper = new QueryWrapper<>();
-        
+
         // 如果传入了title参数，则添加模糊查询条件
         if (StringUtils.isNotBlank(title)) {
             queryWrapper.like("title", title);
         }
-        
+
         // 按ID升序排序
         queryWrapper.orderByAsc("id");
-        
+
         // 执行分页查询
         IPage<LeetCodeProblems> problemsPage = leetCodeProblemsService.page(page, queryWrapper);
-        
+
         return Result.success(problemsPage);
     }
 
@@ -66,18 +62,15 @@ public class LeetCodeProblemsController {
     @GetMapping("/url/{leetcodeNumber}")
     public Result<String> getUrlByLeetCodeNumber(@PathVariable Integer leetcodeNumber) {
         log.info("根据LeetCode题号获取题目URL，题号：{}", leetcodeNumber);
-        
         // 创建查询条件
         QueryWrapper<LeetCodeProblems> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("leetcode_number", leetcodeNumber);
-        
         // 执行查询
         LeetCodeProblems problem = leetCodeProblemsService.getOne(queryWrapper);
-        
         if (problem == null) {
             return Result.fail(404, "未找到对应题号的题目");
         }
-        
         return Result.success(problem.getUrl());
     }
+
 }

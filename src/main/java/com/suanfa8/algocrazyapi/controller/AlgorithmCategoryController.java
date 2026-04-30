@@ -22,7 +22,6 @@ public class AlgorithmCategoryController {
     @Resource
     private IAlgorithmCategoryService algorithmCategoryService;
 
-
     @Operation(summary = "获取所有算法分类列表")
     @GetMapping("/all")
     @Cacheable(value = "algorithmCategories", key = "'all'", unless = "#result == null || #result.data.size() == 0")

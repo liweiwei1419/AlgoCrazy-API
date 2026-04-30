@@ -59,32 +59,28 @@ public class ExerciseSolutionController {
     @GetMapping("/chapters")
     @Operation(summary = "获取章节列表", description = "获取指定父结点下的章节列表")
     @Cacheable(key = "'chapters'")
-    public Result<List<ChapterInfo>> chapters(){
+    public Result<List<ChapterInfo>> chapters() {
         // 查询 parent_id 在 (204,203,206,205) 的文章
         List<Integer> parentIds = List.of(204, 203, 206, 205);
-        
+
         // 使用 MyBatis-Plus 查询条件：parent_id 在指定列表中，只查询需要的字段
         LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.in(Article::getParentId, parentIds)
-                   .eq(Article::getIsDeleted, false)
-                   .orderByAsc(Article::getDisplayOrder)
-                   // 只查询需要的字段，避免查询大字段
-                   .select(Article::getId, Article::getTitle, Article::getDisplayOrder);
-        
+        queryWrapper.in(Article::getParentId, parentIds).eq(Article::getIsDeleted, false).orderByAsc(Article::getDisplayOrder)
+                // 只查询需要的字段，避免查询大字段
+                .select(Article::getId, Article::getTitle, Article::getDisplayOrder);
+
         List<Article> articles = articleService.list(queryWrapper);
-        
+
         // 提取章节信息并按 ID 排序
-        List<ChapterInfo> chapterInfos = articles.stream()
-                .map(article -> {
+        List<ChapterInfo> chapterInfos = articles.stream().map(article -> {
                     String title = article.getTitle();
                     // 从标题中提取数字作为ID，并提取章节名称
                     Integer chapterId = extractChapterId(title);
                     String chapterName = extractChapterName(title);
                     return new ChapterInfo(chapterId, chapterName);
-                })
-                .sorted(Comparator.comparingInt(ChapterInfo::getId)) // 按照 ID 升序排序
+                }).sorted(Comparator.comparingInt(ChapterInfo::getId)) // 按照 ID 升序排序
                 .toList();
-        
+
         return Result.success(chapterInfos);
     }
 
@@ -97,11 +93,11 @@ public class ExerciseSolutionController {
         if (title == null || title.trim().isEmpty()) {
             return 0;
         }
-        
+
         // 使用正则表达式提取数字
         Pattern pattern = Pattern.compile("\\d+");
         Matcher matcher = pattern.matcher(title);
-        
+
         if (matcher.find()) {
             try {
                 return Integer.parseInt(matcher.group());
@@ -109,7 +105,7 @@ public class ExerciseSolutionController {
                 return 0;
             }
         }
-        
+
         return 0;
     }
 
@@ -123,7 +119,7 @@ public class ExerciseSolutionController {
         if (title == null || title.trim().isEmpty()) {
             return "未知章节";
         }
-        
+
         // 查找"章"的位置
         int chapterIndex = title.indexOf("章");
         if (chapterIndex != -1) {
@@ -137,33 +133,23 @@ public class ExerciseSolutionController {
                 return title.substring(chapterIndex + 1).trim();
             }
         }
-        
+
         // 如果没有"章"，查找"："的位置
         int colonIndex = title.indexOf("：");
         if (colonIndex != -1) {
             // 提取"："之前的文本
             return title.substring(0, colonIndex).trim();
         }
-        
+
         // 如果都没有，返回原标题
         return title;
     }
 
-
     @GetMapping
     @Operation(summary = "获取习题解答列表", description = "分页获取习题解答列表，只返回部分字段")
-    public Result<IPage<ExerciseSolutionListDTO>> getList(
-            @Parameter(description = "页码") @RequestParam(defaultValue = "1") Integer page,
-            @Parameter(description = "每页大小") @RequestParam(defaultValue = "10") Integer size,
-            @Parameter(description = "搜索关键词") @RequestParam(required = false) String keyword,
-            @Parameter(description = "难度级别") @RequestParam(required = false) String difficulty,
-            @Parameter(description = "分类") @RequestParam(required = false) String category,
-            @Parameter(description = "章节序号") @RequestParam(required = false) String chapterNumber,
-            @Parameter(description = "LeetCode题号") @RequestParam(required = false) String leetcodeNumber,
-            @Parameter(description = "发布状态") @RequestParam(required = false) Boolean isPublished) {
+    public Result<IPage<ExerciseSolutionListDTO>> getList(@Parameter(description = "页码") @RequestParam(defaultValue = "1") Integer page, @Parameter(description = "每页大小") @RequestParam(defaultValue = "10") Integer size, @Parameter(description = "搜索关键词") @RequestParam(required = false) String keyword, @Parameter(description = "难度级别") @RequestParam(required = false) String difficulty, @Parameter(description = "分类") @RequestParam(required = false) String category, @Parameter(description = "章节序号") @RequestParam(required = false) String chapterNumber, @Parameter(description = "LeetCode题号") @RequestParam(required = false) String leetcodeNumber, @Parameter(description = "发布状态") @RequestParam(required = false) Boolean isPublished) {
 
-        log.info("获取习题解答列表，参数：{}",
-                new Object[]{page, size, keyword, difficulty, category, chapterNumber, leetcodeNumber, isPublished});
+        log.info("获取习题解答列表，参数：{}", new Object[]{page, size, keyword, difficulty, category, chapterNumber, leetcodeNumber, isPublished});
 
         IPage<ExerciseSolutionListDTO> pageList = exerciseSolutionService.getPageListWithPartialFields(page, size, keyword, difficulty, category, chapterNumber, leetcodeNumber, isPublished);
         return Result.success(pageList);
@@ -179,7 +165,6 @@ public class ExerciseSolutionController {
         }
         return Result.success(exerciseSolution);
     }
-
 
     @GetMapping("/url/**")
     @Operation(summary = "根据 URL 获取习题解答", description = "根据 URL 获取习题解答详情，URL 格式如 chapter02/leetcode/0493-reverse-pairs")
@@ -275,7 +260,7 @@ public class ExerciseSolutionController {
     public Result<Object> getOldArticle(@PathVariable String leetcodeNumber) {
         try {
             String url = "https://old-suanfa8-api.dance8.fun/api/v2/article/content/leetcode/" + leetcodeNumber;
-            
+
             // 使用 Apache HttpClient 5 发送 HTTP 请求
             try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
                 HttpGet httpGet = new HttpGet(url);
@@ -322,7 +307,6 @@ public class ExerciseSolutionController {
         return Result.success(treeList);
     }
 
-
     @GetMapping("/children/{parentId}")
     @Operation(summary = "获取所有子结点", description = "获取指定结点的所有子结点（包括孙子结点）")
     public Result<List<ExerciseSolution>> getAllChildren(@PathVariable Integer parentId) {
@@ -342,18 +326,17 @@ public class ExerciseSolutionController {
     public Result<Void> batchUpdatePublishStatus(@RequestBody Map<String, Object> request) {
         List<Integer> ids = (List<Integer>) request.get("ids");
         Boolean isPublished = (Boolean) request.get("isPublished");
-        
+
         if (ids == null || ids.isEmpty()) {
             return Result.fail(ResultCode.PARAM_ERROR);
         }
-        
+
         boolean success = exerciseSolutionService.batchUpdatePublishStatus(ids, isPublished);
         if (success) {
             return Result.success();
         }
         return Result.fail(ResultCode.UPDATE_FAILED);
     }
-
 
     @PutMapping("/replace-images/{id}")
     @Operation(summary = "替换图片", description = "将 Markdown 中的图片上传到 MinIO 并替换为本站链接")
