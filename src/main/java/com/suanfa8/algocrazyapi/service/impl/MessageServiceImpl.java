@@ -52,6 +52,23 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message> impl
         message.setCreatedAt(LocalDateTime.now());
         message.setUpdatedAt(LocalDateTime.now());
         message.setIsDeleted(false);
+        
+        // 处理多级回复
+        if (message.getParentId() == null || message.getParentId() == 0) {
+            message.setParentId(0L);
+            message.setLevel(0);
+        } else {
+            // 获取父留言的层级，当前层级为父层级+1
+            Message parentMessage = messageMapper.selectById(message.getParentId());
+            if (parentMessage != null) {
+                message.setLevel(parentMessage.getLevel() + 1);
+            } else {
+                // 如果父留言不存在，默认为顶层
+                message.setParentId(0L);
+                message.setLevel(0);
+            }
+        }
+        
         messageMapper.insert(message);
         return message;
     }
@@ -95,4 +112,64 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message> impl
                     .orderByDesc(Message::getCreatedAt);
         return messageMapper.selectList(queryWrapper);
     }
+
+    @Override
+    public List<Message> getMessageTree() {
+        // 先获取所有顶层留言
+        LambdaQueryWrapper<Message> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Message::getIsDeleted, false)
+                    .eq(Message::getParentId, 0)
+                    .orderByDesc(Message::getCreatedAt);
+        List<Message> topLevelMessages = messageMapper.selectList(queryWrapper);
+        
+        // 递归添加子回复
+        for (Message message : topLevelMessages) {
+            addRepliesToMessage(message);
+        }
+        
+        return topLevelMessages;
+    }
+
+
+
+    @Override
+    public List<Message> getRepliesByParentId(Long parentId) {
+        LambdaQueryWrapper<Message> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Message::getIsDeleted, false)
+                    .eq(Message::getParentId, parentId)
+                    .orderByAsc(Message::getCreatedAt);
+        return messageMapper.selectList(queryWrapper);
+    }
+
+    @Override
+    public Message addReplyMessage(Long parentId, Message message) {
+        Message parentMessage = messageMapper.selectById(parentId);
+        if (parentMessage == null || parentMessage.getIsDeleted()) {
+            throw new RuntimeException("父留言不存在");
+        }
+        
+        message.setParentId(parentId);
+        message.setLevel(parentMessage.getLevel() + 1);
+        message.setStatus(0);
+        message.setCreatedAt(LocalDateTime.now());
+        message.setUpdatedAt(LocalDateTime.now());
+        message.setIsDeleted(false);
+        
+        messageMapper.insert(message);
+        return message;
+    }
+
+    /**
+     * 递归添加子回复到留言对象
+     */
+    private void addRepliesToMessage(Message parentMessage) {
+        List<Message> replies = getRepliesByParentId(parentMessage.getId());
+        if (!replies.isEmpty()) {
+            parentMessage.setChildren(replies);
+            for (Message reply : replies) {
+                addRepliesToMessage(reply);
+            }
+        }
+    }
+
 }

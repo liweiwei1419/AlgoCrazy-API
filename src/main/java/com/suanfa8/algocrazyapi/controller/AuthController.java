@@ -2,6 +2,7 @@ package com.suanfa8.algocrazyapi.controller;
 
 import com.suanfa8.algocrazyapi.auth.AuthenticationRequest;
 import com.suanfa8.algocrazyapi.auth.AuthenticationResponse;
+import com.suanfa8.algocrazyapi.common.Result;
 import com.suanfa8.algocrazyapi.service.impl.JwtRedisService;
 import com.suanfa8.algocrazyapi.service.impl.UserDetailsServiceImpl;
 import com.suanfa8.algocrazyapi.utils.JwtUtil;
@@ -39,7 +40,7 @@ public class AuthController {
     private JwtUtil jwtUtil;
 
     @RequestMapping(value = "/authenticate", method = RequestMethod.POST)
-    public ResponseEntity<?> createAuthenticationToken(@RequestBody AuthenticationRequest authenticationRequest) throws Exception {
+    public Result<AuthenticationResponse> createAuthenticationToken(@RequestBody AuthenticationRequest authenticationRequest) throws Exception {
         String identifier = authenticationRequest.getUsernameOrEmail();
         String password = authenticationRequest.getPassword();
         log.info("identifier: {}, password: {}", identifier, password);
@@ -69,7 +70,7 @@ public class AuthController {
 
         final String jwt = jwtUtil.generateToken(userDetails);
         jwtRedisService.saveJwt(userDetails.getUsername(), jwt);
-        return ResponseEntity.ok(new AuthenticationResponse(jwt));
+        return Result.success(new AuthenticationResponse(jwt));
     }
 
     // @PreAuthorize("hasAnyRole('USER', 'ADMIN')")

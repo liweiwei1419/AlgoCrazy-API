@@ -14,6 +14,7 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @TableName("message_board")
@@ -35,6 +36,15 @@ public class Message {
     
     @TableField("status")
     private Integer status; // 0-待回复，1-已回复
+    
+    @TableField("parent_id")
+    private Long parentId; // 父留言ID，0表示顶层留言
+    
+    @TableField("level")
+    private Integer level; // 回复层级：0-顶层，1-一级回复，2-二级回复...
+    
+    @TableField("reply_to_nickname")
+    private String replyToNickname; // 回复对象的昵称
     
     @TableField("reply_content")
     private String replyContent;
@@ -60,4 +70,10 @@ public class Message {
     @TableField("is_deleted")
     @TableLogic
     private Boolean isDeleted = false;
+    
+    /**
+     * 子回复列表（非数据库字段，用于树形结构返回）
+     */
+    @TableField(exist = false)
+    private List<Message> children;
 }

@@ -87,5 +87,5 @@ public class YuqueDocumentController {
         }
         return "Failed to get document detail";
     }
-    
+
 }

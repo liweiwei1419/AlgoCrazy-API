@@ -56,6 +56,26 @@ public class MessageController {
         return Result.success(messageService.addMessage(message));
     }
 
+    @Operation(summary = "获取树形结构的留言列表")
+    @GetMapping("/tree")
+    public Result<List<Message>> getMessageTree() {
+        return Result.success(messageService.getMessageTree());
+    }
+
+    @Operation(summary = "获取指定留言的所有子回复")
+    @GetMapping("/replies/{parentId}")
+    public Result<List<Message>> getRepliesByParentId(@Parameter(name = "parentId", required = true, description = "父留言ID") @PathVariable Long parentId) {
+        return Result.success(messageService.getRepliesByParentId(parentId));
+    }
+
+    @Operation(summary = "添加回复（支持多级回复）")
+    @PostMapping("/reply/{parentId}")
+    public Result<Message> addReplyMessage(@Parameter(name = "parentId", required = true, description = "父留言ID") @PathVariable Long parentId, @RequestBody MessageAddDto messageAddDto) {
+        Message message = new Message();
+        BeanUtils.copyProperties(messageAddDto, message);
+        return Result.success(messageService.addReplyMessage(parentId, message));
+    }
+
     @Operation(summary = "更新留言状态")
     @PreAuthorize("hasAnyRole('ADMIN')")
     @PutMapping("/status/{id}/{status}")

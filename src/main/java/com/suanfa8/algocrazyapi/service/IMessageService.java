@@ -58,4 +58,25 @@ public interface IMessageService extends IService<Message> {
      * @return 留言列表
      */
     List<Message> getMessagesByStatus(Integer status);
+
+    /**
+     * 获取树形结构的留言列表
+     * @return 树形结构的留言列表
+     */
+    List<Message> getMessageTree();
+
+    /**
+     * 获取指定留言的所有子回复
+     * @param parentId 父留言ID
+     * @return 子回复列表
+     */
+    List<Message> getRepliesByParentId(Long parentId);
+
+    /**
+     * 添加回复（支持多级回复）
+     * @param parentId 父留言ID
+     * @param message 回复信息
+     * @return 添加后的回复
+     */
+    Message addReplyMessage(Long parentId, Message message);
 }
