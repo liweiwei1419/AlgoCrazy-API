@@ -41,6 +41,7 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message> impl
         Page<Message> page = new Page<>(pageNum, pageSize);
         LambdaQueryWrapper<Message> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Message::getIsDeleted, false)
+                    .eq(Message::getParentId, 0) // 只获取顶层留言
                     .orderByDesc(Message::getCreatedAt);
 
         return messageMapper.selectPage(page, queryWrapper);
