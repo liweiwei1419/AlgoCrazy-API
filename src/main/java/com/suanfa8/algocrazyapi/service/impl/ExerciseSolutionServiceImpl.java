@@ -177,12 +177,9 @@ public class ExerciseSolutionServiceImpl extends ServiceImpl<ExerciseSolutionMap
             hasCondition = true;
         }
         
+        // isPublished 条件与其他条件是 AND 关系，不参与 OR 逻辑
         if (isPublished != null) {
-            if (hasCondition) {
-                queryWrapper.or();
-            }
             queryWrapper.eq(ExerciseSolution::getIsPublished, isPublished);
-            hasCondition = true;
         }
         
         queryWrapper.eq(ExerciseSolution::getIsDeleted, false)

@@ -147,10 +147,12 @@ public class ExerciseSolutionController {
 
     @GetMapping
     @Operation(summary = "获取习题解答列表", description = "分页获取习题解答列表，只返回部分字段")
-    public Result<IPage<ExerciseSolutionListDTO>> getList(@Parameter(description = "页码") @RequestParam(defaultValue = "1") Integer page, @Parameter(description = "每页大小") @RequestParam(defaultValue = "10") Integer size, @Parameter(description = "搜索关键词") @RequestParam(required = false) String keyword, @Parameter(description = "难度级别") @RequestParam(required = false) String difficulty, @Parameter(description = "分类") @RequestParam(required = false) String category, @Parameter(description = "章节序号") @RequestParam(required = false) String chapterNumber, @Parameter(description = "LeetCode题号") @RequestParam(required = false) String leetcodeNumber, @Parameter(description = "发布状态") @RequestParam(required = false) Boolean isPublished) {
-
-        log.info("获取习题解答列表，参数：{}", new Object[]{page, size, keyword, difficulty, category, chapterNumber, leetcodeNumber, isPublished});
-
+    public Result<IPage<ExerciseSolutionListDTO>> getList(@Parameter(description = "页码") @RequestParam(defaultValue = "1") Integer page, @Parameter(description = "每页大小") @RequestParam(defaultValue = "10") Integer size, @Parameter(description = "搜索关键词") @RequestParam(required = false) String keyword, @Parameter(description = "难度级别") @RequestParam(required = false) String difficulty, @Parameter(description = "分类") @RequestParam(required = false) String category, @Parameter(description = "章节序号") @RequestParam(required = false) String chapterNumber, @Parameter(description = "LeetCode题号") @RequestParam(required = false) String leetcodeNumber, @Parameter(description = "发布状态") @RequestParam(required = false) Boolean isPublished, @Parameter(description = "是否来自用户页面") @RequestParam(required = false) Boolean fromUserPage) {
+        log.info("获取习题解答列表，参数：{}", page, size, keyword, difficulty, category, chapterNumber, leetcodeNumber, isPublished, fromUserPage);
+        // 如果是用户页面传来的请求，强制过滤 isPublished=true（与其他条件是 AND 关系）
+        if (Boolean.TRUE.equals(fromUserPage)) {
+            isPublished = true;
+        }
         IPage<ExerciseSolutionListDTO> pageList = exerciseSolutionService.getPageListWithPartialFields(page, size, keyword, difficulty, category, chapterNumber, leetcodeNumber, isPublished);
         return Result.success(pageList);
     }
@@ -351,6 +353,36 @@ public class ExerciseSolutionController {
             log.error("替换图片失败", e);
             return Result.fail(ResultCode.FAILED);
         }
+    }
+
+    @PutMapping("/{id}/publish")
+    @Operation(summary = "发布练习", description = "将指定练习设置为已发布状态")
+    public Result<Void> publish(@PathVariable Integer id) {
+        ExerciseSolution exerciseSolution = exerciseSolutionService.getById(id);
+        if (exerciseSolution == null) {
+            return Result.fail(ResultCode.EXERCISE_SOLUTION_NOT_FOUND);
+        }
+        exerciseSolution.setIsPublished(true);
+        boolean success = exerciseSolutionService.updateById(exerciseSolution);
+        if (success) {
+            return Result.success();
+        }
+        return Result.fail(ResultCode.UPDATE_FAILED);
+    }
+
+    @PutMapping("/{id}/unpublish")
+    @Operation(summary = "取消发布练习", description = "将指定练习设置为未发布状态")
+    public Result<Void> unpublish(@PathVariable Integer id) {
+        ExerciseSolution exerciseSolution = exerciseSolutionService.getById(id);
+        if (exerciseSolution == null) {
+            return Result.fail(ResultCode.EXERCISE_SOLUTION_NOT_FOUND);
+        }
+        exerciseSolution.setIsPublished(false);
+        boolean success = exerciseSolutionService.updateById(exerciseSolution);
+        if (success) {
+            return Result.success();
+        }
+        return Result.fail(ResultCode.UPDATE_FAILED);
     }
 
 }
