@@ -63,7 +63,13 @@ public enum ResultCode {
     /**
      * 获取旧文章失败
      */
-    GET_OLD_ART_FAILED(500, "获取旧文章失败")
+    GET_OLD_ART_FAILED(500, "获取旧文章失败"),
+
+    /**
+     * 草稿不存在
+     */
+    DRAFT_NOT_FOUND(500, "草稿不存在")
+
     ;
 
 
