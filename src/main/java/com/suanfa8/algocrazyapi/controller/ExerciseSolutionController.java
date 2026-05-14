@@ -385,4 +385,14 @@ public class ExerciseSolutionController {
         return Result.fail(ResultCode.UPDATE_FAILED);
     }
 
+    @PutMapping("/{id}/remark")
+    @Operation(summary = "修改备注", description = "根据ID修改习题的备注信息")
+    public Result<Void> updateRemark(@PathVariable Integer id, @Parameter(description = "备注内容") @RequestParam String remark) {
+        boolean success = exerciseSolutionService.updateRemarkById(id, remark);
+        if (success) {
+            return Result.success();
+        }
+        return Result.fail(ResultCode.EXERCISE_SOLUTION_NOT_FOUND);
+    }
+
 }

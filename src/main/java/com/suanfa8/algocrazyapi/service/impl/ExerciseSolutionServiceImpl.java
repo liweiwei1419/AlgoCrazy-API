@@ -113,7 +113,7 @@ public class ExerciseSolutionServiceImpl extends ServiceImpl<ExerciseSolutionMap
             ExerciseSolution::getLeetcodeNumber,
             ExerciseSolution::getIsPublished,
             ExerciseSolution::getCreatedAt,
-            ExerciseSolution::getUpdatedAt,
+            ExerciseSolution::getUpdatedAt, ExerciseSolution::getRemark,
             ExerciseSolution::getUrl
         );
         
@@ -205,6 +205,7 @@ public class ExerciseSolutionServiceImpl extends ServiceImpl<ExerciseSolutionMap
         dto.setCreatedAt(entity.getCreatedAt());
         dto.setUpdatedAt(entity.getUpdatedAt());
         dto.setUrl(entity.getUrl());
+        dto.setRemark(entity.getRemark());
         return dto;
     }
 
@@ -474,4 +475,13 @@ public class ExerciseSolutionServiceImpl extends ServiceImpl<ExerciseSolutionMap
         return exercises.stream().collect(Collectors.toMap(ExerciseSolution::getId, Function.identity()));
     }
 
+    @Override
+    public boolean updateRemarkById(Integer id, String remark) {
+        ExerciseSolution exerciseSolution = getById(id);
+        if (exerciseSolution == null || exerciseSolution.getIsDeleted()) {
+            return false;
+        }
+        exerciseSolution.setRemark(remark);
+        return updateById(exerciseSolution);
+    }
 }

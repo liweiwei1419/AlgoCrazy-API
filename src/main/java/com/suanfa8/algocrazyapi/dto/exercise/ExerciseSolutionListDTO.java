@@ -44,4 +44,6 @@ public class ExerciseSolutionListDTO {
     private LocalDateTime updatedAt;
 
     private String url;
+
+    private String remark;
 }

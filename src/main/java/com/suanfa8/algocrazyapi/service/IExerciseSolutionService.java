@@ -75,6 +75,7 @@ public interface IExerciseSolutionService extends IService<ExerciseSolution> {
 
     /**
      * 替换 Markdown 中的图片并更新到 MinIO
+     *
      * @param id 习题解答ID
      * @return 是否成功
      */
@@ -85,5 +86,15 @@ public interface IExerciseSolutionService extends IService<ExerciseSolution> {
      * 根据ID列表批量获取习题
      */
     Map<Integer, ExerciseSolution> getExerciseMapByIds(List<Integer> ids);
+
+    /**
+     * 根据ID修改备注
+     *
+     * @param id     习题ID
+     * @param remark 备注内容
+     * @return 是否成功
+     */
+    boolean updateRemarkById(Integer id, String remark);
+
 
 }
