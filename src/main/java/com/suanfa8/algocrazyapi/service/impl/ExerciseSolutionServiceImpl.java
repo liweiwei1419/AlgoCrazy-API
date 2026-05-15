@@ -359,7 +359,7 @@ public class ExerciseSolutionServiceImpl extends ServiceImpl<ExerciseSolutionMap
         if (webReference == null || webReference.isEmpty()) {
             return "unknown";
         }
-        Pattern pattern = Pattern.compile("problems/([^/]+)/description");
+        Pattern pattern = Pattern.compile("problems/([^/]+)/");
         Matcher matcher = pattern.matcher(webReference);
         if (matcher.find()) {
             return matcher.group(1);
