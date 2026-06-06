@@ -6,6 +6,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.suanfa8.algocrazyapi.common.Result;
 import com.suanfa8.algocrazyapi.common.ResultCode;
 import com.suanfa8.algocrazyapi.dto.ChapterInfo;
+import com.suanfa8.algocrazyapi.dto.exercise.ExerciseCatalogChapterDTO;
+import com.suanfa8.algocrazyapi.dto.exercise.ExerciseCatalogDTO;
+import com.suanfa8.algocrazyapi.dto.exercise.ExerciseCatalogItemDTO;
+import com.suanfa8.algocrazyapi.dto.exercise.ExerciseCatalogModuleDTO;
 import com.suanfa8.algocrazyapi.dto.exercise.ExerciseSolutionListDTO;
 import com.suanfa8.algocrazyapi.entity.Article;
 import com.suanfa8.algocrazyapi.entity.ExerciseSolution;
@@ -38,8 +42,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Comparator;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -49,6 +58,8 @@ import java.util.regex.Pattern;
 @CacheConfig(cacheNames = "exercise-solutions")
 @Slf4j
 public class ExerciseSolutionController {
+
+    private static final List<Integer> BOOK_MODULE_PARENT_IDS = List.of(204, 203, 206, 205);
 
     @Resource
     private IExerciseSolutionService exerciseSolutionService;
@@ -60,12 +71,9 @@ public class ExerciseSolutionController {
     @Operation(summary = "获取章节列表", description = "获取指定父结点下的章节列表")
     @Cacheable(key = "'chapters'")
     public Result<List<ChapterInfo>> chapters() {
-        // 查询 parent_id 在 (204,203,206,205) 的文章
-        List<Integer> parentIds = List.of(204, 203, 206, 205);
-
         // 使用 MyBatis-Plus 查询条件：parent_id 在指定列表中，只查询需要的字段
         LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.in(Article::getParentId, parentIds).eq(Article::getIsDeleted, false).orderByAsc(Article::getDisplayOrder)
+        queryWrapper.in(Article::getParentId, BOOK_MODULE_PARENT_IDS).eq(Article::getIsDeleted, false).orderByAsc(Article::getDisplayOrder)
                 // 只查询需要的字段，避免查询大字段
                 .select(Article::getId, Article::getTitle, Article::getDisplayOrder);
 
@@ -82,6 +90,51 @@ public class ExerciseSolutionController {
                 .toList();
 
         return Result.success(chapterInfos);
+    }
+
+    @GetMapping("/catalog")
+    @Operation(summary = "获取用户练习目录", description = "返回模块、章节和已发布习题摘要，用于书籍练习页目录展示")
+    @Cacheable(key = "'catalog'")
+    public Result<ExerciseCatalogDTO> catalog() {
+        List<Article> modules = getBookModules();
+        List<Article> chapters = getBookChapters();
+        List<ExerciseSolution> exercises = getPublishedExerciseSummaries();
+
+        Map<String, List<ExerciseSolution>> exercisesByChapter = exercises.stream()
+                .filter(exercise -> normalizeChapterNumber(exercise.getChapterNumber()) != null)
+                .collect(Collectors.groupingBy(
+                        exercise -> normalizeChapterNumber(exercise.getChapterNumber()),
+                        LinkedHashMap::new,
+                        Collectors.toList()
+                ));
+
+        List<ExerciseCatalogModuleDTO> moduleDTOList = modules.stream()
+                .map(module -> buildModuleDTO(module, chapters, exercisesByChapter))
+                .toList();
+
+        List<ExerciseCatalogChapterDTO> supplementalChapters = buildSupplementalChapters(chapters, exercisesByChapter);
+        if (!supplementalChapters.isEmpty()) {
+            ExerciseCatalogModuleDTO supplementalModule = new ExerciseCatalogModuleDTO();
+            supplementalModule.setId(0);
+            supplementalModule.setTitle("补充练习");
+            supplementalModule.setLabel("Additional");
+            supplementalModule.setChapters(supplementalChapters);
+            supplementalModule.setChapterCount(supplementalChapters.size());
+            supplementalModule.setExerciseCount(sumChapterExercises(supplementalChapters));
+            List<ExerciseCatalogModuleDTO> withSupplemental = new ArrayList<>(moduleDTOList);
+            withSupplemental.add(supplementalModule);
+            moduleDTOList = withSupplemental;
+        }
+
+        ExerciseCatalogDTO catalogDTO = new ExerciseCatalogDTO();
+        catalogDTO.setModules(moduleDTOList);
+        catalogDTO.setModuleCount(moduleDTOList.size());
+        catalogDTO.setChapterCount(moduleDTOList.stream().mapToInt(ExerciseCatalogModuleDTO::getChapterCount).sum());
+        catalogDTO.setExerciseCount(exercises.size());
+        catalogDTO.setCategories(extractCategories(exercises));
+        catalogDTO.setDifficultyCounts(countDifficulties(exercises));
+
+        return Result.success(catalogDTO);
     }
 
     /**
@@ -143,6 +196,184 @@ public class ExerciseSolutionController {
 
         // 如果都没有，返回原标题
         return title;
+    }
+
+    private List<Article> getBookModules() {
+        LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.in(Article::getId, BOOK_MODULE_PARENT_IDS)
+                .eq(Article::getIsDeleted, false)
+                .orderByAsc(Article::getDisplayOrder)
+                .select(Article::getId, Article::getTitle, Article::getDisplayOrder);
+        return articleService.list(queryWrapper);
+    }
+
+    private List<Article> getBookChapters() {
+        LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.in(Article::getParentId, BOOK_MODULE_PARENT_IDS)
+                .eq(Article::getIsDeleted, false)
+                .orderByAsc(Article::getDisplayOrder)
+                .select(Article::getId, Article::getParentId, Article::getTitle, Article::getDisplayOrder);
+        return articleService.list(queryWrapper);
+    }
+
+    private List<ExerciseSolution> getPublishedExerciseSummaries() {
+        LambdaQueryWrapper<ExerciseSolution> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(ExerciseSolution::getIsDeleted, false)
+                .eq(ExerciseSolution::getIsPublished, true)
+                .orderByAsc(ExerciseSolution::getSortOrder)
+                .orderByDesc(ExerciseSolution::getUpdatedAt)
+                .select(
+                        ExerciseSolution::getId,
+                        ExerciseSolution::getTitle,
+                        ExerciseSolution::getSortOrder,
+                        ExerciseSolution::getDifficultyLevel,
+                        ExerciseSolution::getCategory,
+                        ExerciseSolution::getChapterNumber,
+                        ExerciseSolution::getLeetcodeNumber,
+                        ExerciseSolution::getUrl,
+                        ExerciseSolution::getWebReference,
+                        ExerciseSolution::getDocumentReference,
+                        ExerciseSolution::getVideoReference
+                );
+        return exerciseSolutionService.list(queryWrapper);
+    }
+
+    private ExerciseCatalogModuleDTO buildModuleDTO(Article module, List<Article> chapters, Map<String, List<ExerciseSolution>> exercisesByChapter) {
+        List<ExerciseCatalogChapterDTO> chapterDTOList = chapters.stream()
+                .filter(chapter -> Objects.equals(chapter.getParentId(), module.getId()))
+                .sorted(Comparator.comparingInt(chapter -> extractChapterId(chapter.getTitle())))
+                .map(chapter -> buildChapterDTO(chapter, exercisesByChapter))
+                .toList();
+
+        ExerciseCatalogModuleDTO moduleDTO = new ExerciseCatalogModuleDTO();
+        moduleDTO.setId(module.getId());
+        moduleDTO.setTitle(cleanModuleTitle(module.getTitle()));
+        moduleDTO.setLabel("Module " + module.getId());
+        moduleDTO.setChapters(chapterDTOList);
+        moduleDTO.setChapterCount(chapterDTOList.size());
+        moduleDTO.setExerciseCount(sumChapterExercises(chapterDTOList));
+        return moduleDTO;
+    }
+
+    private ExerciseCatalogChapterDTO buildChapterDTO(Article chapter, Map<String, List<ExerciseSolution>> exercisesByChapter) {
+        String chapterNumber = String.valueOf(extractChapterId(chapter.getTitle()));
+        List<ExerciseSolution> exercises = exercisesByChapter.getOrDefault(chapterNumber, Collections.emptyList());
+
+        ExerciseCatalogChapterDTO chapterDTO = new ExerciseCatalogChapterDTO();
+        chapterDTO.setId(chapter.getId());
+        chapterDTO.setNumber(chapterNumber);
+        chapterDTO.setTitle(chapter.getTitle());
+        chapterDTO.setName(extractChapterName(chapter.getTitle()));
+        chapterDTO.setExercises(exercises.stream().map(this::buildExerciseItemDTO).toList());
+        chapterDTO.setExerciseCount(exercises.size());
+        chapterDTO.setDifficultyCounts(countDifficulties(exercises));
+        return chapterDTO;
+    }
+
+    private List<ExerciseCatalogChapterDTO> buildSupplementalChapters(List<Article> chapters, Map<String, List<ExerciseSolution>> exercisesByChapter) {
+        List<String> knownChapterNumbers = chapters.stream()
+                .map(chapter -> String.valueOf(extractChapterId(chapter.getTitle())))
+                .toList();
+
+        return exercisesByChapter.entrySet().stream()
+                .filter(entry -> !knownChapterNumbers.contains(entry.getKey()))
+                .map(entry -> buildSupplementalChapterDTO(entry.getKey(), entry.getValue()))
+                .sorted(Comparator.comparingInt(chapter -> parseIntOrMax(chapter.getNumber())))
+                .toList();
+    }
+
+    private ExerciseCatalogChapterDTO buildSupplementalChapterDTO(String chapterNumber, List<ExerciseSolution> exercises) {
+        ExerciseCatalogChapterDTO chapterDTO = new ExerciseCatalogChapterDTO();
+        chapterDTO.setId(parseIntOrMax(chapterNumber));
+        chapterDTO.setNumber(chapterNumber);
+        chapterDTO.setTitle("第 " + chapterNumber + " 章");
+        chapterDTO.setName("补充题解");
+        chapterDTO.setExercises(exercises.stream().map(this::buildExerciseItemDTO).toList());
+        chapterDTO.setExerciseCount(exercises.size());
+        chapterDTO.setDifficultyCounts(countDifficulties(exercises));
+        return chapterDTO;
+    }
+
+    private ExerciseCatalogItemDTO buildExerciseItemDTO(ExerciseSolution exercise) {
+        ExerciseCatalogItemDTO itemDTO = new ExerciseCatalogItemDTO();
+        itemDTO.setId(exercise.getId());
+        itemDTO.setTitle(exercise.getTitle());
+        itemDTO.setSortOrder(exercise.getSortOrder());
+        itemDTO.setDifficultyLevel(exercise.getDifficultyLevel());
+        itemDTO.setCategory(exercise.getCategory());
+        itemDTO.setChapterNumber(exercise.getChapterNumber());
+        itemDTO.setLeetcodeNumber(exercise.getLeetcodeNumber());
+        itemDTO.setUrl(exercise.getUrl());
+        itemDTO.setHasWebReference(hasText(exercise.getWebReference()));
+        itemDTO.setHasDocument(hasText(exercise.getDocumentReference()));
+        itemDTO.setHasVideo(hasText(exercise.getVideoReference()));
+        return itemDTO;
+    }
+
+    private String cleanModuleTitle(String title) {
+        if (!hasText(title)) {
+            return "未命名模块";
+        }
+        int colonIndex = title.indexOf("：");
+        if (colonIndex >= 0 && colonIndex < title.length() - 1) {
+            return title.substring(colonIndex + 1).trim();
+        }
+        return title.trim();
+    }
+
+    private String normalizeChapterNumber(String chapterNumber) {
+        if (!hasText(chapterNumber)) {
+            return null;
+        }
+        String trimmed = chapterNumber.trim();
+        Matcher matcher = Pattern.compile("\\d+").matcher(trimmed);
+        if (!matcher.find()) {
+            return trimmed;
+        }
+        return String.valueOf(Integer.parseInt(matcher.group()));
+    }
+
+    private List<String> extractCategories(List<ExerciseSolution> exercises) {
+        return exercises.stream()
+                .map(ExerciseSolution::getCategory)
+                .filter(this::hasText)
+                .map(String::trim)
+                .distinct()
+                .sorted()
+                .toList();
+    }
+
+    private Map<String, Integer> countDifficulties(List<ExerciseSolution> exercises) {
+        Map<String, Integer> counts = new LinkedHashMap<>();
+        counts.put("easy", 0);
+        counts.put("medium", 0);
+        counts.put("hard", 0);
+        counts.put("other", 0);
+
+        for (ExerciseSolution exercise : exercises) {
+            String difficulty = hasText(exercise.getDifficultyLevel()) ? exercise.getDifficultyLevel() : "other";
+            if (!counts.containsKey(difficulty)) {
+                difficulty = "other";
+            }
+            counts.put(difficulty, counts.get(difficulty) + 1);
+        }
+        return counts;
+    }
+
+    private int sumChapterExercises(List<ExerciseCatalogChapterDTO> chapters) {
+        return chapters.stream().mapToInt(ExerciseCatalogChapterDTO::getExerciseCount).sum();
+    }
+
+    private int parseIntOrMax(String value) {
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException e) {
+            return Integer.MAX_VALUE;
+        }
+    }
+
+    private boolean hasText(String value) {
+        return value != null && !value.trim().isEmpty();
     }
 
     @GetMapping

@@ -37,6 +37,7 @@ public class SecurityConfig {
     private static final String[] URL_WHITELIST = {
             // 习题解答按 URL 查询接口，公开访问
             "/exercise-solutions/url/**",
+            "/exercise-solutions/catalog",
             "/exercise-solutions/chapters",
             "/exercise-solutions",
             "/auth/logout",
