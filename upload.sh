@@ -22,7 +22,8 @@ cd "$PROJECT_DIR" || {
 
 # 1. 执行 Maven 打包（跳过测试）
 echo "正在执行 Maven 打包（跳过测试）..."
-mvn clean package -DskipTests
+MAVEN_OPTS="-Djansi.mode=strip -Djansi.graceful=true ${MAVEN_OPTS:-}" \
+    mvn --batch-mode -Dstyle.color=never clean package -DskipTests
 
 if [ $? -ne 0 ]; then
     echo "Maven 打包失败，请检查错误"
