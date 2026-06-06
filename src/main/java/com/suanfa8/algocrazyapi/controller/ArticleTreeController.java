@@ -9,7 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,14 +27,9 @@ public class ArticleTreeController {
     @Resource
     private IArticleTreeService articleTreeService;
 
-    @Resource
-    private RedisTemplate<String, Object> redisTemplate;
-
-    private static final String CACHE_KEY = "article:fullTree";
-
     // 获取完整树形结构，用于测试
     @GetMapping("/all")
-    @Cacheable(value = "articleFullTree", key = "'article:fullTree'", unless = "#result == null")
+    @Cacheable(value = "articleFullTree", key = "'article:fullTree:v2'", unless = "#result == null")
     public Result<List<ArticleTreeNode>> getArticleTree() {
         List<ArticleTreeNode> tree = articleTreeService.getFullTree();
         List<ArticleTreeNode> result = tree != null ? tree : Collections.emptyList();
@@ -44,7 +38,7 @@ public class ArticleTreeController {
 
     // 用于书本目录
     @GetMapping("/book")
-    @Cacheable(value = "bookFullTree", key = "'book:fullTree'", unless = "#result == null")
+    @Cacheable(value = "bookFullTree", key = "'book:fullTree:v2'", unless = "#result == null")
     public Result<List<BookTreeNode>> getBookTree() {
         List<BookTreeNode> tree = articleTreeService.getBookTree();
         List<BookTreeNode> result = tree != null ? tree : Collections.emptyList();
@@ -52,25 +46,20 @@ public class ArticleTreeController {
     }
 
     // 当数据更新时清除缓存
-    @CacheEvict(value = {"articleFullTree", "bookFullTree"}, key = "'article:fullTree', 'book:fullTree'")
+    @CacheEvict(value = {"articleFullTree", "bookFullTree"}, allEntries = true)
     public void clearCache() {
-        try {
-            redisTemplate.delete(CACHE_KEY);
-        } catch (Exception e) {
-            // 清除缓存失败不影响主流程
-        }
     }
 
     // 移动结点
     @PostMapping("/{id}/move")
-    @CacheEvict(value = {"articleFullTree", "bookFullTree"}, key = "'article:fullTree', 'book:fullTree'")
+    @CacheEvict(value = {"articleFullTree", "bookFullTree"}, allEntries = true)
     public Result<Void> moveArticle(@PathVariable Integer id, @RequestParam Integer newParentId) {
         articleTreeService.moveNode(id, newParentId);
         return Result.success();
     }
 
     // 调整顺序
-    @CacheEvict(value = {"articleFullTree", "bookFullTree"}, key = "'article:fullTree', 'book:fullTree'")
+    @CacheEvict(value = {"articleFullTree", "bookFullTree"}, allEntries = true)
     @PostMapping("/{id}/reorder")
     public Result<Void> reorderArticle(@PathVariable Integer id, @RequestParam Integer newOrder) {
         articleTreeService.reorderNode(id, newOrder);

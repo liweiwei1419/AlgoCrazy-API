@@ -32,8 +32,8 @@ public class ArticleTreeServiceImpl implements IArticleTreeService {
             BeanUtils.copyProperties(article, node);
             node.setIndex(article.getId().toString());
 
-            // 设置完整URL
-            if (!article.getIsFolder()) {
+            // 设置完整URL。目录节点也可能有正文内容，因此只要配置了 url 就允许跳转。
+            if (hasUrl(article)) {
                 node.setUrl(buildFullUrl(article, allArticles));
             }
 
@@ -72,11 +72,8 @@ public class ArticleTreeServiceImpl implements IArticleTreeService {
             ArticleTreeNode node = new ArticleTreeNode();
             BeanUtils.copyProperties(article, node);
 
-            // 如果是文件夹，URL设置为空或特定标识
-            if (article.getIsFolder()) {
-                node.setUrl(null);
-            } else {
-                // 非文件夹文章，拼接完整URL路径
+            // 目录节点也可能有正文内容，因此只要配置了 url 就允许跳转。
+            if (hasUrl(article)) {
                 node.setUrl(buildFullUrl(article, allArticles));
             }
 
@@ -195,5 +192,8 @@ public class ArticleTreeServiceImpl implements IArticleTreeService {
         }
     }
 
-}
+    private boolean hasUrl(Article article) {
+        return article.getUrl() != null && !article.getUrl().isBlank();
+    }
 
+}

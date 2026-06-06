@@ -168,6 +168,9 @@ public class ArticleController {
     public Result<ArticleDetailDto> queryByUrl(@PathVariable String url) {
         articleService.lambdaUpdate().eq(Article::getUrl, url).setSql("view_count = view_count + 1").update();
         Article article = articleService.queryByUrl(url);
+        if (article == null) {
+            return Result.fail(500, "文章不存在");
+        }
         ArticleDetailDto articleDetailDto = new ArticleDetailDto();
         articleDetailDto.setId(article.getId());
         articleDetailDto.setContent(article.getContent());
