@@ -12,7 +12,7 @@ import lombok.ToString;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class CommentUpdateDto {
 
-    private Integer commentId;
+    private Long commentId;
 
     private String content;
 

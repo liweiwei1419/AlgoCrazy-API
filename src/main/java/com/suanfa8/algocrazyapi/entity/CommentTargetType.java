@@ -18,7 +18,17 @@ public enum CommentTargetType {
     /**
      * 练习
      */
-    EXERCISE("EXERCISE", "练习");
+    EXERCISE("EXERCISE", "练习"),
+
+    /**
+     * 留言板
+     */
+    MESSAGE_BOARD("MESSAGE_BOARD", "留言"),
+
+    /**
+     * 题目点评
+     */
+    PROBLEM_REVIEW("PROBLEM_REVIEW", "题目点评");
     
     /**
      * 数据库存储值

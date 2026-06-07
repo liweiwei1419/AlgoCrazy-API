@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -24,18 +23,66 @@ import java.util.List;
 public class Comment {
 
     @TableId(type = IdType.AUTO)
-    private Integer id;
+    private Long id;
 
-    // 解决返回给前端精度丢失的问题
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
-    @TableField("user_id")
-    private Long userId;
+    @TableField("target_type")
+    private String targetType;
+
+    @TableField("target_id")
+    private Long targetId;
 
     @TableField("content")
     private String content;
 
-    @TableField("parent_comment_id")
-    private Integer parentCommentId;
+    @TableField("parent_id")
+    private Long parentId;
+
+    @TableField("reply_to_comment_id")
+    private Long replyToCommentId;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
+    @TableField("user_id")
+    private Long userId;
+
+    @TableField("author_type")
+    private String authorType;
+
+    @TableField("guest_nickname")
+    private String guestNickname;
+
+    @TableField("guest_email")
+    private String guestEmail;
+
+    @TableField("is_anonymous")
+    private Boolean anonymous = false;
+
+    @TableField("display_nickname")
+    private String displayNickname;
+
+    @TableField("display_avatar")
+    private String displayAvatar;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
+    @TableField("reply_to_user_id")
+    private Long replyToUserId;
+
+    @TableField("reply_to_nickname")
+    private String replyToNickname;
+
+    @TableField("reply_count")
+    private Integer replyCount = 0;
+
+    @TableField("like_count")
+    private Integer likeCount = 0;
+
+    @TableField("status")
+    private String status;
+
+    @TableField("ip_hash")
+    private String ipHash;
+
+    @TableField("user_agent_hash")
+    private String userAgentHash;
 
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
@@ -49,54 +96,17 @@ public class Comment {
     @TableField(value = "updated_at", fill = FieldFill.UPDATE)
     private LocalDateTime updatedAt;
 
-    /**
-     * 评论用户头像（非数据库字段）
-     */
-    @TableField(exist = false)
-    private String userAvatar;
-
-    @TableField("user_nickname")
-    private String userNickname;
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @TableField("deleted_at")
+    private LocalDateTime deletedAt;
 
     /**
      * 二级评论列表（非数据库字段）
      */
     @TableField(exist = false)
     private List<Comment> replies;
-
-    @TableField("is_guest")
-    private boolean isGuest;
-
-    @TableField("is_deleted")
-    @TableLogic
-    private Boolean isDeleted = false;
-
-    @TableField("like_count")
-    private Integer likeCount = 0;
-
-    @TableField("reply_count")
-    private Integer replyCount = 0;
-
-    @TableField("reply_to_comment_id")
-    private Integer replyToCommentId;
-
-    @TableField("reply_to_user_id")
-    private Long replyToUserId;
-
-    @TableField(exist = false)
-    private String replyToUserNickname;
-
-    /**
-     * 目标类型：ARTICLE（文章）、EXERCISE（练习）等
-     */
-    @TableField("target_type")
-    private String targetType;
-
-    /**
-     * 目标ID
-     */
-    @TableField("target_id")
-    private Integer targetId;
 
     /**
      * 目标标题（非数据库字段）

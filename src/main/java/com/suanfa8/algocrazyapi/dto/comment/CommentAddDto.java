@@ -20,17 +20,25 @@ public class CommentAddDto {
     /**
      * 目标ID
      */
-    private Integer targetId;
+    private Long targetId;
 
     private String content;
 
-    private String userId;
+    private Long parentId;
 
-    // 回复才有
+    private Long replyToCommentId;
+
+    private String guestNickname;
+
+    private String guestEmail;
+
+    private Boolean anonymous;
+
+    /**
+     * 兼容旧前端字段，后续不再使用。
+     */
     private Integer parentCommentId;
-    // 回复才有
+
     private Long replyToUserId;
-    // 回复才有
-    private Integer replyToCommentId;
 
 }

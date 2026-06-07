@@ -49,6 +49,8 @@ public class SecurityConfig {
             "/comment/exercise/comments",
             "/comment/add",
             "/comment/*/replies",
+            "/comments",
+            "/comments/**",
             "/user/register",
             "/user/forgot-password",
             "/user/reset-password",

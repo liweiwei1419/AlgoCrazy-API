@@ -11,8 +11,8 @@ import lombok.ToString;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class CommentDeleteDto {
 
-    private Integer commentId;
+    private Long commentId;
 
-    private Integer parentCommentId;
+    private Long parentCommentId;
 
 }

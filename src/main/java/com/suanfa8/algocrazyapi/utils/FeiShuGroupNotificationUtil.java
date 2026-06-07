@@ -11,6 +11,7 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -44,7 +45,7 @@ public class FeiShuGroupNotificationUtil implements NotificationStrategy {
             // 使用标准 Base64 编码（飞书要求）
             String sign = new String(Base64.encodeBase64(signData));
 
-            String url = webhookUrl + "?sign=" + sign + "&timestamp=" + timestamp;
+            String url = buildSignedWebhookUrl(timestamp, sign);
 
             Map<String, Object> body = new HashMap<>();
             body.put("msg_type", "text");
@@ -63,6 +64,12 @@ public class FeiShuGroupNotificationUtil implements NotificationStrategy {
             e.printStackTrace();
             throw new RuntimeException("发送飞书通知失败", e);
         }
+    }
+
+    private String buildSignedWebhookUrl(Long timestamp, String sign) {
+        String separator = webhookUrl.contains("?") ? "&" : "?";
+        String encodedSign = URLEncoder.encode(sign, StandardCharsets.UTF_8);
+        return webhookUrl + separator + "timestamp=" + timestamp + "&sign=" + encodedSign;
     }
 
     @Override
