@@ -40,6 +40,7 @@ public class SecurityConfig {
             "/exercise-solutions/catalog",
             "/exercise-solutions/chapters",
             "/exercise-solutions",
+            "/faqs/published",
             "/auth/logout",
 
             // 放行的 URL 路径
