@@ -68,7 +68,12 @@ public enum ResultCode {
     /**
      * 草稿不存在
      */
-    DRAFT_NOT_FOUND(500, "草稿不存在")
+    DRAFT_NOT_FOUND(500, "草稿不存在"),
+
+    /**
+     * 练习视频不存在
+     */
+    EXERCISE_VIDEO_NOT_FOUND(500, "练习视频不存在")
 
     ;
 

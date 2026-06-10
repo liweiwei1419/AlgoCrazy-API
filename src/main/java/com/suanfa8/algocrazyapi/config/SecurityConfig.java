@@ -40,6 +40,8 @@ public class SecurityConfig {
             "/exercise-solutions/catalog",
             "/exercise-solutions/chapters",
             "/exercise-solutions",
+            "/exercise-videos/exercise/**",
+            "/exercise-videos/*/danmus",
             "/faqs/published",
             "/auth/logout",
 
