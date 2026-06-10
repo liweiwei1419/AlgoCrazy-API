@@ -69,6 +69,9 @@ public class ExerciseSolution {
     @TableField("remark")
     private String remark = "";
 
+    @TableField("learning_tip")
+    private String learningTip;
+
     @TableField("is_published")
     private Boolean isPublished = false;
 
