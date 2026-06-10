@@ -54,6 +54,7 @@ public class SecurityConfig {
             "/comment/*/replies",
             "/comments",
             "/comments/**",
+            "/problem-reviews/**",
             "/user/register",
             "/user/forgot-password",
             "/user/reset-password",
