@@ -1,0 +1,144 @@
+228,第 16 章 前缀和与哈希表：子数组问题的优化策略,prefix-sum-hashmap
+324,第 3 节 并查集的优化 2：按秩合并,union-find-union-by-rank
+223,第 11 章 哈希表：用空间换时间的典型应用,hash-table
+298,第 1 节 从斐波那契数列开始认识动态规划,dp-fibonacci
+212,第 2 节 插入排序：数据不同，表现不同,insertion-sort
+300,第 3 节 求解过程需要满足：无后效性,dp-no-aftereffect
+291,第 4 节 哈希表问题选讲,hash-table-examples
+211,第 1 节 选择排序：算法学习的 Hello World,selection-sort
+251,第 2 节 滑动窗口两道经典题目详解,sliding-window-classics
+304,第 7 节 区间 DP 问题选讲,dp-interval
+276,第 6 节 优先队列问题选讲,priority-queue-examples
+297,第 5 节 总结与练习,backtracking-summary
+296,第 4 节 回溯算法应用于游戏问题,backtracking-games
+199,第 2 节 写在前面的话,words-before-we-begin
+200,第 3 节 本书章节介绍,chapter-overview
+214,第 4 节 复杂度分析：算法效率的衡量标尺,complexity-analysis
+315,第 4 节 总结与练习,bfs-topological-summary
+309,第 1 节 贪心算法简介,greedy-intro
+293,第 1 节 从全排列问题开始理解回溯算法,backtracking-permutations
+310,第 2 节 贪心算法问题选讲,greedy-examples
+220,第 8 章 优先队列：建立在数组上的树结构,priority-queue
+320,第 2 节 字典树问题选讲,trie-examples
+322,第 1 节 并查集简介,union-find-intro
+325,第 4 节 并查集问题选讲,union-find-examples
+283,第 6 节 总结与练习,tree-summary
+233,第 1 节 递归是「分而治之」思想的自然体现,recursion-divide-conquer
+330,第 4 节 Bellman-Ford 算法：有负权边的单源最短路径算法,bellman-ford
+308,第 11 节 总结与练习,dp-summary
+240,第 8 节 随机选择基准元素：避免有序数组的最坏情况,quick-sort-random-pivot
+247,第 4 节 二分查找问题选讲,binary-search-examples
+234,第 2 节 看不见的栈：理解递归的隐形引擎,recursion-call-stack
+235,第 3 节 使用递归计算快速幂,fast-power
+266,第 1 节 说栈是在说功能而没有说实现,stack-abstract-concept
+245,第 2 节 必须退出循环后才能确定答案的问题（本节内容非常重要）,binary-search-post-loop
+295,第 3 节 回溯算法应用于 Flood Fill 问题,backtracking-flood-fill
+243,第 11 节 总结与练习,recursion-summary
+313,第 2 节 广度优先遍历问题选讲,bfs-examples
+238,第 6 节 计算逆序对数量：归并排序的经典应用,count-inversions
+281,第 4 节 二叉树的广度优先遍历,binary-tree-bfs
+237,第 5 节 编程实现归并排序,merge-sort-implementation
+242,第 10 节 快速排序例题选讲,quick-sort-examples
+252,第 3 节 双指针算法,two-pointers
+253,第 4 节 双指针算法问题选讲,two-pointers-examples
+282,第 5 节 树的问题选讲,tree-examples
+285,第 2 节 红黑树与 B 树简介,red-black-tree-b-tree
+236,第 4 节 归并排序,merge-sort
+301,第 4 节 当动态规划遇到「后效性」问题怎么办？,dp-aftereffect-solution
+264,第 5 节 链表与其他数据结构,linked-list-vs-others
+305,第 8 节 树形 DP 问题选讲,dp-tree
+311,第 3 节 总结与练习,greedy-summary
+299,第 2 节 最优子结构,dp-optimal-substructure
+241,第 9 节 快速排序优化：处理重复元素的高效方法,quick-sort-duplicates
+239,第 7 节 快速排序算法详解：从思想到实现,quick-sort
+294,第 2 节 回溯算法应用于排列组合问题,backtracking-combinations
+250,第 1 节 滑动窗口算法,sliding-window
+328,第 2 节 通过具体例子理解 Dijkstra 算法,dijkstra-example
+332,第 6 节 总结与练习,shortest-path-summary
+327,第 1 节 单源最短路径问题与松弛操作,shortest-path-relaxation
+333,第 1 节 相关概念与切分定理,mst-concepts-cut-property
+244,第 1 节 二分查找入门：从猜价格到查字典,binary-search-intro
+334,第 2 节 Kruskal 算法：通过排序所有边然后逐步添加不形成环的边构建最小生成树,kruskal
+335,第 3 节 Prim 算法：从一个点开始，逐步扩展生成树,prim
+249,第 6 节 总结与练习,binary-search-summary
+323,第 2 节 并查集的优化 1：路径压缩,union-find-path-compression
+288,第 1 节 哈希表与哈希函数,hash-table-intro
+284,第 1 节 二叉搜索树：结合二分查找与链表的数据结构,bst-intro
+274,第 4 节 最大堆代码实现,max-heap-implementation
+286,第 3 节 二叉搜索树问题选讲,bst-examples
+265,第 6 节 总结与练习,linked-list-summary
+312,第 1 节 图论基础,graph-basics
+263,第 4 节 快慢指针,fast-slow-pointers
+246,第 3 节 最大值极小化问题,minimize-maximum
+269,第 4 节 队列问题选讲,queue-examples
+319,第 1 节 字典树简介,trie-intro
+262,第 3 节 虚拟头结点,dummy-head
+279,第 2 节 二叉树的深度优先遍历,binary-tree-dfs
+314,第 3 节 拓扑排序简介,topological-sort
+302,第 5 节 线性 DP 问题选讲,dp-linear
+270,第 5 节 总结与练习,stack-queue-summary
+289,第 2 节 哈希函数：从对象到整数的「魔法」,hash-function
+290,第 3 节 哈希冲突、装载因子与扩容,hash-collision-load-factor
+317,第 2 节 前缀和与哈希表,prefix-sum-hashmap-application
+280,第 3 节 二叉树的中序遍历和后序遍历,binary-tree-inorder-postorder
+261,第 2 节 修改链表结点的指针,linked-list-pointer-manipulation
+303,第 6 节 两个字符串的 DP 问题选讲,dp-two-strings
+210,第 4 章 滑动窗口与双指针：数组问题的量体裁衣与相遇即解,sliding-window-two-pointers
+260,第 1 节 真正动态的数据结构,linked-list-intro
+275,第 5 节 堆排序：选择排序的升级,heap-sort
+267,第 2 节 栈问题选讲,stack-examples
+268,第 3 节 队列简介,queue-intro
+287,第 4 节 总结与练习,bst-summary
+255,第 1 节 什么是动态数组？,dynamic-array-intro
+254,第 5 节 总结与练习,sliding-window-two-pointers-summary
+331,第 5 节 Floyd 算法：所有点对的最短路径问题,floyd-warshall
+306,第 9 节 0-1 背包问题,knapsack-01
+278,第 1 节 树的简介,tree-intro
+307,第 10 节 完全背包问题,knapsack-complete
+230,第 18 章 并查集：解决连通性问题的经典数据结构,union-find
+222,第 10 章 二叉搜索树：高效查找与动态维护,binary-search-tree
+256,第 2 节 动态数组是如何自动扩容的？,dynamic-array-resizing
+273,第 3 节 堆的调整：上浮与下沉,heap-swim-sink
+258,第 4 节 均摊复杂度分析：为什么动态数组的插入仍是 O(1)？,amortized-analysis
+225,第 13 章 动态规划：其实就是表格法,dynamic-programming
+336,第 4 节 总结,mst-summary
+209,第 3 章 二分查找：逐渐缩小搜索区间,binary-search
+321,第 3 节 总结与练习,trie-summary
+232,第 20 章 最小生成树算法：Kruskal 与 Prim 算法,minimum-spanning-tree
+292,第 5 节 总结与练习,hash-table-summary
+218,第 6 章 链表：动态数据结构基础,linked-list
+329,第 3 节 Dijkstra 算法与广度优先遍历,dijkstra-bfs
+339,第 21 章 总结与典型问题,review-classic-problems
+213,第 3 节 不利用额外空间很难降低时间复杂度,space-time-tradeoff
+340,第 1 节 总结与典型问题,review-problems
+341,第 2 节 写在最后的话,final-words
+217,第 5 章 动态数组：看似动态，实则是静态数组的巧妙包装,dynamic-array
+318,第 3 节 总结与练习,prefix-sum-summary
+326,第 5 节 总结与练习,union-find-summary
+202,第 5 节 适合本书的读者和不适合本书的读者,suitable-readers
+198,第 1 节 本书亮点,highlights
+206,第 4 部分 进阶篇,advanced-topics
+227,第 15 章 广度优先遍历与拓扑排序：层级遍历与依赖解析,bfs-topological-sort
+316,第 1 节 前缀和简介,prefix-sum-intro
+231,第 19 章 最短路径问题：Dijkstra、Bellman-Ford、Floyd 算法,shortest-path
+205,第 3 部分 算法设计思想,algorithm-design
+215,第 5 节 循环不变量：保持变量的定义不变,loop-invariant
+1,第 0 部分 写在前面的话,home
+277,第 7 节 总结与练习,priority-queue-summary
+248,第 5 节 二分查找的学习误区,binary-search-pitfalls
+207,第 1 章 基础排序算法：算法学习的起点,sorting-basics
+201,第 4 节 如何使用本书,how-to-use
+226,第 14 章 贪心算法：局部最优能否带来全局最优？,greedy
+338,第 5 部分 总结与典型问题,summary-classic-problems
+272,第 2 节 建立在数组上的树结构,heap-as-array
+221,第 9 章 树与二叉树：DFS、BFS 与后序遍历的妙用,trees-dfs-bfs
+216,第 6 节 总结与练习,summary-practice
+257,第 3 节 警惕复杂度震荡,complexity-oscillation
+271,第 1 节 优先队列是抽象概念,priority-queue-abstract
+259,第 5 节 总结,dynamic-array-summary
+203,第 1 部分 算法基础,algorithm-basics
+219,第 7 章 栈与队列：LIFO 和 FIFO 的经典应用,stack-queue
+224,第 12 章 回溯算法：全局使用一份变量尝试所有可能，其实还是 DFS,backtracking
+229,第 17 章 字典树：高效处理字符串匹配问题,trie
+204,第 2 部分 数据结构基础,data-structure-basics
+208,第 2 章 递归的最佳学习材料：归并排序与快速排序,recursion
