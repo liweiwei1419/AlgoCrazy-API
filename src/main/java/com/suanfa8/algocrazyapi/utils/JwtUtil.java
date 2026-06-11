@@ -78,13 +78,6 @@ public class JwtUtil {
             }
 
             final String username = extractUsername(token);
-
-            System.out.println("validateToken " + username);
-
-            System.out.println("userDetails.getUsername() " + userDetails.getUsername());
-
-            System.out.println("!isTokenExpired(token) " + !isTokenExpired(token));
-
             return username.equals(userDetails.getUsername()) && !isTokenExpired(token) && jwtRedisService.validateJwt(username, token);
         } catch (JwtException | IllegalArgumentException e) {
             return false;

@@ -68,6 +68,7 @@ public class SecurityConfig {
             "/leetcode/problems/**",
             "/message/**",
             "/algorithm-category/**",
+            "/problem-reviews/topics",
             // Knife4j 文档访问路径
             // API 描述文档的 JSON 数据
             "/v3/api-docs",

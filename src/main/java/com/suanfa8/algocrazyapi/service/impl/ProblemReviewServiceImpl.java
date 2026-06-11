@@ -1,6 +1,7 @@
 package com.suanfa8.algocrazyapi.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.suanfa8.algocrazyapi.dto.problemreview.ProblemReviewStatsDTO;
 import com.suanfa8.algocrazyapi.dto.problemreview.ProblemReviewSubmitDTO;
@@ -101,6 +102,79 @@ public class ProblemReviewServiceImpl extends ServiceImpl<ProblemReviewMapper, P
         return review;
     }
 
+    @Override
+    public List<ProblemReviewTopicDTO> listAdminTopics(String keyword) {
+        LambdaQueryWrapper<ProblemReviewTopic> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(ProblemReviewTopic::getIsDeleted, false);
+        if (StringUtils.hasText(keyword)) {
+            String trimmedKeyword = keyword.trim();
+            queryWrapper.and(wrapper -> wrapper
+                    .like(ProblemReviewTopic::getReviewTag, trimmedKeyword)
+                    .or()
+                    .like(ProblemReviewTopic::getWhyTypical, trimmedKeyword)
+                    .or()
+                    .like(ProblemReviewTopic::getSiteReview, trimmedKeyword));
+        }
+        queryWrapper.orderByAsc(ProblemReviewTopic::getSortOrder)
+                .orderByDesc(ProblemReviewTopic::getUpdatedAt);
+
+        List<ProblemReviewTopic> topics = problemReviewTopicMapper.selectList(queryWrapper);
+        if (topics.isEmpty()) {
+            return List.of();
+        }
+
+        Map<Long, List<ProblemReview>> reviewsByTopic = listVisibleReviewsByTopicIds(
+                topics.stream().map(ProblemReviewTopic::getId).toList()
+        );
+        Map<Integer, ExerciseSolution> exerciseMap = exerciseSolutionService.getExerciseMapByIds(
+                topics.stream().map(ProblemReviewTopic::getExerciseId).filter(Objects::nonNull).distinct().toList()
+        );
+
+        return topics.stream()
+                .map(topic -> buildTopicDTO(topic, exerciseMap.get(topic.getExerciseId()), reviewsByTopic.get(topic.getId()), false))
+                .toList();
+    }
+
+    @Override
+    public ProblemReviewTopic getAdminTopic(Long topicId) {
+        if (topicId == null || topicId < 1) {
+            throw new IllegalArgumentException("点评题目不存在");
+        }
+        LambdaQueryWrapper<ProblemReviewTopic> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(ProblemReviewTopic::getId, topicId)
+                .eq(ProblemReviewTopic::getIsDeleted, false);
+        ProblemReviewTopic topic = problemReviewTopicMapper.selectOne(queryWrapper);
+        if (topic == null) {
+            throw new IllegalArgumentException("点评题目不存在");
+        }
+        return topic;
+    }
+
+    @Override
+    public ProblemReviewTopic createTopic(ProblemReviewTopic topic) {
+        normalizeTopic(topic);
+        problemReviewTopicMapper.insert(topic);
+        return topic;
+    }
+
+    @Override
+    public ProblemReviewTopic updateTopic(Long topicId, ProblemReviewTopic topic) {
+        ProblemReviewTopic existingTopic = getAdminTopic(topicId);
+        topic.setId(existingTopic.getId());
+        normalizeTopic(topic);
+        problemReviewTopicMapper.updateById(topic);
+        return getAdminTopic(topicId);
+    }
+
+    @Override
+    public boolean deleteTopic(Long topicId) {
+        getAdminTopic(topicId);
+        LambdaUpdateWrapper<ProblemReviewTopic> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(ProblemReviewTopic::getId, topicId)
+                .set(ProblemReviewTopic::getIsDeleted, true);
+        return problemReviewTopicMapper.update(new ProblemReviewTopic(), updateWrapper) > 0;
+    }
+
     private List<ProblemReviewTopic> listEnabledTopicEntities() {
         LambdaQueryWrapper<ProblemReviewTopic> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(ProblemReviewTopic::getIsDeleted, false)
@@ -153,6 +227,7 @@ public class ProblemReviewServiceImpl extends ServiceImpl<ProblemReviewMapper, P
         dto.setWhyTypical(topic.getWhyTypical());
         dto.setSiteReview(topic.getSiteReview());
         dto.setSortOrder(topic.getSortOrder());
+        dto.setReviewEnabled(topic.getReviewEnabled());
         dto.setStats(buildStats(safeReviews));
         if (includeRecentReviews) {
             dto.setRecentReviews(safeReviews.stream().limit(8).toList());
@@ -229,6 +304,25 @@ public class ProblemReviewServiceImpl extends ServiceImpl<ProblemReviewMapper, P
         }
     }
 
+    private void normalizeTopic(ProblemReviewTopic topic) {
+        if (topic == null) {
+            throw new IllegalArgumentException("点评题目不能为空");
+        }
+        if (topic.getExerciseId() == null || topic.getExerciseId() < 1) {
+            throw new IllegalArgumentException("请选择关联练习");
+        }
+        ExerciseSolution exercise = exerciseSolutionService.getById(topic.getExerciseId());
+        if (exercise == null || Boolean.TRUE.equals(exercise.getIsDeleted())) {
+            throw new IllegalArgumentException("关联练习不存在");
+        }
+        topic.setReviewTag(blankToNull(topic.getReviewTag()));
+        topic.setWhyTypical(blankToNull(topic.getWhyTypical()));
+        topic.setSiteReview(blankToNull(topic.getSiteReview()));
+        topic.setReviewEnabled(topic.getReviewEnabled() == null || Boolean.TRUE.equals(topic.getReviewEnabled()));
+        topic.setSortOrder(topic.getSortOrder() == null ? 0 : topic.getSortOrder());
+        topic.setIsDeleted(false);
+    }
+
     private void validateScore(Integer score, String label) {
         if (score == null || score < 1 || score > 5) {
             throw new IllegalArgumentException(label + "必须在 1 到 5 分之间");
@@ -245,5 +339,9 @@ public class ProblemReviewServiceImpl extends ServiceImpl<ProblemReviewMapper, P
 
     private String fallback(String value, String fallback) {
         return StringUtils.hasText(value) ? value.trim() : fallback;
+    }
+
+    private String blankToNull(String value) {
+        return StringUtils.hasText(value) ? value.trim() : null;
     }
 }

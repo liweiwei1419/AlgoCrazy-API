@@ -36,6 +36,8 @@ public class ProblemReviewTopicDTO {
 
     private Integer sortOrder;
 
+    private Boolean reviewEnabled;
+
     private ProblemReviewStatsDTO stats = new ProblemReviewStatsDTO();
 
     private List<ProblemReview> recentReviews = new ArrayList<>();
