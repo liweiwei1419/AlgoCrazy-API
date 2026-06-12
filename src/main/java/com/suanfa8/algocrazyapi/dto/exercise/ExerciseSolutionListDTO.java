@@ -31,6 +31,8 @@ public class ExerciseSolutionListDTO {
 
     private String leetcodeNumber;
 
+    private Boolean isBookExample;
+
     private Boolean isPublished;
 
     @JsonSerialize(using = LocalDateTimeSerializer.class)

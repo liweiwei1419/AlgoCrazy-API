@@ -24,6 +24,8 @@ public class ExerciseCatalogItemDTO {
 
     private String url;
 
+    private Boolean isBookExample;
+
     private Boolean hasWebReference;
 
     private Boolean hasDocument;

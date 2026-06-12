@@ -111,6 +111,7 @@ public class ExerciseSolutionServiceImpl extends ServiceImpl<ExerciseSolutionMap
             ExerciseSolution::getCategory,
             ExerciseSolution::getChapterNumber,
             ExerciseSolution::getLeetcodeNumber,
+            ExerciseSolution::getIsBookExample,
             ExerciseSolution::getIsPublished,
             ExerciseSolution::getCreatedAt,
             ExerciseSolution::getUpdatedAt, ExerciseSolution::getRemark,
@@ -201,6 +202,7 @@ public class ExerciseSolutionServiceImpl extends ServiceImpl<ExerciseSolutionMap
         dto.setCategory(entity.getCategory());
         dto.setChapterNumber(entity.getChapterNumber());
         dto.setLeetcodeNumber(entity.getLeetcodeNumber());
+        dto.setIsBookExample(entity.getIsBookExample());
         dto.setIsPublished(entity.getIsPublished());
         dto.setCreatedAt(entity.getCreatedAt());
         dto.setUpdatedAt(entity.getUpdatedAt());

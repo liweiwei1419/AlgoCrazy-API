@@ -72,6 +72,9 @@ public class ExerciseSolution {
     @TableField("learning_tip")
     private String learningTip;
 
+    @TableField("is_book_example")
+    private Boolean isBookExample = false;
+
     @TableField("is_published")
     private Boolean isPublished = false;
 

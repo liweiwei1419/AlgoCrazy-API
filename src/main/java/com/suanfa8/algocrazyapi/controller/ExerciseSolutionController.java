@@ -238,6 +238,7 @@ public class ExerciseSolutionController {
                         ExerciseSolution::getCategory,
                         ExerciseSolution::getChapterNumber,
                         ExerciseSolution::getLeetcodeNumber,
+                        ExerciseSolution::getIsBookExample,
                         ExerciseSolution::getUrl,
                         ExerciseSolution::getWebReference,
                         ExerciseSolution::getDocumentReference,
@@ -312,6 +313,7 @@ public class ExerciseSolutionController {
         itemDTO.setChapterNumber(exercise.getChapterNumber());
         itemDTO.setLeetcodeNumber(exercise.getLeetcodeNumber());
         itemDTO.setUrl(exercise.getUrl());
+        itemDTO.setIsBookExample(exercise.getIsBookExample());
         itemDTO.setHasWebReference(hasText(exercise.getWebReference()));
         itemDTO.setHasDocument(hasText(exercise.getDocumentReference()));
         itemDTO.setHasVideo(exerciseIdsWithVideos.contains(exercise.getId()));
