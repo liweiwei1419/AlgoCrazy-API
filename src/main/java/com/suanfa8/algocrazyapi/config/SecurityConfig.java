@@ -69,6 +69,9 @@ public class SecurityConfig {
             "/message/**",
             "/algorithm-category/**",
             "/problem-reviews/topics",
+            "/essays/published",
+            "/essays/**",
+
             // Knife4j 文档访问路径
             // API 描述文档的 JSON 数据
             "/v3/api-docs",

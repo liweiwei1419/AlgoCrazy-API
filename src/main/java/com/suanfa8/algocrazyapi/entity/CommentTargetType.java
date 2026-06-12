@@ -28,7 +28,12 @@ public enum CommentTargetType {
     /**
      * 题目点评
      */
-    PROBLEM_REVIEW("PROBLEM_REVIEW", "题目点评");
+    PROBLEM_REVIEW("PROBLEM_REVIEW", "题目点评"),
+
+    /**
+     * 随笔
+     */
+    ESSAY("ESSAY", "随笔");
     
     /**
      * 数据库存储值

@@ -10,11 +10,13 @@ import com.suanfa8.algocrazyapi.dto.comment.CommentUpdateDto;
 import com.suanfa8.algocrazyapi.entity.Article;
 import com.suanfa8.algocrazyapi.entity.Comment;
 import com.suanfa8.algocrazyapi.entity.CommentTargetType;
+import com.suanfa8.algocrazyapi.entity.Essay;
 import com.suanfa8.algocrazyapi.entity.ExerciseSolution;
 import com.suanfa8.algocrazyapi.entity.User;
 import com.suanfa8.algocrazyapi.mapper.CommentMapper;
 import com.suanfa8.algocrazyapi.service.IArticleService;
 import com.suanfa8.algocrazyapi.service.ICommentService;
+import com.suanfa8.algocrazyapi.service.IEssayService;
 import com.suanfa8.algocrazyapi.service.IExerciseSolutionService;
 import com.suanfa8.algocrazyapi.utils.NotificationStrategy;
 import com.suanfa8.algocrazyapi.utils.NotificationStrategyFactory;
@@ -47,6 +49,9 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
 
     @Resource
     private IExerciseSolutionService exerciseSolutionService;
+
+    @Resource
+    private IEssayService essayService;
 
     @Resource
     private NotificationStrategyFactory notificationStrategyFactory;
@@ -339,6 +344,9 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         if (CommentTargetType.PROBLEM_REVIEW.getCode().equals(targetType)) {
             return "题目点评";
         }
+        if (CommentTargetType.ESSAY.getCode().equals(targetType)) {
+            return "随笔";
+        }
         return "目标";
     }
 
@@ -348,6 +356,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         }
         fillArticleTargetInfo(comments);
         fillExerciseTargetInfo(comments);
+        fillEssayTargetInfo(comments);
     }
 
     private void fillArticleTargetInfo(List<Comment> comments) {
@@ -392,6 +401,29 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
             if (exercise != null) {
                 comment.setTargetTitle(exercise.getTitle());
                 comment.setTargetUrl(exercise.getUrl());
+            }
+        }
+    }
+
+    private void fillEssayTargetInfo(List<Comment> comments) {
+        Set<Integer> essayIds = comments.stream()
+                .filter(comment -> CommentTargetType.ESSAY.getCode().equals(comment.getTargetType()))
+                .map(Comment::getTargetId)
+                .filter(Objects::nonNull)
+                .map(Long::intValue)
+                .collect(Collectors.toCollection(HashSet::new));
+        if (essayIds.isEmpty()) {
+            return;
+        }
+        Map<Integer, Essay> essayMap = essayService.getEssayMapByIds(new ArrayList<>(essayIds));
+        for (Comment comment : comments) {
+            if (!CommentTargetType.ESSAY.getCode().equals(comment.getTargetType())) {
+                continue;
+            }
+            Essay essay = essayMap.get(comment.getTargetId().intValue());
+            if (essay != null) {
+                comment.setTargetTitle(essay.getTitle());
+                comment.setTargetUrl(String.valueOf(essay.getId()));
             }
         }
     }
