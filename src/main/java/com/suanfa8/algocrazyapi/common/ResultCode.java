@@ -73,7 +73,12 @@ public enum ResultCode {
     /**
      * 练习视频不存在
      */
-    EXERCISE_VIDEO_NOT_FOUND(500, "练习视频不存在")
+    EXERCISE_VIDEO_NOT_FOUND(500, "练习视频不存在"),
+
+    /**
+     * 正文视频不存在
+     */
+    ARTICLE_VIDEO_NOT_FOUND(500, "正文视频不存在")
 
     ;
 

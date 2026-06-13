@@ -33,7 +33,6 @@ class MinioLearnApplicationTests {
     @Autowired
     private MinioClient minioClient;
 
-
     /**
      * 查询所有存储桶
      *
@@ -55,14 +54,46 @@ class MinioLearnApplicationTests {
         }
     }
 
-
     @Test
     void contextLoads() {
         boolean crazy = minioUtils.existBucket("crazy");
         System.out.println(crazy);
     }
 
+    /**
+     * 根据存储桶名称列出所有文件
+     *
+     * @param bucketName 存储桶名称
+     * @throws ServerException
+     * @throws InsufficientDataException
+     * @throws ErrorResponseException
+     * @throws IOException
+     * @throws NoSuchAlgorithmException
+     * @throws InvalidKeyException
+     * @throws InvalidResponseException
+     * @throws XmlParserException
+     * @throws InternalException
+     */
+    @Test
+    void testListFilesInBucket() throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
+        String bucketName = "crazy"; // 指定要列出文件的存储桶名称
 
+        // 列出存储桶中的所有对象
+        Iterable<io.minio.Result<io.minio.messages.Item>> results = minioClient.listObjects(
+                io.minio.ListObjectsArgs.builder().bucket(bucketName).recursive(true).build());
+
+        System.out.println("存储桶 " + bucketName + " 中的文件列表:");
+        // 遍历并打印每个对象
+        for (io.minio.Result<io.minio.messages.Item> result : results) {
+            io.minio.messages.Item item = result.get();
+            String objectName = item.objectName();
+            long size = item.size();
+            String lastModified = item.lastModified().toString();
+
+            System.out.println("文件: " + objectName + ", 大小: " + size + " bytes, 修改时间: " + lastModified);
+        }
+        System.out.println("文件列表输出完成！");
+    }
 
     @Test
     void downloadAllFiles() throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
@@ -104,7 +135,6 @@ class MinioLearnApplicationTests {
 
             System.out.println("下载完成: " + objectName + " -> " + localFilePath);
         }
-
         System.out.println("所有文件下载完成！");
     }
 

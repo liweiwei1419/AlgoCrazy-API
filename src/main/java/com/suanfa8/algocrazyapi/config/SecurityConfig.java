@@ -42,6 +42,8 @@ public class SecurityConfig {
             "/exercise-solutions",
             "/exercise-videos/exercise/**",
             "/exercise-videos/*/danmus",
+            "/article-videos/article/**",
+            "/article-videos/*/danmus",
             "/faqs/published",
             "/auth/logout",
 
